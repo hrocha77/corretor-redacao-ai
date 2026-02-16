@@ -3,125 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Avaliação de Redação</title>
+    <title>Acesso Restrito - Avaliador UFMG/COLTEC</title>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
     <style>
         :root {
-            --ufmg-red: #9e1b32; /* Cor institucional aproximada */
+            --ufmg-red: #9e1b32;
             --ufmg-gray: #333333;
-            --success: #2e7d32;
-            --danger: #c62828;
             --bg-light: #f5f7f9;
         }
 
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg-light); margin: 0; color: var(--ufmg-gray); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-light); margin: 0; overflow: hidden; }
 
-        /* Header Profissional */
-        header { background: white; padding: 1rem 2rem; border-bottom: 3px solid var(--ufmg-red); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .logo-area { display: flex; align-items: center; gap: 10px; }
-        .hardware-badge { background: #e8f5e9; color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid var(--success); }
+        /* Tela de Login */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--ufmg-red); display: flex; align-items: center;
+            justify-content: center; z-index: 9999; transition: 0.5s;
+        }
+        .login-card {
+            background: white; padding: 2.5rem; border-radius: 15px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            text-align: center; width: 100%; max-width: 350px;
+        }
+        .login-card h2 { margin-bottom: 1.5rem; color: var(--ufmg-gray); font-size: 1.2rem; }
+        .login-card input {
+            width: 100%; padding: 12px; margin-bottom: 1rem;
+            border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;
+            box-sizing: border-box; outline: none;
+        }
+        .login-card input:focus { border-color: var(--ufmg-red); }
+        .btn-login {
+            width: 100%; padding: 12px; background: var(--ufmg-red);
+            color: white; border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-login:hover { background: #7a1426; }
 
-        /* Navegação por Abas */
+        /* Ocultar sistema inicialmente */
+        #main-system { display: none; height: 100vh; flex-direction: column; }
+
+        /* Estilos do Sistema (Mantidos da versão anterior) */
+        header { background: white; padding: 1rem 2rem; border-bottom: 3px solid var(--ufmg-red); display: flex; justify-content: space-between; align-items: center; }
+        .hardware-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #2e7d32; }
         nav { background: #fff; display: flex; justify-content: center; gap: 2rem; padding: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .nav-link { border: none; background: none; padding: 1rem; cursor: pointer; color: #666; font-weight: 500; display: flex; align-items: center; gap: 8px; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .nav-link { border: none; background: none; padding: 1rem; cursor: pointer; color: #666; font-weight: 500; border-bottom: 3px solid transparent; }
         .nav-link.active { color: var(--ufmg-red); border-bottom-color: var(--ufmg-red); }
-
-        /* Área de Conteúdo */
-        main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-        .tab-pane { display: none; animation: slideUp 0.4s ease-out; }
+        main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; flex: 1; overflow-y: auto; }
+        .tab-pane { display: none; }
         .tab-pane.active { display: block; }
-
         .card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-
-        /* Editor e Scanner */
-        #video-preview { width: 100%; max-width: 700px; height: 400px; background: #000; margin: 1rem auto; border-radius: 8px; position: relative; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        
-        textarea { width: 100%; height: 500px; padding: 1.5rem; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; resize: none; outline: none; transition: border-color 0.3s; }
-        textarea:focus { border-color: var(--ufmg-red); box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.1); }
-
-        /* Botões */
-        .btn-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
-        .btn { flex: 1; padding: 1rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--ufmg-red); color: white; }
-        .btn-secondary { background: #607d8b; color: white; }
-        .btn-outline { border: 2px solid #ddd; background: white; color: #666; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        /* Resultados */
-        .competency-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .comp-score { background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center; border-top: 4px solid var(--ufmg-red); }
-        .comp-score h4 { margin: 0; font-size: 0.9rem; color: #666; }
-        .comp-score span { font-size: 1.5rem; font-weight: 800; color: var(--ufmg-gray); }
-
-        #feedback-area { background: #fff; border: 1px solid #eee; padding: 1.5rem; border-radius: 8px; font-family: 'Georgia', serif; white-space: pre-wrap; }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        textarea { width: 100%; height: 400px; padding: 1rem; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; resize: none; box-sizing: border-box; }
+        .btn-primary { background: var(--ufmg-red); color: white; padding: 1rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 1rem; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo-area">
-        <i data-lucide="graduation-cap"></i>
-        <h2 style="margin:0; font-size: 1.2rem;">Avaliador COLTEC/UFMG</h2>
+<div id="login-overlay">
+    <div class="login-card">
+        <i data-lucide="lock" style="color: var(--ufmg-red); margin-bottom: 10px;"></i>
+        <h2>Acesso Restrito COLTEC</h2>
+        <input type="password" id="passwordField" placeholder="Digite a senha de acesso">
+        <button class="btn-login" onclick="validateAccess()">Entrar no Sistema</button>
+        <p id="error-msg" style="color: red; font-size: 0.8rem; margin-top: 10px; display: none;">Senha incorreta. Tente novamente.</p>
     </div>
-    <div class="hardware-badge">Processamento via RTX 4090</div>
-</header>
+</div>
 
-<nav>
-    <button class="nav-link active" onclick="switchTab(event, 'scanner')"><i data-lucide="scan"></i> Digitalização</button>
-    <button class="nav-link" onclick="switchTab(event, 'editor')"><i data-lucide="file-text"></i> Edição de Texto</button>
-    <button class="nav-link" onclick="switchTab(event, 'results')"><i data-lucide="bar-chart-3"></i> Avaliação</button>
-</nav>
+<div id="main-system">
+    <header>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i data-lucide="graduation-cap"></i>
+            <h2 style="margin:0; font-size: 1.2rem;">Avaliador COLTEC/UFMG</h2>
+        </div>
+        <div class="hardware-badge">RTX 4090 Online</div>
+    </header>
 
-<main>
-    <div id="scanner" class="tab-pane active">
-        <div class="card">
-            <h3>Capturar Manuscrito</h3>
-            <div id="video-preview">
-                <video id="webcam" autoplay playsinline></video>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="initCamera()"><i data-lucide="camera"></i> Ativar Câmera</button>
-                <button class="btn btn-primary" onclick="captureImage()"><i data-lucide="focus"></i> Escanear Texto</button>
+    <nav>
+        <button class="nav-link active" onclick="switchTab(event, 'editor')">✍️ Redação</button>
+        <button class="nav-link" onclick="switchTab(event, 'results')">📊 Avaliação</button>
+    </nav>
+
+    <main>
+        <div id="editor" class="tab-pane active">
+            <div class="card">
+                <textarea id="essayText" placeholder="Cole a redação aqui para processamento na GPU local..."></textarea>
+                <button class="btn-primary" onclick="runCorrection()">🚀 Corrigir com Qwen2.5-32B</button>
             </div>
         </div>
-    </div>
 
-    <div id="editor" class="tab-pane">
-        <div class="card">
-            <h3>Texto da Redação</h3>
-            <textarea id="essayText" placeholder="O texto digitalizado aparecerá aqui ou você pode digitar..."></textarea>
-            <div class="btn-group">
-                <button class="btn btn-outline" onclick="clearText()"><i data-lucide="trash-2"></i> Limpar Tudo</button>
-                <button class="btn btn-primary" onclick="runCorrection()"><i data-lucide="zap"></i> Iniciar Avaliação IA</button>
+        <div id="results" class="tab-pane">
+            <div class="card">
+                <h3>Relatório Técnico (Critérios 1-57)</h3>
+                <div id="feedback-area" style="white-space: pre-wrap; font-family: serif;">Aguardando correção...</div>
             </div>
         </div>
-    </div>
-
-    <div id="results" class="tab-pane">
-        <div class="card">
-            <h3>Relatório de Desempenho</h3>
-            <div class="competency-grid">
-                <div class="comp-score"><h4>Comp. I</h4><span id="c1">-</span></div>
-                <div class="comp-score"><h4>Comp. II</h4><span id="c2">-</span></div>
-                <div class="comp-score"><h4>Comp. III</h4><span id="c3">-</span></div>
-                <div class="comp-score"><h4>Comp. IV</h4><span id="c4">-</span></div>
-                <div class="comp-score"><h4>Comp. V</h4><span id="c5">-</span></div>
-            </div>
-            <div id="feedback-area">Aguardando processamento do modelo Qwen2.5-VL-32B...</div>
-            <button class="btn btn-outline" style="margin-top: 1rem;" onclick="window.print()"><i data-lucide="download"></i> Exportar como PDF</button>
-        </div>
-    </div>
-</main>
+    </main>
+</div>
 
 <script>
-    // Inicialização de Ícones
     lucide.createIcons();
 
-    // URL do Túnel Ngrok para LM Studio (Porta 1234)
-    const API_URL = "https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions";
+    function validateAccess() {
+        const pass = document.getElementById('passwordField').value;
+        const error = document.getElementById('error-msg');
+        
+        if (pass === "beatriz") {
+            document.getElementById('login-overlay').style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = "none";
+                document.getElementById('main-system').style.display = "flex";
+                document.body.style.overflow = "auto";
+            }, 500);
+        } else {
+            error.style.display = "block";
+            document.getElementById('passwordField').value = "";
+        }
+    }
+
+    // Permitir "Enter" no campo de senha
+    document.getElementById('passwordField').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') validateAccess();
+    });
 
     function switchTab(e, id) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -130,38 +131,15 @@
         e.currentTarget.classList.add('active');
     }
 
-    async function initCamera() {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        document.getElementById('webcam').srcObject = stream;
-    }
-
-    function captureImage() {
-        // Simulação de OCR para demonstração
-        document.getElementById('essayText').value = "Texto reconhecido automaticamente pelo scanner...";
-        switchTab({currentTarget: document.querySelectorAll('.nav-link')[1]}, 'editor');
-    }
-
-    function clearText() {
-        if(confirm("Deseja apagar o texto atual?")) document.getElementById('essayText').value = "";
-    }
-
     async function runCorrection() {
         const text = document.getElementById('essayText').value;
         const feedback = document.getElementById('feedback-area');
-        if(!text) return alert("Insira o texto para correção.");
+        if(!text) return alert("Insira o texto.");
 
-        switchTab({currentTarget: document.querySelectorAll('.nav-link')[2]}, 'results');
-        feedback.innerText = "Sincronizando com RTX 4090 e aplicando 57 critérios de correção...";
+        switchTab({currentTarget: document.querySelectorAll('.nav-link')[1]}, 'results');
+        feedback.innerText = "Utilizando RTX 4090 para aplicar os 57 critérios oficiais...";
 
-        // PROMPT RIGOROSO BASEADO NOS 57 CRITÉRIOS
-        const prompt = `Você é um avaliador oficial de redações. Analise o texto seguindo rigorosamente estes critérios:
-        Competência 1: Domínio da norma padrão (Critérios 1-20).
-        Competência 2: Compreender a proposta e aplicar conceitos (Critérios 21-27).
-        Competência 3: Selecionar, relacionar e organizar fatos (Critérios 28-41).
-        Competência 4: Conhecimento dos mecanismos linguísticos (Critérios 42-46).
-        Competência 5: Elaborar proposta de intervenção (Critérios 47-57).
-
-        Para cada competência, cite explicitamente o NÚMERO do critério (ex: Critério 14 - Desvio de concordância) para justificar a pontuação.`;
+        const API_URL = "https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions";
 
         try {
             const response = await fetch(API_URL, {
@@ -169,18 +147,17 @@
                 headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                 body: JSON.stringify({
                     model: "local-model",
-                    messages: [{role: "system", content: prompt}, {role: "user", content: text}],
+                    messages: [
+                        {role: "system", content: "Você é um corretor rigoroso. Use os critérios 1-57 para avaliar."},
+                        {role: "user", content: text}
+                    ],
                     temperature: 0.2
                 })
             });
             const data = await response.json();
             feedback.innerText = data.choices[0].message.content;
-            
-            // Simulação de preenchimento de scores (pode ser extraído via Regex do retorno)
-            document.getElementById('c1').innerText = "160";
-            document.getElementById('c2').innerText = "200";
         } catch (error) {
-            feedback.innerText = "Falha na conexão. Certifique-se que o hardware local está Online.";
+            feedback.innerText = "Erro: Verifique se o LM Studio e o Ngrok estão ativos no servidor local.";
         }
     }
 </script>
