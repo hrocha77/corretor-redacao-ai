@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Corretor ENEM - RTX 4090</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background-color: #f4f4f9; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        textarea { width: 100%; height: 350px; margin: 15px 0; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; resize: vertical; }
+        button { width: 100%; padding: 15px; background-color: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        button:hover { background-color: #219150; }
+        #resultado { margin-top: 25px; padding: 20px; border-radius: 8px; background: #fff; border-left: 6px solid #27ae60; white-space: pre-wrap; display: none; }
+        .status { font-size: 14px; color: #666; text-align: center; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>📝 Corretor de Redação ENEM</h1>
+    <div class="status">Hardware: NVIDIA RTX 4090 (Local Host)</div>
+    
+    <textarea id="redacao" placeholder="Cole sua redação completa aqui..."></textarea>
+    
+    <button onclick="enviarRedacao()" id="btnCorrigir">🚀 Iniciar Correção Profissional</button>
+    
+    <div id="resultado"></div>
+</div>
+
+<script>
+    async function enviarRedacao() {
+        const texto = document.getElementById('redacao').value;
+        const resDiv = document.getElementById('resultado');
+        const btn = document.getElementById('btnCorrigir');
+
+        if (!texto) {
+            alert("Por favor, cole sua redação!");
+            return;
+        }
+
+        // --- CONFIGURAÇÃO ---
+        // Atualize este link com o seu ngrok atual da porta 1234
+        const NGROK_URL = "https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions";
+
+        btn.innerText = "Analisando com RTX 4090...";
+        btn.disabled = true;
+        resDiv.style.display = "none";
+
+        try {
+            const response = await fetch(NGROK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify({
+                    model: "local-model",
+                    messages: [
+                        { role: "system", content: "Você é um corretor rigoroso do ENEM. Avalie a redação seguindo as 5 competências do INEP. Dê notas de 0 a 200 para cada uma e justifique. No final, dê a nota total." },
+                        { role: "user", content: texto }
+                    ],
+                    temperature: 0.3
+                })
+            });
+
+            const data = await response.json();
+            resDiv.innerText = data.choices[0].message.content;
+            resDiv.style.display = "block";
+        } catch (error) {
+            alert("Erro de conexão! Verifique se o seu PC está ligado e o ngrok ativo.");
+            console.error(error);
+        } finally {
+            btn.innerText = "🚀 Iniciar Correção Profissional";
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
