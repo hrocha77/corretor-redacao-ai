@@ -8,22 +8,22 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <style>
         :root {
-            --primary-blue: #003366;
+            --primary-blue: #003366; /* Azul escuro institucional */
             --light-blue: #f0f4f8;
-            --accent-red: #d9534f;
+            --accent-red: #d9534f; /* Vermelho de destaque */
             --text-main: #333;
             --gray-border: #e1e4e8;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fdfdfd; margin: 0; color: var(--text-main); }
+        body { font-family: 'Segoe UI', sans-serif; background: #fdfdfd; margin: 0; color: var(--text-main); }
 
-        /* Login */
+        /* Camada de Login com senha 'beatriz' */
         #login-overlay { position: fixed; inset: 0; background: var(--primary-blue); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .login-card { background: white; padding: 2rem; border-radius: 12px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .login-card input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         .btn-login { width: 100%; padding: 12px; background: var(--accent-red); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        /* Estrutura */
+        /* Cabeçalho e Navegação Principal */
         #main-system { display: none; height: 100vh; flex-direction: column; }
         header { background: white; padding: 10px 20px; border-bottom: 1px solid var(--gray-border); display: flex; align-items: center; justify-content: space-between; }
         nav { background: white; display: flex; justify-content: center; gap: 30px; border-bottom: 1px solid var(--gray-border); }
@@ -34,11 +34,11 @@
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
 
-        /* Barra de Progresso */
+        /* Barra de Progresso de Execução */
         .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 20px 0; display: none; height: 20px; overflow: hidden; }
-        .progress-bar { height: 100%; background-color: var(--accent-red); width: 0%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; }
+        .progress-bar { height: 100%; background-color: var(--accent-red); width: 0%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: bold; }
 
-        /* ABA RESULTADOS */
+        /* Aba de Resultados - Estilo da Imagem */
         .res-header { display: flex; gap: 20px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .res-sub-link { padding: 10px 0; cursor: pointer; color: #999; font-weight: bold; position: relative; }
         .res-sub-link.active { color: var(--primary-blue); }
@@ -47,21 +47,22 @@
         .comp-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .comp-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 25px 0; }
         .comp-btn { padding: 10px 20px; border: 1px solid #ccc; background: white; cursor: pointer; font-weight: bold; min-width: 60px; transition: 0.2s; border-radius: 4px; }
-        .comp-btn.active { background: #ecdada; border-color: #d9534f; color: #333; }
+        .comp-btn.active { background: #ecdada; border-color: #d9534f; color: #333; } /* Cor pastel da imagem */
 
+        /* Campos de Feedback */
         .field-label { font-weight: bold; color: var(--primary-blue); margin: 20px 0 8px; font-size: 0.95rem; }
-        .desc-box { background: var(--light-blue); padding: 15px; border-radius: 4px; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; }
+        .desc-box { background: var(--light-blue); padding: 15px; border-radius: 4px; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; color: var(--primary-blue); }
         .score-select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 1rem; color: #666; }
         .text-feedback { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 15px; min-height: 100px; font-size: 0.95rem; line-height: 1.6; color: #444; white-space: pre-wrap; }
 
+        /* Grade de Indicadores (Critérios 1-57) */
         .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .crit-item { background: #f9f9f9; padding: 10px; border-radius: 4px; border-left: 4px solid #ddd; font-size: 0.85rem; display: flex; gap: 8px; }
-
-        textarea { width: 100%; height: 400px; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; box-sizing: border-box; }
+        
+        textarea { width: 100%; height: 350px; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn { flex: 1; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-primary { background: var(--accent-red); color: white; }
-        .btn-clear { background: #666; color: white; }
     </style>
 </head>
 <body>
@@ -70,7 +71,7 @@
     <div class="login-card">
         <i data-lucide="lock" style="color:var(--accent-red)"></i>
         <h3>Acesso Restrito</h3>
-        <input type="password" id="passInput" placeholder="Sua senha">
+        <input type="password" id="passInput" placeholder="Senha">
         <button class="btn-login" onclick="login()">Entrar</button>
     </div>
 </div>
@@ -78,7 +79,7 @@
 <div id="main-system">
     <header>
         <div style="display:flex; align-items:center; gap:10px;"><i data-lucide="home"></i> <b>ENEM</b></div>
-        <div style="font-size:0.8rem; color:#888"><i data-lucide="cpu" style="width:14px"></i> Engine Local Ativa</div>
+        <div style="font-size:0.8rem; color:#888">Engine Local Ativa</div>
     </header>
 
     <nav>
@@ -88,27 +89,14 @@
     </nav>
 
     <main>
-        <div id="scanner" class="tab-pane active">
-            <div class="comp-card">
-                <h3>Escanear Folha</h3>
-                <input type="file" id="fileIn" accept="image/*" style="margin-bottom:15px;" onchange="previewImg(this)">
-                <img id="prevImg" style="max-width:100%; display:none; border-radius:8px; margin-bottom:15px;">
-                <button class="btn btn-primary" onclick="doOCR()">Digitalizar para Editor</button>
-                <button class="btn btn-clear" style="margin-top:10px" onclick="clearScan()">Limpar Scanner</button>
-            </div>
-        </div>
-
         <div id="editor" class="tab-pane">
             <div class="comp-card">
-                <textarea id="essayText" placeholder="O texto aparecerá aqui..."></textarea>
-                
+                <textarea id="essayText" placeholder="Escreva ou digitalize sua redação..."></textarea>
                 <div class="progress-container" id="progCont">
                     <div class="progress-bar" id="progBar">0%</div>
                 </div>
-
                 <div class="btn-group">
                     <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">🚀 Corrigir Agora</button>
-                    <button class="btn btn-clear" onclick="clearEditor()">Limpar Aba</button>
                 </div>
             </div>
         </div>
@@ -121,7 +109,6 @@
                 </div>
 
                 <div id="view-par">
-                    <h3 style="margin-top:0">Competências</h3>
                     <div class="comp-selector">
                         <button class="comp-btn active" onclick="setComp(1)">C1</button>
                         <button class="comp-btn" onclick="setComp(2)">C2</button>
@@ -129,26 +116,22 @@
                         <button class="comp-btn" onclick="setComp(4)">C4</button>
                         <button class="comp-btn" onclick="setComp(5)">C5</button>
                     </div>
-
-                    <div id="comp-label-desc" class="desc-box">Demonstrar domínio da modalidade escrita formal...</div>
-
-                    <div class="field-label">Pontuação Estimada</div>
+                    <div id="comp-label-desc" class="desc-box">Carregando descrição...</div>
+                    <div class="field-label">Editar pontuação</div>
                     <select class="score-select" id="score-val" disabled>
-                        <option value="0">0</option><option value="40">40</option><option value="80">80</option><option value="120">120</option><option value="160">160</option><option value="200">200</option>
+                        <option value="0">0</option><option value="40">40</option><option value="80">80</option>
+                        <option value="120">120</option><option value="160">160</option><option value="200">200</option>
                     </select>
-
                     <div class="field-label">Pontos positivos</div>
                     <div id="pos-box" class="text-feedback">Aguardando correção...</div>
-
-                    <div class="field-label">Como melhorar (Sugestões)</div>
+                    <div class="field-label">Como melhorar</div>
                     <div id="imp-box" class="text-feedback">Aguardando correção...</div>
                 </div>
 
                 <div id="view-ind" style="display:none;">
+                    <h3>Lista de Indicadores (Critérios 1-57)</h3>
                     <div class="crit-grid" id="crit-list"></div>
                 </div>
-                
-                <button class="btn btn-clear" style="margin-top:20px; width:100%" onclick="clearResults()">Limpar Resultados</button>
             </div>
         </div>
     </main>
@@ -157,26 +140,27 @@
 <script>
     lucide.createIcons();
     
-    // --- CONFIGURAÇÃO DA URL (ATUALIZE AQUI!) ---
-    const API_URL = "https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1";
-
+    // Centralização da API Ngrok
+    const API_URL = "https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions";
+    
     let curComp = 1;
     let feedbackData = {};
 
-    const comps = {
-        1: "Competência 1: Demonstrar domínio da modalidade escrita formal da língua portuguesa.",
-        2: "Competência 2: Compreender a proposta de redação e aplicar conceitos de várias áreas.",
-        3: "Competência 3: Selecionar, organizar e interpretar informações em defesa de um ponto de vista.",
-        4: "Competência 4: Conhecimento dos mecanismos linguísticos para construção da argumentação.",
-        5: "Competência 5: Elaborar proposta de intervenção que respeite os direitos humanos."
-    };
-
+    // Mapeamento dos 57 critérios conforme imagem
     const criteria = {
         1: ["Ilegibilidade/Rasuras", "Maiúsculas/Minúsculas", "Ortografia", "Acentuação", "Translineação", "Hífen", "Pontuação/Truncamento", "Pontuação/Justaposição", "Outros de pontuação", "Sintaxe/Falta", "Sintaxe/Excesso", "Crase", "Regência", "Concordância", "Modo/Tempo Verbal", "Pronomes", "Paralelismo", "Vocabulário", "Coloquialismo", "Figurada"],
         2: ["Tangenciamento", "Tipo textual", "Repertório restrito", "Não legitimado", "Não pertinente", "Improdutivo", "Legitimado/Produtivo"],
         3: ["Tangenciamento", "Relacionamento", "Expositivo", "Desenvolvimento", "Confuso", "Contradição", "Repetição", "Prolixo", "Modalização", "Progressão", "Tese", "Intervenção", "Argumentado", "Estratégico"],
         4: ["Coesivo interparágrafo", "Operador", "Ambiguidade", "Mau uso", "Repetição"],
         5: ["Sem proposta", "Sem assunto", "Direitos humanos", "Tangenciamento", "Condicional", "Agente", "Ação", "Meio/Modo", "Efeito", "Detalhamento", "Completa"]
+    };
+
+    const comps = {
+        1: "Demonstrar domínio da modalidade escrita formal da língua portuguesa.",
+        2: "Compreender a proposta de redação e aplicar conceitos de várias áreas.",
+        3: "Selecionar, organizar e interpretar informações em defesa de um ponto de vista.",
+        4: "Conhecimento dos mecanismos linguísticos para construção da argumentação.",
+        5: "Elaborar proposta de intervenção que respeite os direitos humanos."
     };
 
     function login() { if(document.getElementById('passInput').value === 'beatriz') { document.getElementById('login-overlay').style.display='none'; document.getElementById('main-system').style.display='flex'; } }
@@ -200,40 +184,29 @@
         curComp = n;
         document.querySelectorAll('.comp-btn').forEach((b, i) => b.classList.toggle('active', i+1 === n));
         document.getElementById('comp-label-desc').innerText = comps[n];
-        document.getElementById('pos-box').innerText = feedbackData[`c${n}_pos`] || "Sem dados para esta competência.";
-        document.getElementById('imp-box').innerText = feedbackData[`c${n}_imp`] || "Sem dados para esta competência.";
+        document.getElementById('pos-box').innerText = feedbackData[`c${n}_pos`] || "Sem dados.";
+        document.getElementById('imp-box').innerText = feedbackData[`c${n}_imp`] || "Sem dados.";
         document.getElementById('score-val').value = feedbackData[`c${n}_score`] || "0";
-        if(document.getElementById('view-ind').style.display === 'block') renderCrits();
     }
 
     function renderCrits() {
         const list = document.getElementById('crit-list');
-        const offset = [0, 0, 20, 27, 41, 46][curComp];
+        const offset = [0, 0, 20, 27, 41, 46][curComp]; // Início numérico de cada C
         list.innerHTML = criteria[curComp].map((c, i) => `<div class="crit-item"><b>${offset + i + 1}</b> ${c}</div>`).join('');
-    }
-
-    function previewImg(i) { const r = new FileReader(); r.onload = e => { const m = document.getElementById('prevImg'); m.src = e.target.result; m.style.display='block'; }; r.readAsDataURL(i.files[0]); }
-    
-    async function doOCR() { 
-        const res = await Tesseract.recognize(document.getElementById('prevImg').src, 'por');
-        document.getElementById('essayText').value = res.data.text;
-        showTab('editor'); 
     }
 
     async function startCorrection() {
         const txt = document.getElementById('essayText').value;
-        if(!txt) return alert("Por favor, insira um texto!");
+        if(!txt) return alert("Insira o texto!");
 
         const btn = document.getElementById('btnCorr');
-        const progCont = document.getElementById('progCont');
         const progBar = document.getElementById('progBar');
+        const progCont = document.getElementById('progCont');
 
         btn.disabled = true;
         progCont.style.display = 'block';
-        progBar.style.width = '30%';
-        progBar.innerText = 'Enviando para GPU...';
-
-        const systemPrompt = "Você é um corretor rigoroso do ENEM. Retorne APENAS um JSON com estas chaves: c1_score, c1_pos, c1_imp, c2_score, c2_pos, c2_imp, c3_score, c3_pos, c3_imp, c4_score, c4_pos, c4_imp, c5_score, c5_pos, c5_imp. Não inclua Markdown ou textos extras.";
+        progBar.style.width = '40%';
+        progBar.innerText = 'Processando na GPU...';
 
         try {
             const r = await fetch(API_URL, {
@@ -241,41 +214,21 @@
                 headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                 body: JSON.stringify({
                     model: "local-model",
-                    messages: [{role:"system", content: systemPrompt}, {role:"user", content: txt}],
-                    temperature: 0.1
+                    messages: [{role:"system", content:"Retorne APENAS um JSON: {c1_score, c1_pos, c1_imp... c5_score, c5_pos, c5_imp}"}, {role:"user", content:txt}]
                 })
             });
-
-            progBar.style.width = '70%';
-            progBar.innerText = 'Processando análise...';
-
             const d = await r.json();
-            let content = d.choices[0].message.content;
-            content = content.replace(/```json/g, "").replace(/```/g, "").trim();
-            
+            let content = d.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
             feedbackData = JSON.parse(content);
             
             progBar.style.width = '100%';
             progBar.innerText = 'Concluído!';
-            
-            setTimeout(() => {
-                showTab('results');
-                setComp(1);
-                progCont.style.display = 'none';
-                btn.disabled = false;
-            }, 800);
-
+            setTimeout(() => { showTab('results'); setComp(1); progCont.style.display='none'; btn.disabled=false; }, 800);
         } catch(e) { 
-            console.error(e);
-            alert("Erro na conexão. Verifique se o Ngrok e o LM Studio estão ativos.");
-            progCont.style.display = 'none';
-            btn.disabled = false;
+            alert("Erro na conexão. Verifique o Ngrok e o LM Studio.");
+            progCont.style.display='none'; btn.disabled=false;
         }
     }
-
-    function clearScan() { document.getElementById('prevImg').style.display='none'; document.getElementById('fileIn').value=''; }
-    function clearEditor() { document.getElementById('essayText').value=''; }
-    function clearResults() { feedbackData={}; setComp(1); }
 </script>
 </body>
 </html>
