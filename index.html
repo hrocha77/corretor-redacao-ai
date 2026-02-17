@@ -34,7 +34,11 @@
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
 
-        /* ABA RESULTADOS - ESTILO IMAGEM */
+        /* Barra de Progresso */
+        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 20px 0; display: none; height: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--accent-red); width: 0%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; }
+
+        /* ABA RESULTADOS */
         .res-header { display: flex; gap: 20px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .res-sub-link { padding: 10px 0; cursor: pointer; color: #999; font-weight: bold; position: relative; }
         .res-sub-link.active { color: var(--primary-blue); }
@@ -43,19 +47,16 @@
         .comp-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .comp-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 25px 0; }
         .comp-btn { padding: 10px 20px; border: 1px solid #ccc; background: white; cursor: pointer; font-weight: bold; min-width: 60px; transition: 0.2s; border-radius: 4px; }
-        .comp-btn.active { background: #ecdada; border-color: #d9534f; color: #333; } /* Cor aproximada da imagem */
+        .comp-btn.active { background: #ecdada; border-color: #d9534f; color: #333; }
 
-        /* Layout Específico Competência (image_3f52c4) */
         .field-label { font-weight: bold; color: var(--primary-blue); margin: 20px 0 8px; font-size: 0.95rem; }
         .desc-box { background: var(--light-blue); padding: 15px; border-radius: 4px; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; }
         .score-select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 1rem; color: #666; }
-        .text-feedback { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 15px; min-height: 100px; font-size: 0.95rem; line-height: 1.6; color: #444; }
+        .text-feedback { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 15px; min-height: 100px; font-size: 0.95rem; line-height: 1.6; color: #444; white-space: pre-wrap; }
 
-        /* Indicadores (image_6ebf7e) */
         .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .crit-item { background: #f9f9f9; padding: 10px; border-radius: 4px; border-left: 4px solid #ddd; font-size: 0.85rem; display: flex; gap: 8px; }
 
-        /* Utils */
         textarea { width: 100%; height: 400px; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn { flex: 1; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -100,8 +101,13 @@
         <div id="editor" class="tab-pane">
             <div class="comp-card">
                 <textarea id="essayText" placeholder="O texto aparecerá aqui..."></textarea>
+                
+                <div class="progress-container" id="progCont">
+                    <div class="progress-bar" id="progBar">0%</div>
+                </div>
+
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="startCorrection()">🚀 Corrigir Agora</button>
+                    <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">🚀 Corrigir Agora</button>
                     <button class="btn btn-clear" onclick="clearEditor()">Limpar Aba</button>
                 </div>
             </div>
@@ -116,34 +122,29 @@
 
                 <div id="view-par">
                     <h3 style="margin-top:0">Competências</h3>
-                    <p style="color:#666; font-size:0.9rem">É o conjunto de parâmetros utilizados para avaliar a redação.</p>
-                    
                     <div class="comp-selector">
-                        <i data-lucide="chevron-left"></i>
                         <button class="comp-btn active" onclick="setComp(1)">C1</button>
                         <button class="comp-btn" onclick="setComp(2)">C2</button>
                         <button class="comp-btn" onclick="setComp(3)">C3</button>
                         <button class="comp-btn" onclick="setComp(4)">C4</button>
                         <button class="comp-btn" onclick="setComp(5)">C5</button>
-                        <i data-lucide="chevron-right"></i>
                     </div>
 
                     <div id="comp-label-desc" class="desc-box">Demonstrar domínio da modalidade escrita formal...</div>
 
-                    <div class="field-label">Editar pontuação</div>
-                    <select class="score-select" id="score-val">
-                        <option>0</option><option>40</option><option>80</option><option>120</option><option>160</option><option selected>200</option>
+                    <div class="field-label">Pontuação Estimada</div>
+                    <select class="score-select" id="score-val" disabled>
+                        <option value="0">0</option><option value="40">40</option><option value="80">80</option><option value="120">120</option><option value="160">160</option><option value="200">200</option>
                     </select>
 
                     <div class="field-label">Pontos positivos</div>
                     <div id="pos-box" class="text-feedback">Aguardando correção...</div>
 
-                    <div class="field-label">Como melhorar</div>
+                    <div class="field-label">Como melhorar (Sugestões)</div>
                     <div id="imp-box" class="text-feedback">Aguardando correção...</div>
                 </div>
 
                 <div id="view-ind" style="display:none;">
-                    <h3>Lista de Indicadores (Critérios 1-57)</h3>
                     <div class="crit-grid" id="crit-list"></div>
                 </div>
                 
@@ -159,11 +160,11 @@
     let feedbackData = {};
 
     const comps = {
-        1: "Demonstrar domínio da modalidade escrita formal da língua portuguesa.",
-        2: "Compreender a proposta de redação e aplicar conceitos das várias áreas.",
-        3: "Selecionar, organizar e interpretar informações em defesa de um ponto de vista.",
-        4: "Conhecimento dos mecanismos linguísticos para construção da argumentação.",
-        5: "Elaborar proposta de intervenção que respeite os direitos humanos."
+        1: "Competência 1: Demonstrar domínio da modalidade escrita formal da língua portuguesa.",
+        2: "Competência 2: Compreender a proposta de redação e aplicar conceitos de várias áreas.",
+        3: "Competência 3: Selecionar, organizar e interpretar informações em defesa de um ponto de vista.",
+        4: "Competência 4: Conhecimento dos mecanismos linguísticos para construção da argumentação.",
+        5: "Competência 5: Elaborar proposta de intervenção que respeite os direitos humanos."
     };
 
     const criteria = {
@@ -180,7 +181,7 @@
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
+        if(event) event.currentTarget.classList.add('active');
     }
 
     function toggleSub(t) {
@@ -195,9 +196,13 @@
         curComp = n;
         document.querySelectorAll('.comp-btn').forEach((b, i) => b.classList.toggle('active', i+1 === n));
         document.getElementById('comp-label-desc').innerText = comps[n];
-        document.getElementById('pos-box').innerText = feedbackData[`c${n}_pos`] || "Sem dados.";
-        document.getElementById('imp-box').innerText = feedbackData[`c${n}_imp`] || "Sem dados.";
-        document.getElementById('score-val').value = feedbackData[`c${n}_score`] || "200";
+        
+        // Carrega dados da memória global
+        document.getElementById('pos-box').innerText = feedbackData[`c${n}_pos`] || "Dados ainda não gerados para esta competência.";
+        document.getElementById('imp-box').innerText = feedbackData[`c${n}_imp`] || "Dados ainda não gerados para esta competência.";
+        document.getElementById('score-val').value = feedbackData[`c${n}_score`] || "0";
+        
+        if(document.getElementById('view-ind').style.display === 'block') renderCrits();
     }
 
     function renderCrits() {
@@ -216,23 +221,69 @@
 
     async function startCorrection() {
         const txt = document.getElementById('essayText').value;
-        if(!txt) return;
-        showTab('results');
-        document.getElementById('pos-box').innerText = "Analisando com GPU...";
-        
+        if(!txt) return alert("Por favor, insira um texto!");
+
+        const btn = document.getElementById('btnCorr');
+        const progCont = document.getElementById('progCont');
+        const progBar = document.getElementById('progBar');
+
+        // Reset e Show Barra
+        btn.disabled = true;
+        progCont.style.display = 'block';
+        progBar.style.width = '30%';
+        progBar.innerText = 'Enviando para GPU...';
+
+        const systemPrompt = `Você é um corretor rigoroso do ENEM. 
+        Analise a redação e retorne OBRIGATORIAMENTE um JSON puro, sem textos antes ou depois.
+        O JSON deve ter estas chaves exatas: 
+        c1_score, c1_pos, c1_imp, 
+        c2_score, c2_pos, c2_imp, 
+        c3_score, c3_pos, c3_imp, 
+        c4_score, c4_pos, c4_imp, 
+        c5_score, c5_pos, c5_imp. 
+        As notas devem ser 0, 40, 80, 120, 160 ou 200. Justifique baseando-se nos critérios oficiais.`;
+
         try {
             const r = await fetch("https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                 body: JSON.stringify({
                     model: "local-model",
-                    messages: [{role:"system", content:"Retorne JSON: {c1_score, c1_pos, c1_imp, ... c5_score, c5_pos, c5_imp}"}, {role:"user", content:txt}]
+                    messages: [
+                        {role:"system", content: systemPrompt}, 
+                        {role:"user", content: txt}
+                    ],
+                    temperature: 0.2
                 })
             });
+
+            progBar.style.width = '70%';
+            progBar.innerText = 'Processando análise...';
+
             const d = await r.json();
-            feedbackData = JSON.parse(d.choices[0].message.content);
-            setComp(1);
-        } catch(e) { document.getElementById('pos-box').innerText = "Erro na GPU."; }
+            let content = d.choices[0].message.content;
+
+            // Limpeza de possíveis marcações de código da IA (Markdown)
+            content = content.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            feedbackData = JSON.parse(content);
+            
+            progBar.style.width = '100%';
+            progBar.innerText = 'Concluído!';
+            
+            setTimeout(() => {
+                showTab('results');
+                setComp(1);
+                progCont.style.display = 'none';
+                btn.disabled = false;
+            }, 800);
+
+        } catch(e) { 
+            console.error(e);
+            alert("Erro de conexão com a GPU. Verifique se o Ngrok e o LM Studio estão ativos.");
+            progCont.style.display = 'none';
+            btn.disabled = false;
+        }
     }
 
     function clearScan() { document.getElementById('prevImg').style.display='none'; document.getElementById('fileIn').value=''; }
