@@ -3,130 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Avaliação de Redação Profissional</title>
+    <title>Plataforma de Correção Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #1a73e8;
-            --success: #2e7d32;
-            --bg-light: #f8f9fa;
+            --primary-blue: #003366;
+            --light-blue: #f0f4f8;
+            --accent-red: #d9534f;
+            --text-main: #333;
+            --gray-border: #e1e4e8;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-light); margin: 0; overflow: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fdfdfd; margin: 0; color: var(--text-main); }
 
-        /* Tela de Login */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary-color); display: flex; align-items: center;
-            justify-content: center; z-index: 9999; transition: 0.5s;
-        }
-        .login-card {
-            background: white; padding: 2.5rem; border-radius: 15px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-            text-align: center; width: 100%; max-width: 350px;
-        }
-        .login-card input {
-            width: 100%; padding: 12px; margin-bottom: 1rem;
-            border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;
-            box-sizing: border-box; outline: none;
-        }
-        .btn-login {
-            width: 100%; padding: 12px; background: var(--accent-color);
-            color: white; border: none; border-radius: 8px;
-            font-weight: bold; cursor: pointer;
-        }
+        /* Login */
+        #login-overlay { position: fixed; inset: 0; background: var(--primary-blue); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .login-card { background: white; padding: 2rem; border-radius: 12px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .login-card input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 12px; background: var(--accent-red); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        /* Sistema Principal */
+        /* Estrutura */
         #main-system { display: none; height: 100vh; flex-direction: column; }
-        header { background: white; padding: 1rem 2rem; border-bottom: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        
-        nav { background: #fff; display: flex; justify-content: center; gap: 2rem; padding: 0.5rem; border-bottom: 1px solid #eee; }
-        .nav-link { border: none; background: none; padding: 1rem; cursor: pointer; color: #666; font-weight: 500; border-bottom: 3px solid transparent; }
-        .nav-link.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
-        
-        main { max-width: 1100px; margin: 1.5rem auto; padding: 0 1rem; flex: 1; overflow-y: auto; width: 100%; box-sizing: border-box; }
-        .tab-pane { display: none; }
+        header { background: white; padding: 10px 20px; border-bottom: 1px solid var(--gray-border); display: flex; align-items: center; justify-content: space-between; }
+        nav { background: white; display: flex; justify-content: center; gap: 30px; border-bottom: 1px solid var(--gray-border); }
+        .nav-link { border: none; background: none; padding: 15px; cursor: pointer; color: #666; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; border-bottom: 3px solid transparent; }
+        .nav-link.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+
+        main { flex: 1; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
-        
-        .card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        textarea { width: 100%; height: 400px; padding: 1.2rem; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; resize: none; box-sizing: border-box; line-height: 1.6; }
-        
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
-        .btn-primary { background: var(--accent-color); color: white; flex: 2; justify-content: center; }
-        .btn-danger { background: #d32f2f; color: white; flex: 1; justify-content: center; }
-        
-        /* Scanner Styles */
-        .upload-area { border: 2px dashed #ccc; padding: 40px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.3s; }
-        .upload-area:hover { border-color: var(--accent-color); background: #f0f7ff; }
-        #image-preview { max-width: 100%; margin-top: 20px; border-radius: 8px; display: none; }
-        .loader { display: none; margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ABA RESULTADOS - ESTILO IMAGEM */
+        .res-header { display: flex; gap: 20px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .res-sub-link { padding: 10px 0; cursor: pointer; color: #999; font-weight: bold; position: relative; }
+        .res-sub-link.active { color: var(--primary-blue); }
+        .res-sub-link.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--primary-blue); }
+
+        .comp-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .comp-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 25px 0; }
+        .comp-btn { padding: 10px 20px; border: 1px solid #ccc; background: white; cursor: pointer; font-weight: bold; min-width: 60px; transition: 0.2s; border-radius: 4px; }
+        .comp-btn.active { background: #ecdada; border-color: #d9534f; color: #333; } /* Cor aproximada da imagem */
+
+        /* Layout Específico Competência (image_3f52c4) */
+        .field-label { font-weight: bold; color: var(--primary-blue); margin: 20px 0 8px; font-size: 0.95rem; }
+        .desc-box { background: var(--light-blue); padding: 15px; border-radius: 4px; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; }
+        .score-select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 1rem; color: #666; }
+        .text-feedback { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 15px; min-height: 100px; font-size: 0.95rem; line-height: 1.6; color: #444; }
+
+        /* Indicadores (image_6ebf7e) */
+        .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .crit-item { background: #f9f9f9; padding: 10px; border-radius: 4px; border-left: 4px solid #ddd; font-size: 0.85rem; display: flex; gap: 8px; }
+
+        /* Utils */
+        textarea { width: 100%; height: 400px; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-primary { background: var(--accent-red); color: white; }
+        .btn-clear { background: #666; color: white; }
     </style>
 </head>
 <body>
 
 <div id="login-overlay">
     <div class="login-card">
-        <i data-lucide="shield-check" style="color: var(--accent-color); margin-bottom: 10px; width: 48px; height: 48px;"></i>
-        <h2 style="margin-bottom: 20px;">Acesso Restrito</h2>
-        <input type="password" id="passwordField" placeholder="Senha de acesso">
-        <button class="btn-login" onclick="validateAccess()">Entrar no Sistema</button>
-        <p id="error-msg" style="color: #d32f2f; font-size: 0.8rem; margin-top: 15px; display: none;">Senha incorreta.</p>
+        <i data-lucide="lock" style="color:var(--accent-red)"></i>
+        <h3>Acesso Restrito</h3>
+        <input type="password" id="passInput" placeholder="Sua senha">
+        <button class="btn-login" onclick="login()">Entrar</button>
     </div>
 </div>
 
 <div id="main-system">
     <header>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <i data-lucide="clipboard-check" style="color: var(--accent-color);"></i>
-            <h2 style="margin:0; font-size: 1.2rem; color: var(--primary-color);">Avaliador de Redação Profissional</h2>
-        </div>
-        <div id="status-badge" style="font-size: 0.8rem; color: #666;"><i data-lucide="cpu" style="width:14px; vertical-align:middle;"></i> Sistema Ativo</div>
+        <div style="display:flex; align-items:center; gap:10px;"><i data-lucide="home"></i> <b>ENEM</b></div>
+        <div style="font-size:0.8rem; color:#888"><i data-lucide="cpu" style="width:14px"></i> Engine Local Ativa</div>
     </header>
 
     <nav>
-        <button class="nav-link active" onclick="switchTab(event, 'scanner')"><i data-lucide="camera" style="width:16px;"></i> Digitalizar</button>
-        <button class="nav-link" onclick="switchTab(event, 'editor')"><i data-lucide="file-text" style="width:16px;"></i> Editor</button>
-        <button class="nav-link" onclick="switchTab(event, 'results')"><i data-lucide="bar-chart" style="width:16px;"></i> Resultado</button>
+        <button class="nav-link active" onclick="showTab('scanner')">Digitalizar</button>
+        <button class="nav-link" onclick="showTab('editor')">Editor</button>
+        <button class="nav-link" onclick="showTab('results')">Resultado</button>
     </nav>
 
     <main>
         <div id="scanner" class="tab-pane active">
-            <div class="card">
-                <h3>Digitalizar Imagem</h3>
-                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <i data-lucide="upload-cloud" style="width: 40px; height: 40px; color: #666;"></i>
-                    <p>Clique ou arraste a foto da redação aqui</p>
-                    <input type="file" id="fileInput" hidden accept="image/*" onchange="handleImage(this)">
-                </div>
-                <div class="loader" id="scanLoader"></div>
-                <img id="image-preview">
-                <div class="btn-group" id="scanActions" style="display:none;">
-                    <button class="btn btn-primary" onclick="startOCR()"><i data-lucide="wand-2"></i> Extrair Texto</button>
-                    <button class="btn btn-danger" onclick="clearScanner()"><i data-lucide="trash"></i> Limpar</button>
-                </div>
+            <div class="comp-card">
+                <h3>Escanear Folha</h3>
+                <input type="file" id="fileIn" accept="image/*" style="margin-bottom:15px;" onchange="previewImg(this)">
+                <img id="prevImg" style="max-width:100%; display:none; border-radius:8px; margin-bottom:15px;">
+                <button class="btn btn-primary" onclick="doOCR()">Digitalizar para Editor</button>
+                <button class="btn btn-clear" style="margin-top:10px" onclick="clearScan()">Limpar Scanner</button>
             </div>
         </div>
 
         <div id="editor" class="tab-pane">
-            <div class="card">
-                <h3>Texto da Redação</h3>
-                <textarea id="essayText" placeholder="O texto aparecerá aqui após a digitalização ou pode ser colado..."></textarea>
+            <div class="comp-card">
+                <textarea id="essayText" placeholder="O texto aparecerá aqui..."></textarea>
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="runCorrection()">🚀 Iniciar Correção Profissional</button>
-                    <button class="btn btn-danger" onclick="clearEditor()"><i data-lucide="trash"></i> Limpar Aba</button>
+                    <button class="btn btn-primary" onclick="startCorrection()">🚀 Corrigir Agora</button>
+                    <button class="btn btn-clear" onclick="clearEditor()">Limpar Aba</button>
                 </div>
             </div>
         </div>
 
         <div id="results" class="tab-pane">
-            <div class="card">
-                <h3>Relatório de Avaliação</h3>
-                <div id="feedback-area" style="white-space: pre-wrap; font-family: serif; line-height: 1.8;">O resultado aparecerá após o processamento.</div>
-                <button class="btn btn-danger" style="margin-top: 20px;" onclick="clearResults()">Limpar Resultado</button>
+            <div class="comp-card">
+                <div class="res-header">
+                    <div id="sub-par" class="res-sub-link active" onclick="toggleSub('par')">Parâmetros</div>
+                    <div id="sub-ind" class="res-sub-link" onclick="toggleSub('ind')">Indicadores</div>
+                </div>
+
+                <div id="view-par">
+                    <h3 style="margin-top:0">Competências</h3>
+                    <p style="color:#666; font-size:0.9rem">É o conjunto de parâmetros utilizados para avaliar a redação.</p>
+                    
+                    <div class="comp-selector">
+                        <i data-lucide="chevron-left"></i>
+                        <button class="comp-btn active" onclick="setComp(1)">C1</button>
+                        <button class="comp-btn" onclick="setComp(2)">C2</button>
+                        <button class="comp-btn" onclick="setComp(3)">C3</button>
+                        <button class="comp-btn" onclick="setComp(4)">C4</button>
+                        <button class="comp-btn" onclick="setComp(5)">C5</button>
+                        <i data-lucide="chevron-right"></i>
+                    </div>
+
+                    <div id="comp-label-desc" class="desc-box">Demonstrar domínio da modalidade escrita formal...</div>
+
+                    <div class="field-label">Editar pontuação</div>
+                    <select class="score-select" id="score-val">
+                        <option>0</option><option>40</option><option>80</option><option>120</option><option>160</option><option selected>200</option>
+                    </select>
+
+                    <div class="field-label">Pontos positivos</div>
+                    <div id="pos-box" class="text-feedback">Aguardando correção...</div>
+
+                    <div class="field-label">Como melhorar</div>
+                    <div id="imp-box" class="text-feedback">Aguardando correção...</div>
+                </div>
+
+                <div id="view-ind" style="display:none;">
+                    <h3>Lista de Indicadores (Critérios 1-57)</h3>
+                    <div class="crit-grid" id="crit-list"></div>
+                </div>
+                
+                <button class="btn btn-clear" style="margin-top:20px; width:100%" onclick="clearResults()">Limpar Resultados</button>
             </div>
         </div>
     </main>
@@ -134,111 +155,89 @@
 
 <script>
     lucide.createIcons();
+    let curComp = 1;
+    let feedbackData = {};
 
-    // LOGIN
-    function validateAccess() {
-        const pass = document.getElementById('passwordField').value;
-        if (pass === "beatriz") {
-            document.getElementById('login-overlay').style.display = "none";
-            document.getElementById('main-system').style.display = "flex";
-            document.body.style.overflow = "auto";
-        } else {
-            document.getElementById('error-msg').style.display = "block";
-            document.getElementById('passwordField').value = "";
-        }
-    }
+    const comps = {
+        1: "Demonstrar domínio da modalidade escrita formal da língua portuguesa.",
+        2: "Compreender a proposta de redação e aplicar conceitos das várias áreas.",
+        3: "Selecionar, organizar e interpretar informações em defesa de um ponto de vista.",
+        4: "Conhecimento dos mecanismos linguísticos para construção da argumentação.",
+        5: "Elaborar proposta de intervenção que respeite os direitos humanos."
+    };
 
-    // NAVEGAÇÃO
-    function switchTab(e, id) {
+    const criteria = {
+        1: ["Ilegibilidade/Rasuras", "Maiúsculas/Minúsculas", "Ortografia", "Acentuação", "Translineação", "Hífen", "Pontuação/Truncamento", "Pontuação/Justaposição", "Outros de pontuação", "Sintaxe/Falta", "Sintaxe/Excesso", "Crase", "Regência", "Concordância", "Modo/Tempo Verbal", "Pronomes", "Paralelismo", "Vocabulário", "Coloquialismo", "Figurada"],
+        2: ["Tangenciamento", "Tipo textual", "Repertório restrito", "Não legitimado", "Não pertinente", "Improdutivo", "Legitimado/Produtivo"],
+        3: ["Tangenciamento", "Relacionamento", "Expositivo", "Desenvolvimento", "Confuso", "Contradição", "Repetição", "Prolixo", "Modalização", "Progressão", "Tese", "Intervenção", "Argumentado", "Estratégico"],
+        4: ["Coesivo interparágrafo", "Operador", "Ambiguidade", "Mau uso", "Repetição"],
+        5: ["Sem proposta", "Sem assunto", "Direitos humanos", "Tangenciamento", "Condicional", "Agente", "Ação", "Meio/Modo", "Efeito", "Detalhamento", "Completa"]
+    };
+
+    function login() { if(document.getElementById('passInput').value === 'beatriz') { document.getElementById('login-overlay').style.display='none'; document.getElementById('main-system').style.display='flex'; } }
+    
+    function showTab(id) { 
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        e.currentTarget.classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    // LÓGICA DO SCANNER (OCR)
-    function handleImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById('image-preview');
-                img.src = e.target.result;
-                img.style.display = 'block';
-                document.getElementById('scanActions').style.display = 'flex';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+    function toggleSub(t) {
+        document.getElementById('view-par').style.display = t === 'par' ? 'block' : 'none';
+        document.getElementById('view-ind').style.display = t === 'ind' ? 'block' : 'none';
+        document.getElementById('sub-par').classList.toggle('active', t === 'par');
+        document.getElementById('sub-ind').classList.toggle('active', t === 'ind');
+        if(t === 'ind') renderCrits();
     }
 
-    async function startOCR() {
-        const img = document.getElementById('image-preview');
-        const loader = document.getElementById('scanLoader');
-        if (!img.src) return;
+    function setComp(n) {
+        curComp = n;
+        document.querySelectorAll('.comp-btn').forEach((b, i) => b.classList.toggle('active', i+1 === n));
+        document.getElementById('comp-label-desc').innerText = comps[n];
+        document.getElementById('pos-box').innerText = feedbackData[`c${n}_pos`] || "Sem dados.";
+        document.getElementById('imp-box').innerText = feedbackData[`c${n}_imp`] || "Sem dados.";
+        document.getElementById('score-val').value = feedbackData[`c${n}_score`] || "200";
+    }
 
-        loader.style.display = 'block';
+    function renderCrits() {
+        const list = document.getElementById('crit-list');
+        const offset = [0, 0, 20, 27, 41, 46][curComp];
+        list.innerHTML = criteria[curComp].map((c, i) => `<div class="crit-item"><b>${offset + i + 1}</b> ${c}</div>`).join('');
+    }
+
+    function previewImg(i) { const r = new FileReader(); r.onload = e => { const m = document.getElementById('prevImg'); m.src = e.target.result; m.style.display='block'; }; r.readAsDataURL(i.files[0]); }
+    
+    async function doOCR() { 
+        const res = await Tesseract.recognize(document.getElementById('prevImg').src, 'por');
+        document.getElementById('essayText').value = res.data.text;
+        showTab('editor'); 
+    }
+
+    async function startCorrection() {
+        const txt = document.getElementById('essayText').value;
+        if(!txt) return;
+        showTab('results');
+        document.getElementById('pos-box').innerText = "Analisando com GPU...";
         
         try {
-            const result = await Tesseract.recognize(img.src, 'por', { logger: m => console.log(m) });
-            document.getElementById('essayText').value = result.data.text;
-            alert("Digitalização concluída! O texto foi enviado para a aba Editor.");
-            switchTab({currentTarget: document.querySelectorAll('.nav-link')[1]}, 'editor');
-        } catch (e) {
-            alert("Erro na digitalização. Tente uma imagem mais clara.");
-        } finally {
-            loader.style.display = 'none';
-        }
-    }
-
-    // BOTÕES DE LIMPAR
-    function clearScanner() {
-        document.getElementById('fileInput').value = "";
-        document.getElementById('image-preview').style.display = "none";
-        document.getElementById('scanActions').style.display = "none";
-    }
-
-    function clearEditor() {
-        if(confirm("Deseja limpar todo o texto da redação?")) {
-            document.getElementById('essayText').value = "";
-        }
-    }
-
-    function clearResults() {
-        document.getElementById('feedback-area').innerText = "O resultado aparecerá após o processamento.";
-    }
-
-    // CORREÇÃO (AI)
-    async function runCorrection() {
-        const text = document.getElementById('essayText').value;
-        const feedback = document.getElementById('feedback-area');
-        if(!text) return alert("Por favor, digitalize ou insira um texto primeiro.");
-
-        switchTab({currentTarget: document.querySelectorAll('.nav-link')[2]}, 'results');
-        feedback.innerText = "Processando análise técnica baseada nos 57 critérios... Aguarde.";
-
-        const API_URL = "https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions";
-
-        try {
-            const response = await fetch(API_URL, {
+            const r = await fetch("https://carolann-unfrosty-semiliberally.ngrok-free.dev/v1/chat/completions", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                 body: JSON.stringify({
                     model: "local-model",
-                    messages: [
-                        {role: "system", content: "Você é um corretor de redação rigoroso. Use os critérios de 1 a 57 para avaliar."},
-                        {role: "user", content: text}
-                    ],
-                    temperature: 0.2
+                    messages: [{role:"system", content:"Retorne JSON: {c1_score, c1_pos, c1_imp, ... c5_score, c5_pos, c5_imp}"}, {role:"user", content:txt}]
                 })
             });
-            const data = await response.json();
-            feedback.innerText = data.choices[0].message.content;
-        } catch (error) {
-            feedback.innerText = "Erro: Verifique se o servidor local está ativo no Ngrok.";
-        }
+            const d = await r.json();
+            feedbackData = JSON.parse(d.choices[0].message.content);
+            setComp(1);
+        } catch(e) { document.getElementById('pos-box').innerText = "Erro na GPU."; }
     }
 
-    // Enter na senha
-    document.getElementById('passwordField').addEventListener('keypress', (e) => { if (e.key === 'Enter') validateAccess(); });
+    function clearScan() { document.getElementById('prevImg').style.display='none'; document.getElementById('fileIn').value=''; }
+    function clearEditor() { document.getElementById('essayText').value=''; }
+    function clearResults() { feedbackData={}; setComp(1); }
 </script>
 </body>
 </html>
