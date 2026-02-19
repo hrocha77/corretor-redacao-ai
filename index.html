@@ -900,19 +900,20 @@ async function doOcrAI(btn, prog, bar, msg) {
         return;
     }
 
-    msg.textContent = 'Enviando imagem para a IA...';
-    bar.style.width = '30%';
+    msg.textContent = 'Convertendo imagem...';
+    bar.style.width = '20%';
 
-    // Converte imagem para base64
     const imgSrc = document.getElementById('prevImg').src;
     const base64 = imgSrc.split(',')[1];
     const mimeMatch = imgSrc.match(/data:(image\/\w+);/);
     const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
 
     try {
-        msg.textContent = 'IA transcrevendo manuscrito...';
-        bar.style.width = '60%';
+        msg.textContent = 'Qwen lendo manuscrito...';
+        bar.style.width = '50%';
 
+        // Formato exato que o llama-cpp/Llava15ChatHandler espera:
+        // imagem ANTES do texto, sem system message separada
         const resp = await fetch(config.apiUrl, {
             method: 'POST',
             headers: {
@@ -923,22 +924,15 @@ async function doOcrAI(btn, prog, bar, msg) {
                 model: config.model,
                 messages: [
                     {
-                        role: 'system',
-                        content: 'Você é um transcritor de redações. Receberá uma IMAGEM de uma folha de redação manuscrita do ENEM. Transcreva o texto exatamente como está escrito, linha por linha, sem corrigir erros ortográficos ou gramaticais, sem comentários adicionais. Retorne somente o texto transcrito.'
-                    },
-                    {
                         role: 'user',
                         content: [
                             {
                                 type: 'image_url',
-                                image_url: {
-                                    url: `data:${mime};base64,${base64}`,
-                                    detail: 'high'
-                                }
+                                image_url: { url: `data:${mime};base64,${base64}` }
                             },
                             {
                                 type: 'text',
-                                text: 'Esta é uma IMAGEM de uma redação manuscrita. Transcreva todo o texto visível, linha por linha.'
+                                text: 'Transcreva exatamente o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros, sem comentários. Retorne apenas o texto transcrito.'
                             }
                         ]
                     }
@@ -946,26 +940,25 @@ async function doOcrAI(btn, prog, bar, msg) {
                 temperature: 0.1,
                 max_tokens: 2000
             }),
-            signal: AbortSignal.timeout(120000)
+            signal: AbortSignal.timeout(180000)
         });
 
         if (!resp.ok) {
             const err = await resp.text();
-            // Modelo sem suporte a imagens → tenta Tesseract automaticamente
-            if (resp.status === 400 && err.includes('image')) {
-                showToast('Modelo não suporta imagens — usando Tesseract como fallback.', 'error');
+            // Modelo sem visão → fallback Tesseract
+            if (resp.status === 400) {
+                showToast('Modelo não suportou imagem — usando Tesseract.', 'error');
                 await doOcrTesseract(btn, prog, bar, msg);
                 return;
             }
-            throw new Error(`HTTP ${resp.status}: ${err.slice(0,150)}`);
+            throw new Error(`HTTP ${resp.status}: ${err.slice(0, 150)}`);
         }
 
         const data = await resp.json();
         const text = data.choices?.[0]?.message?.content;
 
-        // Verifica se o modelo recusou a imagem na resposta
-        if (!text || text.toLowerCase().includes("don't support") || text.toLowerCase().includes("não suport") || text.toLowerCase().includes("cannot process image")) {
-            showToast('Modelo não suporta imagens — usando Tesseract como fallback.', 'error');
+        if (!text) {
+            showToast('IA não retornou texto — usando Tesseract.', 'error');
             await doOcrTesseract(btn, prog, bar, msg);
             return;
         }
@@ -978,16 +971,17 @@ async function doOcrAI(btn, prog, bar, msg) {
         setTimeout(() => {
             prog.style.display = 'none';
             btn.disabled = false;
-            showToast('Texto extraído pela IA! Revise no editor.', 'success');
+            showToast('Texto extraído pelo Qwen! Revise no editor.', 'success');
             showTab('editor');
-        }, 800);
+        }, 700);
 
     } catch(e) {
         prog.style.display = 'none';
         btn.disabled = false;
-        showToast('Erro na IA: ' + e.message, 'error');
+        showToast('Erro: ' + e.message, 'error');
     }
 }
+
 
 async function doOcrTesseract(btn, prog, bar, msg) {
     msg.textContent = 'Iniciando Tesseract...';
