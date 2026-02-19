@@ -450,6 +450,10 @@
                             </div>
                         </label>
                     </div>
+                    <!-- Aviso modelos sem visão -->
+                    <div id="ai-vision-warning" style="display:none; margin-top:10px; padding:8px 12px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); border-radius:8px; font-size:0.78rem; color:var(--gold);">
+                        ⚠️ <b>Modelos de texto puro</b> (ex: Qwen 32B sem visão) não processam imagens. Se falhar, o Tesseract será usado automaticamente — ou selecione Tesseract diretamente.
+                    </div>
                 </div>
 
                 <div class="ocr-progress" id="ocrProgress" style="margin-top:12px;">
@@ -867,6 +871,7 @@ function updateOcrMethod() {
     const isAI = document.querySelector('input[name="ocrMethod"]:checked').value === 'ai';
     document.getElementById('lbl-ai').style.borderColor = isAI ? 'var(--accent)' : 'var(--border)';
     document.getElementById('lbl-tesseract').style.borderColor = !isAI ? 'var(--accent)' : 'var(--border)';
+    document.getElementById('ai-vision-warning').style.display = isAI ? 'block' : 'none';
 }
 
 async function doOCR() {
@@ -916,19 +921,28 @@ async function doOcrAI(btn, prog, bar, msg) {
             },
             body: JSON.stringify({
                 model: config.model,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image_url',
-                            image_url: { url: `data:${mime};base64,${base64}` }
-                        },
-                        {
-                            type: 'text',
-                            text: 'Transcreva EXATAMENTE o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros, sem adicionar comentários. Retorne apenas o texto transcrito.'
-                        }
-                    ]
-                }],
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Você é um transcritor de redações. Receberá uma IMAGEM de uma folha de redação manuscrita do ENEM. Transcreva o texto exatamente como está escrito, linha por linha, sem corrigir erros ortográficos ou gramaticais, sem comentários adicionais. Retorne somente o texto transcrito.'
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image_url',
+                                image_url: {
+                                    url: `data:${mime};base64,${base64}`,
+                                    detail: 'high'
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: 'Esta é uma IMAGEM de uma redação manuscrita. Transcreva todo o texto visível, linha por linha.'
+                            }
+                        ]
+                    }
+                ],
                 temperature: 0.1,
                 max_tokens: 2000
             }),
@@ -937,12 +951,24 @@ async function doOcrAI(btn, prog, bar, msg) {
 
         if (!resp.ok) {
             const err = await resp.text();
+            // Modelo sem suporte a imagens → tenta Tesseract automaticamente
+            if (resp.status === 400 && err.includes('image')) {
+                showToast('Modelo não suporta imagens — usando Tesseract como fallback.', 'error');
+                await doOcrTesseract(btn, prog, bar, msg);
+                return;
+            }
             throw new Error(`HTTP ${resp.status}: ${err.slice(0,150)}`);
         }
 
         const data = await resp.json();
         const text = data.choices?.[0]?.message?.content;
-        if (!text) throw new Error('IA não retornou texto.');
+
+        // Verifica se o modelo recusou a imagem na resposta
+        if (!text || text.toLowerCase().includes("don't support") || text.toLowerCase().includes("não suport") || text.toLowerCase().includes("cannot process image")) {
+            showToast('Modelo não suporta imagens — usando Tesseract como fallback.', 'error');
+            await doOcrTesseract(btn, prog, bar, msg);
+            return;
+        }
 
         bar.style.width = '100%';
         msg.textContent = 'Transcrição concluída!';
@@ -1088,7 +1114,15 @@ Retorne SOMENTE um JSON válido, sem texto adicional, sem markdown:
                         model: config.model,
                         messages: [
                             { role: 'system', content: systemPrompt },
-                            { role: 'user', content: txt }
+                            {
+                                role: 'user',
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text: txt
+                                    }
+                                ]
+                            }
                         ],
                         temperature: config.temp,
                         max_tokens: 800
