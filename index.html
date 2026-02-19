@@ -928,11 +928,13 @@ async function doOcrAI(btn, prog, bar, msg) {
                         content: [
                             {
                                 type: 'image_url',
-                                image_url: { url: `data:${mime};base64,${base64}` }
+                                image_url: {
+                                    url: `data:${mime};base64,${base64}`
+                                }
                             },
                             {
                                 type: 'text',
-                                text: 'Transcreva exatamente o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros, sem comentários. Retorne apenas o texto transcrito.'
+                                text: 'Transcreva exatamente o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros ortográficos ou gramaticais, sem comentários. Retorne apenas o texto transcrito.'
                             }
                         ]
                     }
@@ -1108,15 +1110,7 @@ Retorne SOMENTE um JSON válido, sem texto adicional, sem markdown:
                         model: config.model,
                         messages: [
                             { role: 'system', content: systemPrompt },
-                            {
-                                role: 'user',
-                                content: [
-                                    {
-                                        type: 'text',
-                                        text: txt
-                                    }
-                                ]
-                            }
+                            { role: 'user',   content: txt }
                         ],
                         temperature: config.temp,
                         max_tokens: 800
