@@ -420,31 +420,70 @@
         <!-- SCANNER -->
         <div id="scanner" class="tab-pane active">
             <div class="card">
-                <div class="card-title">
-                    📷
-                    Digitalizar Redação
-                </div>
+                <div class="card-title">📷 Digitalizar Redação</div>
+
                 <div class="upload-zone" id="uploadZone">
                     <input type="file" id="fileIn" accept="image/*" onchange="previewImg(this)">
                     <div class="upload-icon"><div style="font-size:2.5rem;">📁</div></div>
                     <div class="upload-text">Arraste uma imagem ou <span>clique para selecionar</span></div>
                     <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">PNG, JPG, WEBP — até 10MB</div>
                 </div>
+
                 <img id="prevImg">
-                <div class="ocr-progress" id="ocrProgress">
+
+                <!-- Método de extração -->
+                <div style="margin-top:16px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+                    <div style="font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Método de extração</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; transition:border-color 0.2s;" id="lbl-ai">
+                            <input type="radio" name="ocrMethod" value="ai" checked onchange="updateOcrMethod()" style="accent-color:var(--accent);">
+                            <div>
+                                <div style="font-weight:700; font-size:0.85rem;">🤖 IA (Qwen / LLM)</div>
+                                <div style="font-size:0.72rem; color:var(--muted);">Melhor para letra manuscrita</div>
+                            </div>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; transition:border-color 0.2s;" id="lbl-tesseract">
+                            <input type="radio" name="ocrMethod" value="tesseract" onchange="updateOcrMethod()" style="accent-color:var(--accent);">
+                            <div>
+                                <div style="font-weight:700; font-size:0.85rem;">📄 Tesseract</div>
+                                <div style="font-size:0.72rem; color:var(--muted);">Texto impresso / digitado</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="ocr-progress" id="ocrProgress" style="margin-top:12px;">
                     <div class="progress-track" style="height:6px;">
                         <div class="progress-fill" id="ocrBar" style="width:0%"></div>
                     </div>
-                    <div style="font-size:0.78rem; color:var(--muted); margin-top:6px; text-align:center;" id="ocrMsg">Processando OCR...</div>
+                    <div style="font-size:0.78rem; color:var(--muted); margin-top:6px; text-align:center;" id="ocrMsg">Processando...</div>
                 </div>
-                <button class="btn btn-primary" id="btnOCR" onclick="doOCR()" style="margin-top:16px;" disabled>
-                     Extrair Texto
+
+                <button class="btn btn-primary" id="btnOCR" onclick="doOCR()" style="margin-top:14px;" disabled>
+                    Extrair Texto
                 </button>
             </div>
         </div>
 
         <!-- EDITOR -->
         <div id="editor" class="tab-pane">
+            <div class="card" style="margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:12px;">📋 Tema da Redação</div>
+                <div style="font-size:0.8rem; color:var(--muted); margin-bottom:8px;">
+                    Informe o tema para que a correção avalie se a redação está de acordo com a proposta.
+                </div>
+                <input type="text" id="temaInput"
+                    placeholder="Ex: A persistência da violência contra a mulher na sociedade brasileira"
+                    style="width:100%; padding:12px 16px; background:var(--surface2); border:1px solid var(--border);
+                           border-radius:var(--radius); color:var(--text); font-size:0.92rem; outline:none;
+                           transition:border-color 0.2s; font-family:inherit;"
+                    onfocus="this.style.borderColor='var(--accent)'"
+                    onblur="this.style.borderColor='var(--border)'"
+                    oninput="saveTema()">
+                <div id="tema-warning" style="display:none; margin-top:8px; font-size:0.78rem; color:var(--gold);">
+                    ⚠️ Sem tema definido — a C2 será avaliada sem referência à proposta.
+                </div>
+            </div>
             <div class="card">
                 <div class="card-title">
                     ✏️
@@ -608,6 +647,87 @@ function loadConfig() {
     document.getElementById('tempInput').value = config.temp;
 }
 
+/* ── TEMA ────────────────────────────────────────── */
+function saveTema() {
+    const tema = document.getElementById('temaInput').value.trim();
+    localStorage.setItem('tema', tema);
+    document.getElementById('tema-warning').style.display = tema ? 'none' : 'block';
+}
+
+function loadTema() {
+    const saved = localStorage.getItem('tema') || '';
+    document.getElementById('temaInput').value = saved;
+    document.getElementById('tema-warning').style.display = saved ? 'none' : 'block';
+}
+
+/* ── AVATAR ──────────────────────────────────────── */
+const AVATAR_TIPS = {
+    scanner: {
+        msg: '📷 <b>Aba Digitalizar</b><br><br>Aqui você envia uma <b>foto da redação manuscrita</b>. O sistema extrai o texto automaticamente via OCR.<br><br>➡️ Depois clique em <b>"Extrair Texto"</b> para ir ao editor.',
+        opts: ['Como tirar a foto?', 'Ir para Redação']
+    },
+    editor: {
+        msg: '✏️ <b>Aba Redação</b><br><br>1. Preencha o <b>tema</b> da proposta no campo acima.<br>2. Cole ou escreva sua redação.<br>3. Clique em <b>⚡ Corrigir Agora</b>.<br><br>O tema ajuda a IA a avaliar a C2 corretamente.',
+        opts: ['O que é C2?', 'Ir para Resultado']
+    },
+    results: {
+        msg: '📊 <b>Aba Resultado</b><br><br>Após a correção você verá:<br>• <b>Nota total</b> de 0 a 1000<br>• <b>C1 a C5</b> com nota, pontos positivos e como melhorar<br>• <b>Indicadores</b> detalhados por competência.',
+        opts: ['O que são C1-C5?', 'Voltar ao início']
+    },
+    config: {
+        msg: '⚙️ <b>Aba Configurações</b><br><br>Configure a <b>URL do Ngrok</b> gerada ao iniciar o servidor local.<br><br>⚠️ A URL muda toda vez que o Ngrok for reiniciado — lembre de atualizar aqui.',
+        opts: ['Como obter a URL?', 'O que é modelo?']
+    }
+};
+
+const AVATAR_ANSWERS = {
+    'Como tirar a foto?': 'Tire com boa iluminação, sem sombras e com a folha bem plana. Prefira fundo claro e letras legíveis. Formatos aceitos: PNG, JPG, WEBP.',
+    'Ir para Redação': () => { showTab('editor'); toggleAvatar(); },
+    'O que é C2?': 'C2 avalia se você compreendeu e desenvolveu o tema proposto, usando repertório de áreas do conhecimento de forma pertinente.',
+    'Ir para Resultado': () => { showTab('results'); toggleAvatar(); },
+    'O que são C1-C5?': 'São as 5 Competências avaliadas pelo ENEM:<br>C1: Língua formal<br>C2: Tema e repertório<br>C3: Argumentação<br>C4: Coesão<br>C5: Proposta de intervenção',
+    'Voltar ao início': () => { showTab('scanner'); toggleAvatar(); },
+    'Como obter a URL?': 'Abra o terminal no seu PC, rode <code style="background:#111;padding:2px 6px;border-radius:4px;">ngrok http 1234</code> (ou a porta do seu servidor) e copie o link <b>https://xxxx.ngrok-free.app</b>. Acrescente <b>/v1/chat/completions</b> no final.',
+    'O que é modelo?': 'É o nome do modelo carregado no seu servidor local (ex: <code style="background:#111;padding:2px 6px;border-radius:4px;">local-model</code>, <code style="background:#111;padding:2px 6px;border-radius:4px;">llama3</code>, etc). Verifique no terminal do seu servidor.'
+};
+
+let avatarOpen = false;
+
+function toggleAvatar() {
+    avatarOpen = !avatarOpen;
+    document.getElementById('avatar-bubble').style.display = avatarOpen ? 'block' : 'none';
+    if (avatarOpen) showAvatarForTab();
+}
+
+function showAvatarForTab() {
+    const active = document.querySelector('.tab-pane.active');
+    const tabId = active ? active.id : 'scanner';
+    const tip = AVATAR_TIPS[tabId] || AVATAR_TIPS.scanner;
+    document.getElementById('avatar-msg').innerHTML = tip.msg;
+    const opts = document.getElementById('avatar-options');
+    opts.innerHTML = tip.opts.map(o =>
+        `<button onclick="avatarAnswer('${o}')" style="
+            padding:6px 12px; background:var(--surface2); border:1px solid var(--border);
+            border-radius:100px; color:var(--text); font-size:0.75rem; cursor:pointer;
+            transition:border-color 0.2s;" 
+            onmouseover="this.style.borderColor='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)'">${o}</button>`
+    ).join('');
+}
+
+function avatarAnswer(q) {
+    const ans = AVATAR_ANSWERS[q];
+    if (typeof ans === 'function') { ans(); return; }
+    document.getElementById('avatar-msg').innerHTML = `<b>${q}</b><br><br>${ans}`;
+    document.getElementById('avatar-options').innerHTML = `
+        <button onclick="showAvatarForTab()" style="
+            padding:6px 12px; background:var(--surface2); border:1px solid var(--border);
+            border-radius:100px; color:var(--muted); font-size:0.75rem; cursor:pointer;">
+            ← Voltar
+        </button>`;
+}
+
+/* ── SAVE CONFIG ──────────────────────────────────── */
 function saveConfig() {
     config.apiUrl = document.getElementById('apiUrlInput').value.trim();
     config.model = document.getElementById('modelInput').value.trim() || 'local-model';
@@ -626,8 +746,9 @@ function login() {
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('main-system').style.display = 'flex';
         loadConfig();
+        loadTema();
         if (config.apiUrl) testConnection();
-        
+        document.getElementById('avatar-btn').style.display = 'flex';
     } else {
         document.getElementById('loginErr').textContent = 'Senha incorreta.';
         document.getElementById('passInput').value = '';
@@ -642,6 +763,8 @@ function showTab(id) {
     document.getElementById(id).classList.add('active');
     const map = { scanner: 0, editor: 1, results: 2, config: 3 };
     document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
+    // Atualiza o avatar se estiver aberto
+    if (avatarOpen) showAvatarForTab();
 }
 
 /* ── SUB-TABS ────────────────────────────────────── */
@@ -740,17 +863,108 @@ function previewImg(input) {
     r.readAsDataURL(file);
 }
 
+function updateOcrMethod() {
+    const isAI = document.querySelector('input[name="ocrMethod"]:checked').value === 'ai';
+    document.getElementById('lbl-ai').style.borderColor = isAI ? 'var(--accent)' : 'var(--border)';
+    document.getElementById('lbl-tesseract').style.borderColor = !isAI ? 'var(--accent)' : 'var(--border)';
+}
+
 async function doOCR() {
     const btn = document.getElementById('btnOCR');
     const prog = document.getElementById('ocrProgress');
     const bar = document.getElementById('ocrBar');
     const msg = document.getElementById('ocrMsg');
+    const method = document.querySelector('input[name="ocrMethod"]:checked').value;
 
     btn.disabled = true;
     prog.style.display = 'block';
-    bar.style.width = '0%';
-    msg.textContent = 'Iniciando OCR...';
+    bar.style.width = '10%';
 
+    if (method === 'ai') {
+        await doOcrAI(btn, prog, bar, msg);
+    } else {
+        await doOcrTesseract(btn, prog, bar, msg);
+    }
+}
+
+async function doOcrAI(btn, prog, bar, msg) {
+    if (!config.apiUrl) {
+        showToast('Configure a URL do servidor nas Configurações!', 'error');
+        prog.style.display = 'none';
+        btn.disabled = false;
+        return;
+    }
+
+    msg.textContent = 'Enviando imagem para a IA...';
+    bar.style.width = '30%';
+
+    // Converte imagem para base64
+    const imgSrc = document.getElementById('prevImg').src;
+    const base64 = imgSrc.split(',')[1];
+    const mimeMatch = imgSrc.match(/data:(image\/\w+);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+    try {
+        msg.textContent = 'IA transcrevendo manuscrito...';
+        bar.style.width = '60%';
+
+        const resp = await fetch(config.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+            },
+            body: JSON.stringify({
+                model: config.model,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'image_url',
+                            image_url: { url: `data:${mime};base64,${base64}` }
+                        },
+                        {
+                            type: 'text',
+                            text: 'Transcreva EXATAMENTE o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros, sem adicionar comentários. Retorne apenas o texto transcrito.'
+                        }
+                    ]
+                }],
+                temperature: 0.1,
+                max_tokens: 2000
+            }),
+            signal: AbortSignal.timeout(120000)
+        });
+
+        if (!resp.ok) {
+            const err = await resp.text();
+            throw new Error(`HTTP ${resp.status}: ${err.slice(0,150)}`);
+        }
+
+        const data = await resp.json();
+        const text = data.choices?.[0]?.message?.content;
+        if (!text) throw new Error('IA não retornou texto.');
+
+        bar.style.width = '100%';
+        msg.textContent = 'Transcrição concluída!';
+        document.getElementById('essayText').value = text;
+        updateMeta();
+
+        setTimeout(() => {
+            prog.style.display = 'none';
+            btn.disabled = false;
+            showToast('Texto extraído pela IA! Revise no editor.', 'success');
+            showTab('editor');
+        }, 800);
+
+    } catch(e) {
+        prog.style.display = 'none';
+        btn.disabled = false;
+        showToast('Erro na IA: ' + e.message, 'error');
+    }
+}
+
+async function doOcrTesseract(btn, prog, bar, msg) {
+    msg.textContent = 'Iniciando Tesseract...';
     try {
         const res = await Tesseract.recognize(
             document.getElementById('prevImg').src, 'por',
@@ -771,7 +985,7 @@ async function doOCR() {
     } catch(e) {
         prog.style.display = 'none';
         btn.disabled = false;
-        showToast('Erro no OCR: ' + e.message, 'error');
+        showToast('Erro no Tesseract: ' + e.message, 'error');
     }
 }
 
@@ -810,6 +1024,10 @@ async function startCorrection() {
         return;
     }
 
+    const tema = document.getElementById('temaInput').value.trim();
+    if (!tema) {
+        document.getElementById('tema-warning').style.display = 'block';
+    }
     const btn = document.getElementById('btnCorr');
     const errorLog = document.getElementById('errorLog');
     btn.disabled = true;
@@ -846,8 +1064,10 @@ async function startCorrection() {
         setProgress((i - 1) * 20, `Analisando Competência ${i} de 5...`);
         await new Promise(r => setTimeout(r, 80));
 
-        const systemPrompt = `Você é um corretor oficial de redações do ENEM.
-Analise APENAS a Competência ${i}: "${COMPS[i]}"
+        const tema = document.getElementById('temaInput').value.trim();
+        const temaInfo = tema ? `\nTema da proposta: "${tema}"` : '';
+        const systemPrompt = `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Analise APENAS a Competência ${i}: "${COMPS[i]}"${i === 2 && tema ? '\nVerifique se o texto aborda corretamente o tema informado.' : ''}
 Retorne SOMENTE um JSON válido, sem texto adicional, sem markdown:
 {"c${i}_score": <nota entre 0,40,80,120,160,200>, "c${i}_pos": "<pontos positivos detalhados>", "c${i}_imp": "<como melhorar detalhadamente>"}`;
 
@@ -980,5 +1200,79 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 renderCrits(1);
 </script>
+
+<!-- ── AVATAR ASSISTENTE ─────────────────────────── -->
+<div id="avatar-btn" onclick="toggleAvatar()" title="Ajuda" style="
+    position:fixed; bottom:24px; left:24px; z-index:9990;
+    width:54px; height:54px; border-radius:50%;
+    background:linear-gradient(135deg,#e63946,#f4a261);
+    display:none; align-items:center; justify-content:center;
+    cursor:pointer;
+    box-shadow:0 4px 20px rgba(230,57,70,0.4);
+    transition:transform 0.2s, box-shadow 0.2s;
+    border:2px solid rgba(255,255,255,0.15);"
+    onmouseover="this.style.transform='scale(1.1)'"
+    onmouseout="this.style.transform='scale(1)'">
+    <svg width="34" height="34" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cabelo -->
+  <ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/>
+  <rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
+  <rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
+  <!-- Rosto -->
+  <ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/>
+  <!-- Olhos -->
+  <ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
+  <ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
+  <circle cx="27" cy="25" r="0.8" fill="white"/>
+  <circle cx="39" cy="25" r="0.8" fill="white"/>
+  <!-- Sobrancelhas -->
+  <path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <!-- Nariz -->
+  <ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/>
+  <!-- Boca sorrindo -->
+  <path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <!-- Bochechas -->
+  <ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
+  <ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
+  <!-- Corpo/blusa -->
+  <path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/>
+</svg>
+</div>
+
+<div id="avatar-bubble" style="
+    position:fixed; bottom:90px; left:24px; z-index:9989;
+    width:300px; background:var(--surface);
+    border:1px solid var(--border); border-radius:16px;
+    padding:18px; display:none;
+    box-shadow:0 8px 30px rgba(0,0,0,0.4);
+    animation: fadeIn 0.25s ease;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+        <div><svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/>
+  <rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
+  <rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
+  <ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/>
+  <ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
+  <ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
+  <circle cx="27" cy="25" r="0.8" fill="white"/>
+  <circle cx="39" cy="25" r="0.8" fill="white"/>
+  <path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/>
+  <path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
+  <ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
+  <path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/>
+</svg></div>
+        <div>
+            <div style="font-weight:700; font-size:0.9rem; font-family:'Syne',sans-serif;">ENEM Assistente</div>
+            <div style="font-size:0.72rem; color:var(--success);">● Online</div>
+        </div>
+        <button onclick="toggleAvatar()" style="margin-left:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem;">✕</button>
+    </div>
+    <div id="avatar-msg" style="font-size:0.85rem; line-height:1.6; color:var(--text); min-height:60px;"></div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;" id="avatar-options"></div>
+</div>
 </body>
 </html>
