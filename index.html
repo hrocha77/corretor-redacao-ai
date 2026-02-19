@@ -907,80 +907,98 @@ async function doOcrAI(btn, prog, bar, msg) {
     const base64 = imgSrc.split(',')[1];
     const mimeMatch = imgSrc.match(/data:(image\/\w+);/);
     const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    // LM Studio espera o data URI completo: data:image/jpeg;base64,XXXX
+    const dataUrl = `data:${mime};base64,${base64}`;
 
-    try {
-        msg.textContent = 'Qwen lendo manuscrito...';
-        bar.style.width = '50%';
-
-        // Formato exato que o llama-cpp/Llava15ChatHandler espera:
-        // imagem ANTES do texto, sem system message separada
-        const resp = await fetch(config.apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            },
-            body: JSON.stringify({
-                model: config.model,
-                messages: [
+    const buildBody = (imageUrl) => JSON.stringify({
+        model: config.model,
+        messages: [
+            {
+                role: 'user',
+                content: [
                     {
-                        role: 'user',
-                        content: [
-                            {
-                                type: 'image_url',
-                                image_url: {
-                                    url: base64
-                                }
-                            },
-                            {
-                                type: 'text',
-                                text: 'Transcreva exatamente o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros ortográficos ou gramaticais, sem comentários. Retorne apenas o texto transcrito.'
-                            }
-                        ]
+                        type: 'image_url',
+                        image_url: { url: imageUrl }
+                    },
+                    {
+                        type: 'text',
+                        text: 'Transcreva exatamente o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros ortográficos ou gramaticais, sem comentários. Retorne apenas o texto transcrito.'
                     }
-                ],
-                temperature: 0.1,
-                max_tokens: 2000
-            }),
-            signal: AbortSignal.timeout(180000)
-        });
+                ]
+            }
+        ],
+        temperature: 0.1,
+        max_tokens: 2000
+    });
 
-        if (!resp.ok) {
-            const err = await resp.text();
-            // Modelo sem visão → fallback Tesseract
-            if (resp.status === 400) {
-                showToast('Modelo não suportou imagem — usando Tesseract.', 'error');
+    // Tenta primeiro com data URI completo (LM Studio), depois base64 puro (llama-cpp)
+    const urlFormats = [dataUrl, base64];
+
+    for (let fi = 0; fi < urlFormats.length; fi++) {
+        const fmt = urlFormats[fi];
+        const label = fi === 0 ? 'data URI' : 'base64 puro';
+        try {
+            msg.textContent = `Qwen lendo manuscrito (${label})...`;
+            bar.style.width = fi === 0 ? '40%' : '70%';
+
+            const resp = await fetch(config.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: buildBody(fmt),
+                signal: AbortSignal.timeout(180000)
+            });
+
+            if (!resp.ok) {
+                const err = await resp.text();
+                // Se 400 e ainda temos outro formato para tentar, continua
+                if (resp.status === 400 && fi < urlFormats.length - 1) {
+                    console.warn(`Formato ${label} rejeitado (400), tentando próximo...`);
+                    continue;
+                }
+                // Sem mais formatos → fallback Tesseract
+                if (resp.status === 400) {
+                    showToast('Modelo não suportou imagem — usando Tesseract.', 'error');
+                    await doOcrTesseract(btn, prog, bar, msg);
+                    return;
+                }
+                throw new Error(`HTTP ${resp.status}: ${err.slice(0, 150)}`);
+            }
+
+            const data = await resp.json();
+            const text = data.choices?.[0]?.message?.content;
+
+            if (!text) {
+                if (fi < urlFormats.length - 1) { continue; }
+                showToast('IA não retornou texto — usando Tesseract.', 'error');
                 await doOcrTesseract(btn, prog, bar, msg);
                 return;
             }
-            throw new Error(`HTTP ${resp.status}: ${err.slice(0, 150)}`);
-        }
 
-        const data = await resp.json();
-        const text = data.choices?.[0]?.message?.content;
+            bar.style.width = '100%';
+            msg.textContent = 'Transcrição concluída!';
+            document.getElementById('essayText').value = text;
+            updateMeta();
 
-        if (!text) {
-            showToast('IA não retornou texto — usando Tesseract.', 'error');
-            await doOcrTesseract(btn, prog, bar, msg);
-            return;
-        }
+            setTimeout(() => {
+                prog.style.display = 'none';
+                btn.disabled = false;
+                showToast('Texto extraído pelo Qwen! Revise no editor.', 'success');
+                showTab('editor');
+            }, 700);
+            return; // sucesso
 
-        bar.style.width = '100%';
-        msg.textContent = 'Transcrição concluída!';
-        document.getElementById('essayText').value = text;
-        updateMeta();
-
-        setTimeout(() => {
+        } catch(e) {
+            if (fi < urlFormats.length - 1) {
+                console.warn(`Erro com ${label}:`, e.message, '— tentando próximo formato...');
+                continue;
+            }
             prog.style.display = 'none';
             btn.disabled = false;
-            showToast('Texto extraído pelo Qwen! Revise no editor.', 'success');
-            showTab('editor');
-        }, 700);
-
-    } catch(e) {
-        prog.style.display = 'none';
-        btn.disabled = false;
-        showToast('Erro: ' + e.message, 'error');
+            showToast('Erro: ' + e.message, 'error');
+        }
     }
 }
 
