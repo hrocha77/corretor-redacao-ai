@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correção ENEM RED</title>
+    <title>Correção ENEM Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -386,7 +386,7 @@
 <!-- LOGIN -->
 <div id="login-overlay">
     <div class="login-card">
-        <div class="login-logo">ENEM RED</div>
+        <div class="login-logo">ENEM PRO</div>
         <div class="login-sub">Plataforma de Correção Inteligente</div>
         <input type="password" id="passInput" placeholder="Senha de acesso"
                onkeydown="if(event.key==='Enter') login()">
@@ -401,7 +401,7 @@
 <!-- SISTEMA -->
 <div id="main-system">
     <header>
-        <div class="header-brand">ENEM RED</div>
+        <div class="header-brand">ENEM PRO</div>
         <div class="header-status">
             <div class="status-dot" id="statusDot"></div>
             <span id="statusTxt">Servidor desconectado</span>
@@ -1099,11 +1099,102 @@ async function startCorrection() {
         await new Promise(r => setTimeout(r, 80));
 
         const tema = document.getElementById('temaInput').value.trim();
-        const temaInfo = tema ? `\nTema da proposta: "${tema}"` : '';
-        const systemPrompt = `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Analise APENAS a Competência ${i}: "${COMPS[i]}"${i === 2 && tema ? '\nVerifique se o texto aborda corretamente o tema informado.' : ''}
-Retorne SOMENTE um JSON válido, sem texto adicional, sem markdown:
-{"c${i}_score": <nota entre 0,40,80,120,160,200>, "c${i}_pos": "<pontos positivos detalhados>", "c${i}_imp": "<como melhorar detalhadamente>"}`;
+        const temaInfo = tema ? `\nTema da proposta de redação: "${tema}"` : '';
+
+        const PROMPTS = {
+            1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Avalie APENAS a Competência I: domínio da modalidade escrita formal da língua portuguesa.
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200 pts: no máximo 1 falha sintática E/OU 2 ocorrências de desvios de escrita
+- 160 pts: até 2 falhas sintáticas E/OU até 5 ocorrências de desvios
+- 120 pts: até 4 falhas sintáticas E/OU até 6 ocorrências de desvios distintas
+- 80 pts: até 5 falhas sintáticas E/OU mais de 6 ocorrências distintas com mais de 3 recorrências em alguma delas
+- 40 pts: mais de 6 falhas sintáticas OU mais de 6 ocorrências distintas com mais de 3 recorrências
+- 0 pts: sem estrutura sintática conforme a norma-padrão
+
+FALHAS SINTÁTICAS incluem: truncamento/fragmentação de período com ponto final, uso inadequado de pontuação, justaposição ou encadeamento excessivo com vírgulas, parágrafo com apenas um ponto final, termo ou elemento sintático faltando/sobrando/duplicado, construção confusa.
+
+DESVIOS DE ESCRITA incluem: ilegibilidade por caligrafia ou rasuras, desrespeito às margens, ausência/recuo imperceptível de parágrafo, problema com maiúsculas/minúsculas, grafia incorreta, acento incorreto/faltando, desvio de translineação, uso inadequado do hífen, sujeito preposicionado, falta de paralelismo, colocação inadequada de pronome, uso inadequado de pronomes/pronome relativo/crase, desvio de regência verbal ou nominal, desvio de concordância verbal ou nominal, inadequação de tempo/modo verbal, vocabulário impreciso, palavra informal/coloquial, palavra figurada/conotativa.
+
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos positivos detalhados>", "c1_imp": "<como melhorar com exemplos específicos do texto>"}`,
+
+            2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Avalie APENAS a Competência II: compreensão da proposta e aplicação de repertório sociocultural.
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200 pts: abordagem completa do tema, introdução + 2 desenvolvimentos + conclusão bem desenvolvidos (nenhum embrionário), parágrafos com estrutura adequada, repertório legítimo + pertinente + produtivo
+- 160 pts: igual ao 200, mas repertório legítimo + pertinente porém NÃO produtivo
+- 120 pts: abordagem completa, mas 1 parte embrionária, ou repertório não legitimado/não pertinente. Repertórios copiados/genéricos/apenas citação limitam a 120 pts. Sem as 3 partes claramente identificáveis = máximo 120 pts
+- 80 pts: abordagem completa, mas 2 partes embrionárias ou conclusão com frase incompleta. Trechos copiados da internet em mais de 2 partes = máximo 80 pts
+- 40 pts: tangenciamento do tema, aglomerado caótico de frases, traços constantes de tipos textuais não argumentativos
+- 0 pts: não aborda o tema
+
+REPERTÓRIO PERTINENTE: não copiado, relacionado à área do tema.
+REPERTÓRIO LEGITIMADO: legitimado por área do conhecimento, relacionado ao tema.
+REPERTÓRIO PRODUTIVO: usado para fundamentar relações de causa e consequência.
+TANGENCIAMENTO: não usa palavras do tema, não desenvolve o tema nas 3 partes.
+${tema ? `\nO tema desta redação é: "${tema}". Verifique se a redação aborda esse tema em todas as partes.` : ''}
+
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos positivos detalhados>", "c2_imp": "<como melhorar com exemplos específicos do texto>"}`,
+
+            3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Avalie APENAS a Competência III: seleção, organização e interpretação de informações em defesa de um ponto de vista.
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200 pts: projeto estratégico com 4 parágrafos (intro + 2 desenvolvimentos + conclusão), tese por antecipação com 2 temas-problema, palavras-chave da proposta usadas pertinentemente, informações/fatos/opiniões em todo o texto, argumentos bem relacionados ao tema, repertórios com demonstrações e relação direta com o tema, fatos bem fundamentados com comprovações e marcadores de opinião, sem incoerência/contradição/repetição/generalização, propostas de intervenção resolvem os 2 temas-problema
+- 160 pts: projeto estratégico com poucas falhas, tese por antecipação não muito clara mas com 2 temas-problema, sem fatos/opiniões em 1 parte, poucos marcadores de opinião, falta demonstração em 1 repertório, poucas lacunas de comprovação
+- 120 pts: projeto com algumas falhas, tese confusa mas com 2 temas-problema, sem fatos/opiniões em mais de 1 parte, argumentos pouco relacionados, alguma incoerência, argumentos circulares/repetitivos, propostas resolvem apenas alguns problemas. Repertórios copiados/genéricos = máximo 120 pts
+- 80 pts: projeto com muitas falhas, sem 4 parágrafos, sem tese ou apenas 1 tema-problema, poucas palavras-chave, argumentos quase sem relação, muita incoerência e contradição, propostas resolvem muito pouco. Contradição grave ou apenas 1 informação/fato = máximo 80 pts
+- 40 pts: tangencia o tema, sem intro/desenvolvimento/conclusão definidos, sem tese clara, argumentos não relacionados, de forma incoerente e contraditória
+- 0 pts: aglomerado caótico de palavras
+
+PROJETO ESTRATÉGICO: parágrafo 1 = 2 temas-problema como causas; parágrafo 2 = argumento do 1º tema; parágrafo 3 = argumento do 2º tema; parágrafo 4 = proposta para os 2 temas.
+TESE POR ANTECIPAÇÃO: 2 temas-problema (causas do problema do tema) no 1º parágrafo.
+
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos positivos detalhados>", "c3_imp": "<como melhorar com exemplos específicos do texto>"}`,
+
+            4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Avalie APENAS a Competência IV: conhecimento dos mecanismos linguísticos de argumentação (coesão).
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200 pts: uso expressivo de elementos coesivos com no máximo 2 repetições, todos os elementos coesivos com relações lógico-semânticas adequadas, parágrafos 2/3/4 iniciados com operador argumentativo adequado, recursos coesivos de retomada variados e adequados com poucas repetições
+- 160 pts: uso constante mas com poucas repetições. Limitam a 160: 3+ repetições em 5 linhas, qualquer elemento coesivo com relação inadequada, parágrafo 2 sem operador argumentativo, recurso de retomada inadequado/repetido
+- 120 pts: uso regular com algumas repetições. Limitam a 120: mesmo conectivo usado 3+ vezes, 2 elementos coesivos com relação inadequada, apenas 1 parágrafo inicia com operador argumentativo, 2 recursos de retomada inadequados
+- 80 pts: uso pontual com muitas repetições. Limitam a 80: mesmo conectivo 5+ vezes, 3 elementos coesivos inadequados, nenhum parágrafo inicia com operador argumentativo, redação em parágrafo único, 3 recursos de retomada inadequados
+- 40 pts: uso raro com repetições excessivas. Limitam a 40: mesmo conectivo constantemente, 3+ elementos coesivos inadequados, 3+ recursos de retomada inadequados/excessivos
+- 0 pts: ausência de articulação coesiva, períodos e/ou palavras desconexas ao longo de todo o texto
+
+ELEMENTOS COESIVOS: mecanismos de retomada (pronomes, sinonímia, hiperonímia, hiponímia, elipse, repetições de radical) e operadores argumentativos (conjunções, conectivos com relações de reforço, adição, exemplificação, comparação, justificativa, consequência, concessão, contraposição, finalidade, conformidade, tempo, modo).
+
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos positivos detalhados>", "c4_imp": "<como melhorar com exemplos específicos do texto>"}`,
+
+            5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Avalie APENAS a Competência V: elaboração de proposta de intervenção respeitando os direitos humanos.
+
+CRITÉRIOS DE PONTUAÇÃO (baseados nos 5 elementos: agente, ação, modo/meio, finalidade, detalhamento):
+- 200 pts: proposta para os 2 temas-problema da tese, com todos os 5 elementos válidos, reconhecíveis e articulados
+- 160 pts: proposta para os 2 temas-problema, com 4 dos 5 elementos válidos e articulados com coesão adequada
+- 120 pts: proposta para os 2 temas-problema, com 3 dos 5 elementos válidos e articulados
+- 80 pts: proposta para os 2 temas-problema, com 2 dos 5 elementos válidos. Estruturas condicionais/hipotéticas ou verbos abstratos = máximo 80 pts
+- 40 pts: tangencia o tema ou contradiz o projeto de texto, elementos nulos/não válidos ou apenas 1 elemento válido
+- 0 pts: proposta ausente, que fere direitos humanos, ou não relacionada ao tema
+
+AGENTE: substantivo (nome próprio ou comum) na função de sujeito, representando instituição ou cargo, com artigo definido.
+AÇÃO: predicado do agente com verbo de ação.
+MODO/MEIO: objeto complementar do verbo e seus adjuntos adverbiais de modo, meio ou lugar.
+FINALIDADE: oração subordinada adverbial com conectivo de finalidade.
+DETALHAMENTO: termo ou oração que elabora pelo menos 1 dos demais elementos.
+
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos positivos detalhados>", "c5_imp": "<como melhorar com exemplos específicos do texto>"}`
+        };
+
+        const systemPrompt = PROMPTS[i];
 
         let success = false;
         let lastError = '';
