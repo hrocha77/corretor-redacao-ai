@@ -347,6 +347,8 @@
         .feedback-box.empty { color: var(--muted); font-style: italic; }
         .field-pos .field-label::before { background: var(--success); }
         .field-ded .field-label::before { background: var(--accent); }
+        .field-ded .feedback-box { border-color: rgba(230,57,70,0.2); background: rgba(230,57,70,0.04); }
+        .field-ded .field-label::before { background: var(--accent); }
         .field-ded .feedback-box { border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.04); }
 
         .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -904,28 +906,16 @@ function setComp(n) {
     impBox.innerText = imp || 'Aguardando correção...';
     impBox.classList.toggle('empty', !imp);
 
-    // Erros detalhados — onde perdeu pontos
-    const erros = feedbackData[`c${n}_erros`];
-    const errosSection = document.getElementById('errosSection');
-    const errosList = document.getElementById('errosList');
-    if (!errosSection) return;
-    if (erros && Array.isArray(erros) && erros.length > 0) {
-        errosSection.style.display = 'block';
-        errosList.innerHTML = erros.map(e => `
-            <div class="erro-item">
-                ${e.trecho && e.trecho !== 'ausente'
-                    ? `<div class="erro-trecho">"${e.trecho}"</div>`
-                    : `<div class="erro-trecho" style="color:var(--muted); font-style:normal;">elemento ausente</div>`}
-                <div class="erro-tipo">⚠ ${e.tipo || 'Erro'}</div>
-                <div class="erro-explicacao">${e.explicacao || ''}</div>
-            </div>`).join('');
-    } else {
-        errosSection.style.display = erros ? 'block' : 'none';
-        errosList.innerHTML = erros
-            ? `<div style="color:var(--success); font-size:0.85rem; padding:10px 0;">✅ Nenhuma perda de pontos identificada nesta competência.</div>`
-            : '';
+    // Onde perdeu pontos
+    const ded = feedbackData[`c${n}_ded`];
+    const dedBox = document.getElementById('dedBox');
+    if (dedBox) {
+        dedBox.innerText = ded || 'Aguardando correção...';
+        dedBox.classList.toggle('empty', !ded);
     }
 }
+
+
 
 function setCompInd(n) {
     curCompInd = n;
@@ -1258,7 +1248,7 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
                             { role: 'user',   content: txt }
                         ],
                         temperature: config.temp,
-                        max_tokens: 2000
+                        max_tokens: 2500
                     }),
                     signal: AbortSignal.timeout(120000)
                 });
