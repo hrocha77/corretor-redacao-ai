@@ -1259,7 +1259,7 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                             { role: 'user',   content: txt }
                         ],
                         temperature: config.temp,
-                        max_tokens: 800
+                        max_tokens: 1500
                     }),
                     signal: AbortSignal.timeout(120000)
                 });
@@ -1283,7 +1283,24 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                 const match = raw.match(/\{[\s\S]*\}/);
                 if (!match) throw new Error(`JSON não encontrado. Resposta: ${raw.slice(0,200)}`);
 
-                const parsed = JSON.parse(match[0]);
+                let parsed;
+                try {
+                    parsed = JSON.parse(match[0]);
+                } catch(jsonErr) {
+                    // JSON truncado — extrai campos individualmente com regex
+                    logError(`C${i} — JSON truncado, extraindo campos manualmente...`);
+                    parsed = {};
+                    const scoreMatch = match[0].match(/"c\d_score"\s*:\s*(\d+)/);
+                    const posMatch   = match[0].match(/"c\d_pos"\s*:\s*"([^"]*?)(?:"|$)/s);
+                    const impMatch   = match[0].match(/"c\d_imp"\s*:\s*"([^"]*?)(?:"|$)/s);
+                    const dedMatch   = match[0].match(/"c\d_ded"\s*:\s*"([^"]*?)(?:"|$)/s);
+                    if (scoreMatch) parsed[`c${i}_score`] = parseInt(scoreMatch[1]);
+                    if (posMatch)   parsed[`c${i}_pos`]   = posMatch[1];
+                    if (impMatch)   parsed[`c${i}_imp`]   = impMatch[1];
+                    if (dedMatch)   parsed[`c${i}_ded`]   = dedMatch[1] + (dedMatch[0].endsWith('"') ? '' : '... [truncado]');
+                    if (!parsed[`c${i}_score`] && parsed[`c${i}_score`] !== 0)
+                        throw new Error(`Não foi possível extrair nota do JSON truncado.`);
+                }
                 feedbackData = { ...feedbackData, ...parsed };
 
                 const ps = document.getElementById(`ps${i}`);
