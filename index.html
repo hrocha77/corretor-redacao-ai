@@ -1207,34 +1207,33 @@ async function startCorrection() {
         const PROMPTS = {
             1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência I da redação abaixo, seguindo os critérios oficiais do ENEM.
-Para cada ponto perdido, cite o trecho exato do texto, o tipo de erro e por que causou desconto.
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos positivos>", "c1_imp": "<orientações gerais>", "c1_erros": [{"trecho": "<trecho exato>", "tipo": "<tipo do erro>", "explicacao": "<por que perdeu ponto>"}]}`,
+Seja BREVE. No campo c1_ded liste no máximo 5 erros principais separados por | no formato: trecho = tipo (impacto).
+Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
+{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<max 2 frases>", "c1_imp": "<max 2 frases>", "c1_ded": "<erro1 | erro2 | erro3>"}`,
 
             2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência II da redação abaixo, seguindo os critérios oficiais do ENEM.${tema ? `
-Tema: "${tema}".` : ''}
-Para cada ponto perdido, cite o trecho ou parte do texto, o tipo de problema e por que causou desconto.
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos positivos>", "c2_imp": "<orientações gerais>", "c2_erros": [{"trecho": "<trecho exato ou ex: introdução>", "tipo": "<tipo do problema>", "explicacao": "<por que perdeu ponto>"}]}`,
+Avalie APENAS a Competência II da redação abaixo, seguindo os critérios oficiais do ENEM.${tema ? ` Tema: "${tema}".` : ''}
+Seja BREVE. No campo c2_ded liste no máximo 3 motivos de perda de pontos separados por |.
+Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
+{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<max 2 frases>", "c2_imp": "<max 2 frases>", "c2_ded": "<motivo1 | motivo2 | motivo3>"}`,
 
             3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência III da redação abaixo, seguindo os critérios oficiais do ENEM.
-Para cada ponto perdido, cite o trecho ou parágrafo, o tipo de falha e por que causou desconto.
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos positivos>", "c3_imp": "<orientações gerais>", "c3_erros": [{"trecho": "<trecho exato ou ex: parágrafo 2>", "tipo": "<tipo da falha>", "explicacao": "<por que perdeu ponto>"}]}`,
+Seja BREVE. No campo c3_ded liste no máximo 3 motivos de perda de pontos separados por |.
+Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
+{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<max 2 frases>", "c3_imp": "<max 2 frases>", "c3_ded": "<motivo1 | motivo2 | motivo3>"}`,
 
             4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência IV da redação abaixo, seguindo os critérios oficiais do ENEM.
-Para cada ponto perdido, cite o trecho exato com o problema coesivo e por que causou desconto.
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos positivos>", "c4_imp": "<orientações gerais>", "c4_erros": [{"trecho": "<trecho exato>", "tipo": "<tipo do problema coesivo>", "explicacao": "<por que perdeu ponto>"}]}`,
+Seja BREVE. No campo c4_ded liste no máximo 4 problemas de coesão separados por |.
+Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
+{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<max 2 frases>", "c4_imp": "<max 2 frases>", "c4_ded": "<problema1 | problema2 | problema3>"}`,
 
             5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência V da redação abaixo, seguindo os critérios oficiais do ENEM.
-Indique quais dos 5 elementos (agente, ação, modo/meio, finalidade, detalhamento) estão ausentes ou inválidos, com o trecho da proposta.
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos positivos>", "c5_imp": "<orientações gerais>", "c5_erros": [{"trecho": "<trecho da proposta ou 'ausente'>", "tipo": "<elemento ausente/inválido>", "explicacao": "<por que perdeu ponto>"}]}`
+Seja BREVE. No campo c5_ded indique quais dos 5 elementos (agente, ação, modo/meio, finalidade, detalhamento) estão ausentes ou inadequados, separados por |.
+Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
+{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<max 2 frases>", "c5_imp": "<max 2 frases>", "c5_ded": "<elemento1 ausente | elemento2 inadequado>"}`
         };
 
         const systemPrompt = PROMPTS[i];
@@ -1259,7 +1258,7 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                             { role: 'user',   content: txt }
                         ],
                         temperature: config.temp,
-                        max_tokens: 1500
+                        max_tokens: 2000
                     }),
                     signal: AbortSignal.timeout(120000)
                 });
