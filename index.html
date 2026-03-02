@@ -1296,6 +1296,7 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
                 if (ps) { ps.textContent = parsed[`c${i}_score`] ?? '?'; ps.classList.add('visible'); }
 
                 logError(`C${i} — ✓ nota: ${parsed['c'+i+'_score']}`);
+                logError(`C${i} — ded: ${JSON.stringify(parsed['c'+i+'_ded'])?.slice(0,150)}`);
                 success = true;
                 break;
 
