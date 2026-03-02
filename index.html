@@ -346,6 +346,8 @@
         }
         .feedback-box.empty { color: var(--muted); font-style: italic; }
         .field-pos .field-label::before { background: var(--success); }
+        .field-ded .field-label::before { background: var(--accent); }
+        .field-ded .feedback-box { border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.04); }
 
         .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .crit-item {
@@ -359,6 +361,76 @@
             border: 1px solid var(--border); border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
             font-size: 0.7rem; font-weight: 700; color: var(--muted);
+        }
+
+        /* ── DEDUÇÕES ──────────────────────────── */
+        .deducoes-section { margin-bottom: 20px; }
+        .deducao-item {
+            background: rgba(230,57,70,0.06);
+            border: 1px solid rgba(230,57,70,0.2);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .deducao-trecho {
+            font-family: 'Georgia', serif;
+            color: var(--gold);
+            font-style: italic;
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+        .deducao-erro {
+            color: var(--accent2);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .deducao-impacto {
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+        .deducoes-empty {
+            color: var(--success);
+            font-size: 0.85rem;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── ERROS ────────────────────────────── */
+        .erro-item {
+            background: rgba(230,57,70,0.06);
+            border: 1px solid rgba(230,57,70,0.2);
+            border-left: 3px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin-bottom: 8px;
+        }
+        .erro-trecho {
+            font-family: 'Georgia', serif;
+            font-size: 0.85rem;
+            color: var(--gold);
+            background: rgba(244,162,97,0.08);
+            border-radius: 6px;
+            padding: 4px 10px;
+            margin-bottom: 6px;
+            display: inline-block;
+            font-style: italic;
+        }
+        .erro-tipo {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+        .erro-explicacao {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.6;
         }
 
         /* ── TOAST ─────────────────────────────── */
@@ -572,9 +644,18 @@
                         <div class="field-label">Pontos positivos</div>
                         <div class="feedback-box empty" id="posBox">Aguardando correção...</div>
                     </div>
-                    <div class="feedback-section">
+                    <div class="feedback-section field-ded">
                         <div class="field-label">Como melhorar</div>
                         <div class="feedback-box empty" id="impBox">Aguardando correção...</div>
+                    </div>
+
+                    <div class="deducoes-section">
+                        <div class="field-label" style="margin-bottom:10px;">
+                            <span style="color:var(--accent);">●</span> Onde perdeu pontos
+                        </div>
+                        <div id="perdeBox">
+                            <div class="feedback-box empty">Aguardando correção...</div>
+                        </div>
                     </div>
                 </div>
 
@@ -822,6 +903,28 @@ function setComp(n) {
     posBox.classList.toggle('empty', !pos);
     impBox.innerText = imp || 'Aguardando correção...';
     impBox.classList.toggle('empty', !imp);
+
+    // Erros detalhados — onde perdeu pontos
+    const erros = feedbackData[`c${n}_erros`];
+    const errosSection = document.getElementById('errosSection');
+    const errosList = document.getElementById('errosList');
+    if (!errosSection) return;
+    if (erros && Array.isArray(erros) && erros.length > 0) {
+        errosSection.style.display = 'block';
+        errosList.innerHTML = erros.map(e => `
+            <div class="erro-item">
+                ${e.trecho && e.trecho !== 'ausente'
+                    ? `<div class="erro-trecho">"${e.trecho}"</div>`
+                    : `<div class="erro-trecho" style="color:var(--muted); font-style:normal;">elemento ausente</div>`}
+                <div class="erro-tipo">⚠ ${e.tipo || 'Erro'}</div>
+                <div class="erro-explicacao">${e.explicacao || ''}</div>
+            </div>`).join('');
+    } else {
+        errosSection.style.display = erros ? 'block' : 'none';
+        errosList.innerHTML = erros
+            ? `<div style="color:var(--success); font-size:0.85rem; padding:10px 0;">✅ Nenhuma perda de pontos identificada nesta competência.</div>`
+            : '';
+    }
 }
 
 function setCompInd(n) {
@@ -1104,29 +1207,34 @@ async function startCorrection() {
         const PROMPTS = {
             1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência I da redação abaixo, seguindo os critérios oficiais do ENEM.
+Para cada ponto perdido, cite o trecho exato do texto, o tipo de erro e por que causou desconto.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos positivos detalhados>", "c1_imp": "<como melhorar com exemplos do texto>"}`,
+{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos positivos>", "c1_imp": "<orientações gerais>", "c1_erros": [{"trecho": "<trecho exato>", "tipo": "<tipo do erro>", "explicacao": "<por que perdeu ponto>"}]}`,
 
             2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência II da redação abaixo, seguindo os critérios oficiais do ENEM.${tema ? `
-O tema desta redação é: "${tema}". Verifique se a redação aborda esse tema em todas as partes.` : ''}
+Tema: "${tema}".` : ''}
+Para cada ponto perdido, cite o trecho ou parte do texto, o tipo de problema e por que causou desconto.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos positivos detalhados>", "c2_imp": "<como melhorar com exemplos do texto>"}`,
+{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos positivos>", "c2_imp": "<orientações gerais>", "c2_erros": [{"trecho": "<trecho exato ou ex: introdução>", "tipo": "<tipo do problema>", "explicacao": "<por que perdeu ponto>"}]}`,
 
             3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência III da redação abaixo, seguindo os critérios oficiais do ENEM.
+Para cada ponto perdido, cite o trecho ou parágrafo, o tipo de falha e por que causou desconto.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos positivos detalhados>", "c3_imp": "<como melhorar com exemplos do texto>"}`,
+{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos positivos>", "c3_imp": "<orientações gerais>", "c3_erros": [{"trecho": "<trecho exato ou ex: parágrafo 2>", "tipo": "<tipo da falha>", "explicacao": "<por que perdeu ponto>"}]}`,
 
             4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência IV da redação abaixo, seguindo os critérios oficiais do ENEM.
+Para cada ponto perdido, cite o trecho exato com o problema coesivo e por que causou desconto.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos positivos detalhados>", "c4_imp": "<como melhorar com exemplos do texto>"}`,
+{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos positivos>", "c4_imp": "<orientações gerais>", "c4_erros": [{"trecho": "<trecho exato>", "tipo": "<tipo do problema coesivo>", "explicacao": "<por que perdeu ponto>"}]}`,
 
             5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 Avalie APENAS a Competência V da redação abaixo, seguindo os critérios oficiais do ENEM.
+Indique quais dos 5 elementos (agente, ação, modo/meio, finalidade, detalhamento) estão ausentes ou inválidos, com o trecho da proposta.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos positivos detalhados>", "c5_imp": "<como melhorar com exemplos do texto>"}`
+{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos positivos>", "c5_imp": "<orientações gerais>", "c5_erros": [{"trecho": "<trecho da proposta ou 'ausente'>", "tipo": "<elemento ausente/inválido>", "explicacao": "<por que perdeu ponto>"}]}`
         };
 
         const systemPrompt = PROMPTS[i];
