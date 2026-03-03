@@ -485,6 +485,36 @@
         .bd-total { color:var(--accent); font-size:0.9rem; font-weight:800; }
         .field-pos .field-label::before { background:var(--success); }
         .field-ded .field-label::before { background:var(--accent); }
+
+        /* ── HIGHLIGHT EDITOR ─────────────────── */
+        #highlight-wrap { position: relative; display: none; }
+        #highlight-wrap.active { display: block; }
+        #highlight-overlay {
+            position: absolute; inset: 0;
+            padding: 18px; font-size: 0.95rem; line-height: 1.75;
+            font-family: 'Georgia', serif;
+            color: transparent; pointer-events: none;
+            white-space: pre-wrap; word-wrap: break-word;
+            border: 1px solid transparent; border-radius: var(--radius);
+            overflow: hidden; background: var(--surface2);
+        }
+        #essayText.with-highlight {
+            background: transparent !important;
+            position: relative; z-index: 1;
+            caret-color: var(--text);
+        }
+        .hl-suspect { background: rgba(244,162,97,0.4); border-bottom: 2px solid var(--gold); border-radius: 2px; color: transparent; }
+        .hl-error   { background: rgba(230,57,70,0.3);  border-bottom: 2px solid var(--accent); border-radius: 2px; color: transparent; }
+        .review-banner {
+            display: none; background: rgba(244,162,97,0.08);
+            border: 1px solid rgba(244,162,97,0.35); border-radius: var(--radius);
+            padding: 12px 16px; margin-bottom: 12px; font-size: 0.82rem; color: var(--gold);
+        }
+        .review-banner.active { display: flex; align-items: flex-start; gap: 10px; }
+        .review-legend { display: flex; gap: 14px; margin-top: 6px; flex-wrap: wrap; }
+        .review-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--muted); }
+        .review-dot { width: 14px; height: 4px; border-radius: 2px; }
+        .btn-clear-hl { margin-left: auto; background: none; border: 1px solid rgba(244,162,97,0.4); color: var(--gold); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -604,9 +634,28 @@
                     <div class="meta-badge" id="lineCount">0 linhas</div>
                     <div class="meta-badge" id="charCount">0 caracteres</div>
                 </div>
-                <textarea id="essayText"
-                    placeholder="Cole ou escreva sua redação aqui..."
-                    oninput="updateMeta()"></textarea>
+                <!-- Banner de revisão OCR -->
+                <div class="review-banner" id="reviewBanner">
+                    <div style="flex:1">
+                        <b>⚠️ Revisão necessária</b> — o OCR pode ter erros. Verifique os trechos marcados antes de corrigir.
+                        <div class="review-legend">
+                            <div class="review-legend-item"><div class="review-dot" style="background:var(--gold)"></div> Palavra suspeita</div>
+                            <div class="review-legend-item"><div class="review-dot" style="background:var(--accent)"></div> Possível erro grave</div>
+                            <span id="suspectCount" style="color:var(--muted); font-size:0.75rem;"></span>
+                        </div>
+                    </div>
+                    <button class="btn-clear-hl" onclick="clearHighlights()">✕ Limpar marcações</button>
+                </div>
+
+                <!-- Editor com overlay de highlight -->
+                <div id="highlight-wrap" class="active">
+                    <div id="highlight-overlay"></div>
+                    <textarea id="essayText"
+                        placeholder="Cole ou escreva sua redação aqui..."
+                        oninput="updateMeta(); syncHighlight()"
+                        onscroll="syncScroll()"
+                        class="with-highlight"></textarea>
+                </div>
                 <div class="btn-group">
                     <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">
                         ⚡ Corrigir Agora
@@ -1073,6 +1122,98 @@ function renderCrits(n) {
     ).join('');
 }
 
+/* ── OCR HIGHLIGHT ──────────────────────────────────── */
+let highlightActive = false;
+
+function applyOcrHighlights(rawText) {
+    // Extract [[word]] markers from OCR output
+    const plainText = rawText.replace(/\[\[([^\]]+)\]\]/g, '$1');
+    const ta = document.getElementById('essayText');
+    ta.value = plainText;
+
+    // Find all suspect positions
+    const suspects = [];
+    const regex = /\[\[([^\]]+)\]\]/g;
+    let match;
+    let offset = 0;
+    let searchText = rawText;
+    let plainOffset = 0;
+
+    // Rebuild mapping: position in plain text → suspect
+    const tempText = rawText;
+    let plain = '';
+    let i = 0;
+    while (i < tempText.length) {
+        if (tempText[i] === '[' && tempText[i+1] === '[') {
+            const end = tempText.indexOf(']]', i);
+            if (end > i) {
+                const word = tempText.slice(i+2, end);
+                const isIlegivel = word === 'ilegível';
+                suspects.push({ start: plain.length, end: plain.length + word.length, type: isIlegivel ? 'error' : 'suspect' });
+                plain += word;
+                i = end + 2;
+                continue;
+            }
+        }
+        plain += tempText[i];
+        i++;
+    }
+
+    if (suspects.length > 0) {
+        highlightActive = true;
+        renderHighlightOverlay(plainText, suspects);
+        document.getElementById('reviewBanner').classList.add('active');
+        document.getElementById('suspectCount').textContent =
+            suspects.length + ' trecho' + (suspects.length > 1 ? 's' : '') + ' para revisar';
+    } else {
+        highlightActive = false;
+        document.getElementById('highlight-overlay').innerHTML = '';
+        document.getElementById('reviewBanner').classList.remove('active');
+    }
+}
+
+function renderHighlightOverlay(text, suspects) {
+    let html = '';
+    let pos = 0;
+    for (const s of suspects) {
+        // Escape HTML for text before suspect
+        html += escHtml(text.slice(pos, s.start));
+        html += `<mark class="hl-${s.type}">${escHtml(text.slice(s.start, s.end))}</mark>`;
+        pos = s.end;
+    }
+    html += escHtml(text.slice(pos));
+    document.getElementById('highlight-overlay').innerHTML = html;
+    syncScroll();
+}
+
+function escHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function syncHighlight() {
+    if (!highlightActive) return;
+    const ta = document.getElementById('essayText');
+    const overlay = document.getElementById('highlight-overlay');
+    // Re-render overlay with current text (marks removed on edit)
+    // Simple approach: just sync scroll
+    syncScroll();
+}
+
+function syncScroll() {
+    const ta = document.getElementById('essayText');
+    const overlay = document.getElementById('highlight-overlay');
+    overlay.scrollTop = ta.scrollTop;
+    overlay.scrollLeft = ta.scrollLeft;
+}
+
+function clearHighlights() {
+    highlightActive = false;
+    document.getElementById('highlight-overlay').innerHTML = '';
+    document.getElementById('reviewBanner').classList.remove('active');
+    // Re-sync textarea background
+    document.getElementById('highlight-wrap').style.background = '';
+}
+
 /* ── WORD COUNT ──────────────────────────────────── */
 function updateMeta() {
     const txt = document.getElementById('essayText').value;
@@ -1182,7 +1323,7 @@ async function doOcrAI(btn, prog, bar, msg) {
                             },
                             {
                                 type: 'text',
-                                text: 'Transcreva o texto manuscrito desta folha de redação do ENEM com máxima fidelidade.\n\nREGRAS OBRIGATÓRIAS:\n- Transcreva palavra por palavra, exatamente como escrito, preservando erros ortográficos e gramaticais do autor\n- Quando uma palavra for difícil de ler, tente sua melhor leitura baseada no contexto — nunca substitua por outra palavra\n- NÃO corrija, NÃO parafraseie, NÃO resuma, NÃO omita trechos\n- Preserve a estrutura de parágrafos com quebras de linha\n- Se uma palavra for absolutamente ilegível, escreva [ilegível]\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'
+                                text: 'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- Se uma palavra for difícil de ler, transcreva sua melhor leitura e marque-a entre colchetes duplos: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários'
                             }
                         ]
                     }
@@ -1214,13 +1355,13 @@ async function doOcrAI(btn, prog, bar, msg) {
 
         bar.style.width = '100%';
         msg.textContent = 'Transcrição concluída!';
-        document.getElementById('essayText').value = text;
+        applyOcrHighlights(text);
         updateMeta();
 
         setTimeout(() => {
             prog.style.display = 'none';
             btn.disabled = false;
-            showToast('Texto extraído pelo Qwen! Revise no editor.', 'success');
+            showToast('Texto extraído! Palavras suspeitas marcadas em laranja.', 'success');
             showTab('editor');
         }, 700);
 
