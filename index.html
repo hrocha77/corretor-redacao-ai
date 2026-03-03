@@ -1182,13 +1182,21 @@ async function doOcrAI(btn, prog, bar, msg) {
                             },
                             {
                                 type: 'text',
-                                text: 'Transcreva exatamente o texto manuscrito desta folha de redação do ENEM, linha por linha, sem corrigir erros ortográficos ou gramaticais, sem comentários. Retorne apenas o texto transcrito.'
+                                text: 'Transcreva o texto manuscrito desta folha de redação do ENEM com máxima fidelidade.
+
+REGRAS OBRIGATÓRIAS:
+- Transcreva palavra por palavra, exatamente como escrito, preservando erros ortográficos e gramaticais do autor
+- Quando uma palavra for difícil de ler, tente sua melhor leitura baseada no contexto — nunca substitua por outra palavra
+- NÃO corrija, NÃO parafraseie, NÃO resuma, NÃO omita trechos
+- Preserve a estrutura de parágrafos com quebras de linha
+- Se uma palavra for absolutamente ilegível, escreva [ilegível]
+- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'
                             }
                         ]
                     }
                 ],
                 temperature: 0.1,
-                max_tokens: 2000
+                max_tokens: 3500
             }),
             signal: AbortSignal.timeout(180000)
         });
@@ -1283,8 +1291,8 @@ function testConnection() {
     return isValid;
 }
 
-/* ── CORREÇÃO ────────────────────────────────────── */
-async function startCorrection() {
+/* ── CORREÇÃO ────────────────────────────────────── */max_tokens: 3500
+        ection() {
     const txt = document.getElementById('essayText').value.trim();
     if (!txt) { showToast('Cole sua redação antes de corrigir!', 'error'); return; }
     if (!config.apiUrl) {
@@ -1469,7 +1477,7 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                             { role: 'user',   content: txt }
                         ],
                         temperature: config.temp,
-                        max_tokens: 2500
+                        max_tokens: 3500
                     }),
                     signal: AbortSignal.timeout(120000)
                 });
@@ -1497,17 +1505,46 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                 try {
                     parsed = JSON.parse(match[0]);
                 } catch(jsonErr) {
-                    // JSON truncado — extrai campos individualmente com regex
+                    // JSON truncado — tenta recuperar campos individualmente
                     logError(`C${i} — JSON truncado, extraindo campos manualmente...`);
                     parsed = {};
+
+                    // Score
                     const scoreMatch = match[0].match(/"c\d_score"\s*:\s*(\d+)/);
-                    const posMatch   = match[0].match(/"c\d_pos"\s*:\s*"([^"]*?)(?:"|$)/s);
-                    const impMatch   = match[0].match(/"c\d_imp"\s*:\s*"([^"]*?)(?:"|$)/s);
-                    const dedMatch   = match[0].match(/"c\d_ded"\s*:\s*"([^"]*?)(?:"|$)/s);
                     if (scoreMatch) parsed[`c${i}_score`] = parseInt(scoreMatch[1]);
-                    if (posMatch)   parsed[`c${i}_pos`]   = posMatch[1];
-                    if (impMatch)   parsed[`c${i}_imp`]   = impMatch[1];
-                    if (dedMatch)   parsed[`c${i}_ded`]   = dedMatch[1] + (dedMatch[0].endsWith('"') ? '' : '... [truncado]');
+
+                    // Pos e imp (strings simples)
+                    const posMatch = match[0].match(/"c\d_pos"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+                    const impMatch = match[0].match(/"c\d_imp"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+                    if (posMatch) parsed[`c${i}_pos`] = posMatch[1];
+                    if (impMatch) parsed[`c${i}_imp`] = impMatch[1];
+
+                    // Ded — pode ser objeto JSON ou string
+                    const dedObjIdx = match[0].indexOf(`"c${i}_ded"`);
+                    if (dedObjIdx >= 0) {
+                        const afterDed = match[0].slice(dedObjIdx);
+                        const dedValStart = afterDed.indexOf(':') + 1;
+                        const dedStr = afterDed.slice(dedValStart).trim();
+                        if (dedStr.startsWith('{')) {
+                            // Tenta parsear o objeto ded diretamente
+                            // Conta chaves para encontrar o fim do objeto
+                            let depth = 0, di = 0, dedEnd = -1;
+                            for (di = 0; di < dedStr.length; di++) {
+                                if (dedStr[di] === '{') depth++;
+                                else if (dedStr[di] === '}') { depth--; if (depth === 0) { dedEnd = di; break; } }
+                            }
+                            const dedRaw = dedEnd > 0 ? dedStr.slice(0, dedEnd + 1) : dedStr;
+                            try {
+                                parsed[`c${i}_ded`] = JSON.parse(dedRaw);
+                            } catch(e2) {
+                                parsed[`c${i}_ded`] = '(detalhes truncados — aumente max_tokens)';
+                            }
+                        } else if (dedStr.startsWith('"')) {
+                            const strMatch = dedStr.match(/^"((?:[^"\\]|\\.)*)"/s);
+                            parsed[`c${i}_ded`] = strMatch ? strMatch[1] : '(truncado)';
+                        }
+                    }
+
                     if (!parsed[`c${i}_score`] && parsed[`c${i}_score`] !== 0)
                         throw new Error(`Não foi possível extrair nota do JSON truncado.`);
                 }
