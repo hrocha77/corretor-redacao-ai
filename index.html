@@ -453,6 +453,38 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--surface); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        /* ── BREAKDOWN TABLE ─────────────────── */
+        .breakdown-table { width:100%; border-collapse:collapse; }
+        .breakdown-table th {
+            font-size:0.7rem; font-weight:700; letter-spacing:0.8px;
+            text-transform:uppercase; color:var(--muted);
+            padding:8px 12px; text-align:left;
+            border-bottom:1px solid var(--border);
+        }
+        .breakdown-table th:nth-child(2),.breakdown-table td:nth-child(2){ text-align:center; }
+        .breakdown-table th:last-child,.breakdown-table td:last-child{ text-align:right; }
+        .breakdown-table td {
+            padding:9px 12px; font-size:0.83rem; vertical-align:top;
+            border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text);
+        }
+        .breakdown-table tr:last-child td { border-bottom:none; }
+        .breakdown-table tr:hover td { background:rgba(255,255,255,0.02); }
+        .bd-name { font-weight:600; }
+        .bd-obs { font-size:0.74rem; color:var(--muted); margin-top:3px; font-style:italic; }
+        .bd-badge {
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:26px; height:22px; padding:0 8px;
+            border-radius:100px; font-size:0.74rem; font-weight:800;
+        }
+        .bd-badge.red { background:rgba(230,57,70,0.15); color:var(--accent2); border:1px solid rgba(230,57,70,0.3); }
+        .bd-badge.green { background:rgba(46,196,182,0.1); color:var(--success); border:1px solid rgba(46,196,182,0.3); }
+        .bd-pts { font-weight:800; font-size:0.85rem; color:var(--accent2); }
+        .bd-pts.zero { color:var(--success); }
+        .bd-footer td { font-weight:700; border-top:1px solid var(--border) !important; padding-top:10px !important; }
+        .bd-total { color:var(--accent); font-size:0.9rem; font-weight:800; }
+        .field-pos .field-label::before { background:var(--success); }
+        .field-ded .field-label::before { background:var(--accent); }
     </style>
 </head>
 <body>
@@ -651,13 +683,9 @@
                         <div class="feedback-box empty" id="impBox">Aguardando correção...</div>
                     </div>
 
-                    <div class="deducoes-section">
-                        <div class="field-label" style="margin-bottom:10px;">
-                            <span style="color:var(--accent);">●</span> Onde perdeu pontos
-                        </div>
-                        <div id="perdeBox">
-                            <div class="feedback-box empty" id="dedBox">Aguardando correção...</div>
-                        </div>
+                     <div class="feedback-section field-ded">
+                        <div class="field-label">Onde perdeu pontos</div>
+                        <div id="dedBox" class="feedback-box empty">Aguardando correção...</div>
                     </div>
                 </div>
 
@@ -903,32 +931,130 @@ function setComp(n) {
     const impBox = document.getElementById('impBox');
     posBox.innerText = pos || 'Aguardando correção...';
     posBox.classList.toggle('empty', !pos);
-    if (imp) {
-        const impItems = imp.split('|').map(s => s.trim()).filter(Boolean);
-        impBox.innerHTML = impItems.length > 1
-            ? impItems.map(it => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;"><span style="color:var(--success);flex-shrink:0;">→</span><span>${it}</span></div>`).join('')
-            : imp;
-        impBox.classList.remove('empty');
-    } else {
-        impBox.innerText = 'Aguardando correção...';
-        impBox.classList.add('empty');
-    }
+    impBox.innerText = imp || 'Aguardando correção...';
+    impBox.classList.toggle('empty', !imp);
 
     // Onde perdeu pontos
     const ded = feedbackData[`c${n}_ded`];
     const dedBox = document.getElementById('dedBox');
     if (dedBox) {
-        if (ded) {
-            const items = ded.split('|').map(s => s.trim()).filter(Boolean);
-            dedBox.innerHTML = items.length > 1
-                ? items.map(it => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;"><span style="color:var(--accent);flex-shrink:0;">▸</span><span>${it}</span></div>`).join('')
-                : ded;
-            dedBox.classList.remove('empty');
-        } else {
-            dedBox.innerText = 'Aguardando correção...';
+        if (!ded) {
+            dedBox.innerHTML = 'Aguardando correção...';
             dedBox.classList.add('empty');
+        } else {
+            dedBox.classList.remove('empty');
+            dedBox.style.padding = '0';
+            dedBox.style.background = 'transparent';
+            dedBox.style.border = 'none';
+            dedBox.innerHTML = renderDedTable(n, ded);
         }
     }
+}
+
+function renderDedTable(comp, ded) {
+    // Label maps per competency
+    const LABELS = {
+        1: {
+            falhas_sintaticas:    'Falhas sintáticas',
+            desvios_ortografia:   'Ortografia',
+            desvios_pontuacao:    'Pontuação',
+            desvios_concordancia: 'Concordância',
+            desvios_regencia:     'Regência',
+            desvios_vocabulario:  'Vocabulário',
+            outros_desvios:       'Outros desvios'
+        },
+        2: {
+            abordagem_tema:        'Abordagem do tema',
+            estrutura_dissertativa:'Estrutura dissertativa',
+            partes_embrionarias:   'Partes embrionárias',
+            repertorio_legitimado: 'Repertório legitimado',
+            repertorio_pertinente: 'Repertório pertinente',
+            repertorio_produtivo:  'Repertório produtivo'
+        },
+        3: {
+            tese_antecipacao:      'Tese por antecipação',
+            dois_temas_problema:   'Dois temas-problema',
+            palavras_chave:        'Palavras-chave do tema',
+            argumentos_relacionados:'Argumentos relacionados',
+            repertorio_demonstrado:'Repertório demonstrado',
+            marcadores_opiniao:    'Marcadores de opinião',
+            incoerencias:          'Incoerências/contradições',
+            proposta_resolve_temas:'Proposta resolve os temas'
+        },
+        4: {
+            conectivos_inadequados: 'Conectivos inadequados',
+            conectivos_repetidos:   'Conectivos repetidos',
+            paragrafos_sem_operador:'Parágrafos sem operador',
+            retomada_inadequada:    'Retomada inadequada',
+            repeticao_lexical:      'Repetição lexical'
+        },
+        5: {
+            agente:      'Agente',
+            acao:        'Ação',
+            modo_meio:   'Modo / Meio',
+            finalidade:  'Finalidade',
+            detalhamento:'Detalhamento'
+        }
+    };
+
+    const labels = LABELS[comp] || {};
+    let rows = '';
+    let totalPts = 0;
+    let totalFalhas = 0;
+
+    // If ded is a string (fallback), show as text
+    if (typeof ded === 'string') {
+        return `<div class="feedback-box" style="white-space:pre-wrap">${ded}</div>`;
+    }
+
+    for (const [key, val] of Object.entries(ded)) {
+        const label = labels[key] || key.replace(/_/g,' ');
+        const pts = val.pts_perdidos || 0;
+        const obs = val.exemplos || val.obs || '';
+        totalPts += pts;
+
+        let badgeHtml = '';
+        if ('falhas' in val) {
+            const f = val.falhas || 0;
+            totalFalhas += f;
+            badgeHtml = `<span class="bd-badge ${f===0?'green':'red'}">${f} ${f===1?'falha':'falhas'}</span>`;
+        } else if ('ok' in val) {
+            badgeHtml = `<span class="bd-badge ${val.ok?'green':'red'}">${val.ok?'✓ OK':'✗ Falhou'}</span>`;
+        }
+
+        rows += `<tr>
+            <td>
+                <div class="bd-name">${label}</div>
+                ${obs ? `<div class="bd-obs">"${obs.slice(0,120)}${obs.length>120?'…':''}"</div>` : ''}
+            </td>
+            <td>${badgeHtml}</td>
+            <td><span class="bd-pts ${pts===0?'zero':''}">−${pts} pts</span></td>
+        </tr>`;
+    }
+
+    const hasFalhas = Object.values(ded).some(v => 'falhas' in v);
+
+    return `<div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        <table class="breakdown-table">
+            <thead>
+                <tr>
+                    <th>Elemento</th>
+                    <th>${hasFalhas ? 'Ocorrências' : 'Status'}</th>
+                    <th>Pts perdidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+            <tfoot>
+                <tr class="breakdown-footer">
+                    <td>Total</td>
+                    <td>${hasFalhas ? `<span class="bd-badge ${totalFalhas===0?'green':'red'}">${totalFalhas}</span>` : ''}</td>
+                    <td><span class="bd-total-pts">−${totalPts} pts</span></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>`;
 }
 
 
@@ -1210,107 +1336,115 @@ async function startCorrection() {
         const tema = document.getElementById('temaInput').value.trim();
         const temaInfo = tema ? `\nTema da proposta de redação: "${tema}"` : '';
 
+
+        const CALIBRACAO = `
+=== RÉGUA DE CALIBRAÇÃO — CRITÉRIOS OFICIAIS ENEM ===
+
+ESCALA DE NOTAS (por competência): 0 | 40 | 80 | 120 | 160 | 200
+
+RIGOR NA ATRIBUIÇÃO:
+- 200 pts → redação SEM falhas identificáveis na competência avaliada
+- 160 pts → redação com 1 falha leve ou 1 critério não totalmente cumprido
+- 120 pts → redação com 2-3 falhas moderadas ou estrutura parcialmente inadequada
+- 80 pts  → redação com várias falhas ou descumprimento de critérios centrais
+- 40 pts  → redação que tangencia ou falha gravemente na competência
+- 0 pts   → ausência total de domínio da competência
+
+NUNCA atribua 200 pts se houver qualquer falha identificável.
+NUNCA atribua 160 pts se houver mais de 1 problema.
+Redações comuns de estudantes raramente merecem 200 pts — seja criterioso.
+Aplique os critérios oficiais com rigor, não com generosidade.
+=== FIM DA RÉGUA ===`;
+
         const PROMPTS = {
             1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência I (Domínio da norma-padrão) da redação abaixo.
+${CALIBRACAO}
+Avalie APENAS a Competência I da redação abaixo, seguindo os critérios oficiais do ENEM.
 
-CRITÉRIOS DE PONTUAÇÃO:
-- 200pts: no máximo 1 falha sintática e/ou 2 desvios de escrita
-- 160pts: até 2 falhas sintáticas e/ou até 5 desvios
-- 120pts: até 4 falhas sintáticas e/ou até 6 desvios distintos
-- 80pts: até 5 falhas sintáticas e/ou mais de 6 desvios distintos com mais de 3 ocorrências em algum desvio
-- 40pts: mais de 6 falhas sintáticas ou mais de 6 desvios com mais de 3 ocorrências
-- 0pts: sem estrutura sintática de acordo com a norma-padrão
+CRITÉRIOS C1:
+- 200pts: máx 1 falha sintática E/OU máx 2 desvios de escrita
+- 160pts: até 2 falhas sintáticas E/OU até 5 desvios
+- 120pts: até 4 falhas sintáticas E/OU até 6 desvios distintos
+- 80pts: até 5 falhas sintáticas E/OU mais de 6 desvios distintos com mais de 3 recorrências
+- 40pts: mais de 6 falhas sintáticas OU mais de 6 desvios com mais de 3 recorrências
+- 0pts: sem estrutura sintática conforme norma-padrão
 
-FALHAS SINTÁTICAS: truncamento/fragmentação de período, uso inadequado de pontuação, justaposição/encadeamento excessivo de vírgulas, parágrafo com apenas um período, termo sintático faltando/sobrando/duplicado, construção confusa.
-DESVIOS DE ESCRITA: grafia incorreta, acento incorreto, uso inadequado de maiúsculas/minúsculas, translineação inadequada, uso inadequado de hífen, sujeito preposicionado, falta de paralelismo, colocação pronominal inadequada, uso inadequado de pronome/pronome relativo/crase, desvio de regência verbal/nominal, desvio de concordância verbal/nominal, tempo/modo verbal inadequado, vocabulário impreciso/informal/conotativo.
+FALHAS SINTÁTICAS: truncamento/fragmentação de período, pontuação inadequada, justaposição excessiva, termo faltando/sobrando, construção confusa.
+DESVIOS DE ESCRITA: ortografia, acentuação, concordância, regência, pronomes, crase, vocabulário informal, translineação, maiúsculas/minúsculas.
 
-No campo c1_imp: indique AÇÕES CONCRETAS e específicas para melhorar, como por exemplo corrigir a regência do verbo X, substituir a vírgula por ponto-e-vírgula em Y, rever a concordância nominal de Z. Máximo 3 ações diretas.
-No campo c1_ded: liste no máximo 5 erros encontrados no formato "trecho problemático = tipo de erro".
-
-Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos fortes da norma-padrão>", "c1_imp": "<ação 1 | ação 2 | ação 3>", "c1_ded": "<trecho = erro | trecho = erro | trecho = erro>"}`,
+No campo "c1_ded" retorne objeto JSON com falhas por categoria.
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos positivos>", "c1_imp": "<como melhorar>", "c1_ded": {"falhas_sintaticas": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
 
             2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência II (Compreensão do tema e gênero dissertativo-argumentativo) da redação abaixo.${tema ? ` Tema: "${tema}".` : ''}
+${CALIBRACAO}
+Avalie APENAS a Competência II da redação abaixo.${tema ? `\nTema: "${tema}".` : ''}
 
-CRITÉRIOS DE PONTUAÇÃO:
-- 200pts: abordagem completa do tema, introdução/desenvolvimento/conclusão bem desenvolvidas (nenhuma embrionária), repertório legítimo, pertinente e produtivo
-- 160pts: estrutura completa e bem desenvolvida, mas repertório legítimo porém pouco produtivo
-- 120pts: abordagem completa mas uma parte embrionária OU repertório não legitimado/impertinente. Teto: 120 se as três partes não forem bem evidentes ou repertórios parecerem copiados/genéricos
-- 80pts: duas partes embrionárias ou conclusão com frase incompleta. Teto: 80 se trechos copiados da internet em mais de duas partes
-- 40pts: tangenciamento do tema ou aglomerado caótico de frases
+CRITÉRIOS C2:
+- 200pts: abordagem completa, 3 partes desenvolvidas, repertório legítimo + pertinente + produtivo
+- 160pts: igual mas repertório não produtivo
+- 120pts: 1 parte embrionária, ou repertório não legitimado/pertinente — repertório genérico/copiado limita a 120
+- 80pts: 2 partes embrionárias — trechos copiados da internet limita a 80
+- 40pts: tangenciamento, aglomerado caótico, tipos textuais não argumentativos
+- 0pts: fuga ao tema
 
-ESTRUTURA ESPERADA: Introdução (contextualização + tese por antecipação), Desenvolvimento 1 (tópico frasal + fundamentação + fechamento), Desenvolvimento 2 (igual), Conclusão (retomada + proposta de intervenção com 5 elementos).
-REPERTÓRIO PRODUTIVO: usado para fundamentar causa e consequência, relacionado ao tema, não apenas como citação decorativa.
-
-No campo c2_imp: indique AÇÕES CONCRETAS e específicas, como por exemplo desenvolver a conclusão que está embrionária adicionando proposta de intervenção, conectar o repertório de X à tese explicitando sua relação com o tema. Máximo 3 ações diretas.
-No campo c2_ded: liste no máximo 3 problemas estruturais encontrados.
-
-Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos fortes de estrutura e tema>", "c2_imp": "<ação 1 | ação 2 | ação 3>", "c2_ded": "<problema 1 | problema 2 | problema 3>"}`,
+No campo "c2_ded" retorne objeto JSON (ok=bool, pts_perdidos=int, obs=trecho).
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos positivos>", "c2_imp": "<como melhorar>", "c2_ded": {"abordagem_tema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "estrutura_dissertativa": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "partes_embrionarias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_legitimado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_pertinente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_produtivo": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
 
             3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência III (Seleção e organização das informações) da redação abaixo.
+${CALIBRACAO}
+Avalie APENAS a Competência III da redação abaixo.
 
-CRITÉRIOS DE PONTUAÇÃO:
-- 200pts: projeto estratégico (4 parágrafos, tese por antecipação com 2 temas-problema, desenvolvimento de cada tema em parágrafo próprio), palavras-chave usadas pertinentemente, argumentos bem relacionados, repertório com demonstração/relação direta com o tema, fatos e opiniões fundamentados, propostas de intervenção resolvem os 2 temas-problema
-- 160pts: projeto estratégico com poucas falhas, tese pouco clara mas 2 temas-problema, falta fundamentação em uma parte, lacunas pontuais
-- 120pts: tese confusa, argumentos poucos relacionados, repertório sem demonstração em um caso, algumas incoerências/generalizações. Teto: 120 se repertório for pouco pertinente/copiado
-- 80pts: sem tese clara, apenas 1 tema-problema, argumentos quase sem relação, muita incoerência/contradição. Teto: 80 se contradição grave ou apenas 1 tema-problema
-- 40pts: tangencia o tema, sem estrutura definida
+CRITÉRIOS C3:
+- 200pts: 4 parágrafos, tese com 2 temas-problema, palavras-chave em todas as partes, repertórios com demonstração, sem incoerências, propostas resolvem ambos os temas
+- 160pts: projeto com poucas falhas, tese pouco clara mas 2 temas, falta demonstração em 1 repertório
+- 120pts: tese confusa, argumentos pouco relacionados, alguma incoerência — repertório copiado/genérico limita a 120
+- 80pts: sem 4 parágrafos, sem tese ou só 1 tema-problema, muita incoerência/contradição — contradição grave limita a 80
+- 40pts: tangencia o tema, sem estrutura definida, argumentos não relacionados
+- 0pts: aglomerado caótico
 
-PROJETO ESTRATÉGICO: parágrafo 1 apresenta 2 temas-problema como causas do tema; parágrafo 2 desenvolve tema-problema 1; parágrafo 3 desenvolve tema-problema 2; parágrafo 4 propõe intervenção para os 2 temas.
-
-No campo c3_imp: indique AÇÕES CONCRETAS e específicas, como por exemplo reformular a tese para apresentar 2 temas-problema explícitos, adicionar marcadores de opinião no parágrafo 2, conectar o repertório de X ao tema-problema demonstrando sua relação causal. Máximo 3 ações diretas.
-No campo c3_ded: liste no máximo 3 falhas do projeto argumentativo encontradas.
-
-Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos fortes da argumentação>", "c3_imp": "<ação 1 | ação 2 | ação 3>", "c3_ded": "<falha 1 | falha 2 | falha 3>"}`,
+No campo "c3_ded" retorne objeto JSON (ok=bool, pts_perdidos=int, obs=trecho).
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos positivos>", "c3_imp": "<como melhorar>", "c3_ded": {"tese_antecipacao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "dois_temas_problema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "palavras_chave": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "argumentos_relacionados": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_demonstrado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "marcadores_opiniao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "incoerencias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "proposta_resolve_temas": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
 
             4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência IV (Coesão textual) da redação abaixo.
+${CALIBRACAO}
+Avalie APENAS a Competência IV da redação abaixo.
 
-CRITÉRIOS DE PONTUAÇÃO:
-- 200pts: uso expressivo de coesivos, relações lógico-semânticas adequadas em todas as conexões, parágrafos 2/3/4 iniciados com operador argumentativo adequado, retomadas variadas e corretas
-- 160pts: uso constante mas com até 2 repetições de conectivo. Teto 160: qualquer relação lógico-semântica inadequada, parágrafo 2 sem operador argumentativo, retomada inadequada
-- 120pts: uso regular com algumas repetições. Teto 120: mesmo conectivo usado 3+ vezes, 2 relações lógico-semânticas inadequadas, apenas 1 parágrafo com operador argumentativo
-- 80pts: uso pontual com muitas repetições. Teto 80: mesmo conectivo 5+ vezes, 3 relações inadequadas, nenhum parágrafo com operador argumentativo, texto em 1 único parágrafo
-- 40pts: uso raro com repetições excessivas, 3+ relações inadequadas
+CRITÉRIOS C4:
+- 200pts: operadores argumentativos expressivos e variados, parágrafos 2/3/4 iniciam com operador, todos os conectivos com relação lógica adequada, retomadas variadas com poucas repetições
+- 160pts: 3+ repetições em 5 linhas, ou 1 conectivo inadequado, ou parágrafo 2 sem operador, ou retomada inadequada
+- 120pts: mesmo conectivo 3+ vezes, ou 2 conectivos inadequados, ou só 1 parágrafo com operador, ou 2 retomadas inadequadas
+- 80pts: mesmo conectivo 5+ vezes, ou 3 conectivos inadequados, ou nenhum parágrafo com operador, ou redação em parágrafo único
+- 40pts: conectivo usado constantemente, ou 3+ conectivos inadequados
 - 0pts: ausência total de articulação coesiva
 
-MECANISMOS COESIVOS DE RETOMADA: pronomes, sinonímia, hiperonímia, hiponímia, elipse, repetição de partes de expressões.
-OPERADORES ARGUMENTATIVOS: conjunções e conectivos que expressam reforço, adição, exemplificação, comparação, justificativa, consequência, concessão, contraposição, finalidade, conformidade, tempo, modo.
-
-No campo c4_imp: indique AÇÕES CONCRETAS e específicas, como por exemplo substituir as 4 ocorrências de "além disso" por conectivos variados (outrossim, ademais, somado a isso), iniciar o parágrafo 3 com operador argumentativo de contraposição, substituir a repetição do nome X por pronome ou sinônimo. Máximo 3 ações diretas.
-No campo c4_ded: liste no máximo 4 problemas de coesão encontrados no texto.
-
-Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos fortes da coesão>", "c4_imp": "<ação 1 | ação 2 | ação 3>", "c4_ded": "<problema 1 | problema 2 | problema 3 | problema 4>"}`,
+No campo "c4_ded" retorne objeto JSON (falhas=int, pts_perdidos=int, exemplos=trechos).
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos positivos>", "c4_imp": "<como melhorar>", "c4_ded": {"conectivos_inadequados": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "conectivos_repetidos": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "paragrafos_sem_operador": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "retomada_inadequada": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "repeticao_lexical": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
 
             5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência V (Proposta de intervenção) da redação abaixo.
+${CALIBRACAO}
+Avalie APENAS a Competência V da redação abaixo.
 
-CRITÉRIOS DE PONTUAÇÃO (baseados nos 5 elementos: agente, ação, modo/meio, finalidade, detalhamento):
-- 200pts: proposta para os 2 temas-problema, todos os 5 elementos válidos, reconhecíveis e articulados
-- 160pts: proposta para os 2 temas-problema, 4 dos 5 elementos válidos e articulados
-- 120pts: proposta para os 2 temas-problema, 3 dos 5 elementos válidos e articulados
-- 80pts: proposta para os 2 temas-problema, 2 dos 5 elementos válidos. Teto 80: elementos apresentados via estruturas condicionais, hipotéticas ou verbos abstratos
-- 40pts: tangencia o tema, contradiz o projeto de texto, ou apenas 1 elemento válido
-- 0pts: proposta ausente, fere direitos humanos ou não relacionada ao tema
+CRITÉRIOS C5 (5 elementos: agente, ação, modo/meio, finalidade, detalhamento):
+- 200pts: 2 propostas para os 2 temas-problema, todos os 5 elementos válidos e articulados
+- 160pts: 2 propostas, 4 dos 5 elementos válidos
+- 120pts: 2 propostas, 3 dos 5 elementos válidos
+- 80pts: 2 propostas, 2 dos 5 elementos — estruturas condicionais/hipotéticas limita a 80
+- 40pts: tangencia o tema, elementos inválidos ou apenas 1 elemento válido
+- 0pts: proposta ausente, fere direitos humanos, ou não relacionada ao tema
 
-DEFINIÇÕES DOS 5 ELEMENTOS:
-- Agente: substantivo (nome próprio ou comum) na função de sujeito, representando instituição ou cargo, com artigo definido
-- Ação: predicado do agente com verbo de ação concreto
-- Modo/Meio: objeto/complemento do verbo + adjuntos adverbiais de modo, meio ou lugar
-- Finalidade: oração subordinada adverbial com conectivo de finalidade (para que, a fim de)
-- Detalhamento: termo ou oração que elabora/especifica pelo menos um dos outros elementos
+AGENTE: substantivo (instituição/cargo) com artigo definido como sujeito.
+AÇÃO: predicado com verbo de ação.
+MODO/MEIO: objeto + adjuntos adverbiais.
+FINALIDADE: oração com conectivo de finalidade.
+DETALHAMENTO: termo/oração que elabora outro elemento.
 
-No campo c5_imp: indique AÇÕES CONCRETAS e específicas para completar/melhorar a proposta, como por exemplo adicionar o elemento finalidade com "a fim de + objetivo claro", especificar o agente com cargo e artigo definido (ex: "O Ministério da Educação"), trocar o verbo abstrato "promover" por ação concreta como "implementar currículos". Máximo 3 ações diretas.
-No campo c5_ded: indique quais dos 5 elementos estão ausentes ou inadequados na proposta.
-
-Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos fortes da proposta de intervenção>", "c5_imp": "<ação 1 | ação 2 | ação 3>", "c5_ded": "<elemento ausente/inadequado 1 | elemento ausente/inadequado 2>"}`
+No campo "c5_ded" avalie cada um dos 5 elementos.
+Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
+{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos positivos>", "c5_imp": "<como melhorar>", "c5_ded": {"agente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "acao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "modo_meio": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "finalidade": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "detalhamento": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`
         };
 
         const systemPrompt = PROMPTS[i];
@@ -1348,36 +1482,34 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
                 const data = await resp.json();
                 logError(`C${i} — resposta recebida, parseando JSON...`);
 
-                // Suporta Anthropic (data.content[0].text) e OpenAI-compat (data.choices[0].message.content)
-                const raw = data?.content?.[0]?.text
-                         ?? data?.choices?.[0]?.message?.content
-                         ?? '';
-                if (!raw) {
-                    logError(`C${i} — resposta inesperada: ${JSON.stringify(data).slice(0,300)}`);
-                    throw new Error('Resposta sem conteúdo reconhecível da API.');
+                if (!data.choices?.[0]?.message?.content) {
+                    logError(`C${i} — resposta da API: ${JSON.stringify(data).slice(0,300)}`);
+                    throw new Error('Resposta sem conteúdo em choices[0].message.content');
                 }
+
+                const raw = data.choices[0].message.content;
                 logError(`C${i} — conteúdo bruto: ${raw.slice(0, 200)}`);
 
-                // Parser robusto: JSON completo ou extração campo a campo
-                let parsed = null;
-                const jsonMatch = raw.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    try { parsed = JSON.parse(jsonMatch[0]); } catch(_) { parsed = null; }
-                }
-                if (!parsed) {
-                    logError(`C${i} — JSON incompleto/truncado, extraindo campos...`);
+                const match = raw.match(/\{[\s\S]*\}/);
+                if (!match) throw new Error(`JSON não encontrado. Resposta: ${raw.slice(0,200)}`);
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(match[0]);
+                } catch(jsonErr) {
+                    // JSON truncado — extrai campos individualmente com regex
+                    logError(`C${i} — JSON truncado, extraindo campos manualmente...`);
                     parsed = {};
-                    const src = jsonMatch ? jsonMatch[0] : raw;
-                    const sm = src.match(/"c\d_score"\s*:\s*(\d+)/);
-                    const pm = src.match(/"c\d_pos"\s*:\s*"([\s\S]*?)(?:"|(?=\s*,\s*"c\d_))/);
-                    const im = src.match(/"c\d_imp"\s*:\s*"([\s\S]*?)(?:"|(?=\s*,\s*"c\d_))/);
-                    const dm = src.match(/"c\d_ded"\s*:\s*"([\s\S]*?)(?:"|(?=\s*,\s*"c\d_|\s*\}))/);
-                    if (sm) parsed[`c${i}_score`] = parseInt(sm[1]);
-                    if (pm) parsed[`c${i}_pos`] = pm[1].trim();
-                    if (im) parsed[`c${i}_imp`] = im[1].trim();
-                    if (dm) parsed[`c${i}_ded`] = dm[1].trim();
+                    const scoreMatch = match[0].match(/"c\d_score"\s*:\s*(\d+)/);
+                    const posMatch   = match[0].match(/"c\d_pos"\s*:\s*"([^"]*?)(?:"|$)/s);
+                    const impMatch   = match[0].match(/"c\d_imp"\s*:\s*"([^"]*?)(?:"|$)/s);
+                    const dedMatch   = match[0].match(/"c\d_ded"\s*:\s*"([^"]*?)(?:"|$)/s);
+                    if (scoreMatch) parsed[`c${i}_score`] = parseInt(scoreMatch[1]);
+                    if (posMatch)   parsed[`c${i}_pos`]   = posMatch[1];
+                    if (impMatch)   parsed[`c${i}_imp`]   = impMatch[1];
+                    if (dedMatch)   parsed[`c${i}_ded`]   = dedMatch[1] + (dedMatch[0].endsWith('"') ? '' : '... [truncado]');
                     if (!parsed[`c${i}_score`] && parsed[`c${i}_score`] !== 0)
-                        throw new Error(`Não foi possível extrair nota. Resposta: ${raw.slice(0,200)}`);
+                        throw new Error(`Não foi possível extrair nota do JSON truncado.`);
                 }
                 feedbackData = { ...feedbackData, ...parsed };
 
@@ -1419,15 +1551,8 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
     document.getElementById('scoreBanner').style.display = 'flex';
     renderScoreBars();
 
-    // Mantém log visível — adiciona botão para fechar
-    if (errorLog.textContent.trim() && !document.getElementById('logCloseBtn')) {
-        const closeBtn = document.createElement('button');
-        closeBtn.id = 'logCloseBtn';
-        closeBtn.textContent = '✕ Fechar log';
-        closeBtn.style.cssText = 'display:block;margin-top:8px;padding:4px 10px;background:transparent;border:1px solid #ff9999;border-radius:6px;color:#ff9999;cursor:pointer;font-size:0.75rem;';
-        closeBtn.onclick = () => { errorLog.style.display = 'none'; closeBtn.remove(); };
-        errorLog.parentNode.insertBefore(closeBtn, errorLog.nextSibling);
-    }
+    // Esconde log se tudo OK
+    errorLog.style.display = 'none';
 
     await new Promise(r => setTimeout(r, 800));
     document.getElementById('progWrap').style.display = 'none';
