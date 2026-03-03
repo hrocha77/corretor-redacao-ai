@@ -1083,7 +1083,12 @@ function renderDedTable(comp, ded) {
 
     const hasFalhas = Object.values(ded).some(v => 'falhas' in v);
 
+    const actualScore = feedbackData[`c${comp}_score`] || 0;
+    const truePtsLost = 200 - actualScore;
+    const mismatch = totalPts > 0 && totalPts !== truePtsLost;
+
     return `<div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        ${mismatch ? `<div style="padding:8px 12px;font-size:0.74rem;background:rgba(244,162,97,0.08);border-bottom:1px solid rgba(244,162,97,0.2);color:var(--gold);">⚠️ Detalhamento soma ${totalPts}pts mas nota implica ${truePtsLost}pts (200−${actualScore})</div>` : ''}
         <table class="breakdown-table">
             <thead>
                 <tr>
@@ -1099,7 +1104,7 @@ function renderDedTable(comp, ded) {
                 <tr class="breakdown-footer">
                     <td>Total</td>
                     <td>${hasFalhas ? `<span class="bd-badge ${totalFalhas===0?'green':'red'}">${totalFalhas}</span>` : ''}</td>
-                    <td><span class="bd-total-pts">−${totalPts} pts</span></td>
+                    <td><span class="bd-total-pts ${truePtsLost===0?'zero':''}">−${truePtsLost} pts</span></td>
                 </tr>
             </tfoot>
         </table>
@@ -1515,105 +1520,131 @@ NÃO penalize características estilísticas válidas como se fossem erros.
         const PROMPTS = {
             1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
-Avalie APENAS a Competência I da redação abaixo, seguindo os critérios oficiais do ENEM.
+Avalie a Competência I — Norma Culta da redação abaixo.
 
-CRITÉRIOS C1:
-- 200pts: máx 1 falha sintática E/OU máx 2 desvios de escrita
-- 160pts: até 2 falhas sintáticas E/OU até 5 desvios
-- 120pts: até 4 falhas sintáticas E/OU até 6 desvios distintos
-- 80pts: até 5 falhas sintáticas E/OU mais de 6 desvios distintos com mais de 3 recorrências
-- 40pts: mais de 6 falhas sintáticas OU mais de 6 desvios com mais de 3 recorrências
-- 0pts: sem estrutura sintática conforme norma-padrão
+PASSO 1 — CONTE AS FALHAS (seja rigoroso, não invente erros):
+Falhas sintáticas: truncamento, fragmentação, justaposição excessiva, construção truncada.
+Desvios de escrita: ortografia, acentuação, concordância, regência, vocabulário informal.
+NÃO são erros: vocabulário erudito (labor, imperiosa, nebulosidade), inversão sintática formal, nomes de teorias com maiúscula (ex: Instituição Zumbi), orações subordinadas longas bem construídas.
 
-FALHAS SINTÁTICAS: truncamento/fragmentação de período, pontuação inadequada, justaposição excessiva, termo faltando/sobrando, construção confusa.
-DESVIOS DE ESCRITA: ortografia, acentuação, concordância, regência, pronomes, crase, vocabulário informal, translineação, maiúsculas/minúsculas.
+PASSO 2 — DETERMINE A NOTA PELA TABELA ABAIXO (baseada no total de falhas contadas):
+- Total 0 falhas sintáticas E 0-2 desvios → 200pts
+- Total 1-2 falhas sintáticas OU 3-5 desvios → 160pts
+- Total 3-4 falhas sintáticas OU 6-8 desvios → 120pts
+- Total 5-6 falhas sintáticas OU 9+ desvios → 80pts
+- Total 7+ falhas sintáticas → 40pts
+- Sem estrutura → 0pts
 
-ATENÇÃO — NÃO são erros (não penalize):
-- Vocabulário erudito ou técnico correto: "labor", "imperiosa", "nebulosidade", "contingente", "acerca" são português culto válido
-- Maiúsculas em nomes de teorias, termos consagrados ou citações: "Instituição Zumbi" é nome de teoria sociológica — correto com maiúscula
-- Inversão sintática estilística: "faz-se imperiosa a tomada" é construção formal correta
-- Orações subordinadas longas bem construídas não são falha sintática
-- Vírgula antes de oração adverbial não é erro
-- Ponto final após período longo e completo não é falha
-- Apenas contabilize o que é INEQUIVOCAMENTE errado segundo a norma-padrão
+PASSO 3 — CALCULE: pts_perdidos_total = 200 - nota_atribuída
+Distribua esse total proporcionalmente entre as categorias com falhas.
+Se nota=200, todos os pts_perdidos devem ser 0.
 
-No campo "c1_ded" retorne objeto JSON com falhas por categoria.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c1_score": <0,40,80,120,160,200>, "c1_ded": {"falhas_sintaticas": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
+{"c1_score": <nota calculada no passo 2>, "c1_ded": {"falhas_sintaticas": {"falhas": <n contado>, "pts_perdidos": <proporcional>, "exemplos": "<trechos exatos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}}}`,
 
             2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
-Avalie APENAS a Competência II da redação abaixo.${tema ? `\nTema: "${tema}".` : ''}
+Avalie a Competência II — Tema e Repertório.${tema ? `\nTema: "${tema}".` : ''}
 
-CRITÉRIOS C2:
-- 200pts: abordagem completa, 3 partes desenvolvidas, repertório legítimo + pertinente + produtivo
-- 160pts: igual mas repertório não produtivo
-- 120pts: 1 parte embrionária, ou repertório não legitimado/pertinente — repertório genérico/copiado limita a 120
-- 80pts: 2 partes embrionárias — trechos copiados da internet limita a 80
-- 40pts: tangenciamento, aglomerado caótico, tipos textuais não argumentativos
-- 0pts: fuga ao tema
+PASSO 1 — VERIFIQUE CADA CRITÉRIO:
+- abordagem_tema: a redação aborda o tema em todas as partes? (tangenciamento → máx 40pts)
+- estrutura_dissertativa: tem introdução, desenvolvimento e conclusão claros?
+- partes_embrionarias: quantos parágrafos têm menos de 3 linhas? (cada um reduz a nota)
+- repertorio_legitimado: a fonte citada é real, reconhecida academicamente ou culturalmente?
+- repertorio_pertinente: o repertório se relaciona diretamente ao tema?
+- repertorio_produtivo: o repertório é usado para construir o argumento (não só citado)?
 
-IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
-No campo "c2_ded" retorne objeto JSON (ok=bool, pts_perdidos=int, obs=trecho).
+PASSO 2 — DETERMINE A NOTA:
+- Todos ok + repertório produtivo → 200pts
+- Todos ok + repertório não produtivo → 160pts
+- 1 parte embrionária OU repertório não legitimado/pertinente → 120pts
+- 2+ partes embrionárias OU trechos copiados → 80pts
+- Tangenciamento do tema → 40pts
+- Fuga ao tema → 0pts
+
+PASSO 3 — pts_perdidos total = 200 - nota. Distribua entre os critérios que falharam (ok=false).
+Se nota=200, todos pts_perdidos=0.
+
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c2_score": <0,40,80,120,160,200>, "c2_ded": {"abordagem_tema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "estrutura_dissertativa": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "partes_embrionarias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_legitimado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_pertinente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_produtivo": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
+{"c2_score": <nota>, "c2_ded": {"abordagem_tema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "estrutura_dissertativa": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "partes_embrionarias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_legitimado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_pertinente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_produtivo": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
 
             3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
-Avalie APENAS a Competência III da redação abaixo.
+Avalie a Competência III — Projeto de Texto.
 
-CRITÉRIOS C3:
-- 200pts: 4 parágrafos, tese com 2 temas-problema, palavras-chave em todas as partes, repertórios com demonstração, sem incoerências, propostas resolvem ambos os temas
-- 160pts: projeto com poucas falhas, tese pouco clara mas 2 temas, falta demonstração em 1 repertório
-- 120pts: tese confusa, argumentos pouco relacionados, alguma incoerência — repertório copiado/genérico limita a 120
-- 80pts: sem 4 parágrafos, sem tese ou só 1 tema-problema, muita incoerência/contradição — contradição grave limita a 80
-- 40pts: tangencia o tema, sem estrutura definida, argumentos não relacionados
-- 0pts: aglomerado caótico
+PASSO 1 — VERIFIQUE CADA CRITÉRIO:
+- tese_antecipacao: a tese é apresentada no 1º parágrafo de forma clara?
+- dois_temas_problema: a tese contém exatamente 2 problemas a serem desenvolvidos?
+- palavras_chave: as palavras centrais do tema aparecem em todas as partes?
+- argumentos_relacionados: cada argumento se relaciona diretamente ao tema-problema do parágrafo?
+- repertorio_demonstrado: os repertórios são explicados e conectados ao argumento?
+- marcadores_opiniao: há marcadores de autoria (defendo que, acredito, é necessário)?
+- incoerencias: há contradições ou afirmações que se anulam?
+- proposta_resolve_temas: a proposta de intervenção resolve os 2 temas-problema da tese?
 
-IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
-No campo "c3_ded" retorne objeto JSON (ok=bool, pts_perdidos=int, obs=trecho).
+PASSO 2 — DETERMINE A NOTA:
+- Todos ok, projeto estratégico impecável → 200pts
+- 1 critério com falha leve → 160pts
+- 2 critérios com falha OU tese confusa → 120pts
+- 3+ critérios com falha OU sem tese clara → 80pts
+- Sem projeto identificável → 40pts
+- Aglomerado caótico → 0pts
+
+PASSO 3 — pts_perdidos total = 200 - nota. Distribua entre critérios que falharam.
+Se nota=200, todos pts_perdidos=0.
+
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c3_score": <0,40,80,120,160,200>, "c3_ded": {"tese_antecipacao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "dois_temas_problema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "palavras_chave": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "argumentos_relacionados": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_demonstrado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "marcadores_opiniao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "incoerencias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "proposta_resolve_temas": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
+{"c3_score": <nota>, "c3_ded": {"tese_antecipacao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "dois_temas_problema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "palavras_chave": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "argumentos_relacionados": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_demonstrado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "marcadores_opiniao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "incoerencias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "proposta_resolve_temas": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
 
             4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
-Avalie APENAS a Competência IV da redação abaixo.
+Avalie a Competência IV — Coesão Textual.
 
-CRITÉRIOS C4:
-- 200pts: operadores argumentativos expressivos e variados, parágrafos 2/3/4 iniciam com operador, todos os conectivos com relação lógica adequada, retomadas variadas com poucas repetições
-- 160pts: 3+ repetições em 5 linhas, ou 1 conectivo inadequado, ou parágrafo 2 sem operador, ou retomada inadequada
-- 120pts: mesmo conectivo 3+ vezes, ou 2 conectivos inadequados, ou só 1 parágrafo com operador, ou 2 retomadas inadequadas
-- 80pts: mesmo conectivo 5+ vezes, ou 3 conectivos inadequados, ou nenhum parágrafo com operador, ou redação em parágrafo único
-- 40pts: conectivo usado constantemente, ou 3+ conectivos inadequados
-- 0pts: ausência total de articulação coesiva
+PASSO 1 — CONTE/VERIFIQUE:
+- conectivos_inadequados: conectivos usados com sentido errado (ex: "portanto" sem conclusão)
+- conectivos_repetidos: mesmo conectivo usado 3+ vezes no texto inteiro
+- paragrafos_sem_operador: parágrafos 2, 3 ou 4 que NÃO iniciam com operador argumentativo
+- retomada_inadequada: pronome ou sinônimo que não retoma claramente o referente
+- repeticao_lexical: mesma palavra repetida 3+ vezes em 5 linhas
 
-IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
-No campo "c4_ded" retorne objeto JSON (falhas=int, pts_perdidos=int, exemplos=trechos).
+PASSO 2 — DETERMINE A NOTA:
+- Nenhum problema → 200pts
+- 1 problema leve → 160pts
+- 2 problemas OU mesmo conectivo 3x → 120pts
+- 3+ problemas OU parágrafo sem operador → 80pts
+- Conectivo constante OU 3+ conectivos inadequados → 40pts
+- Sem articulação → 0pts
+
+PASSO 3 — pts_perdidos total = 200 - nota. Distribua entre categorias com falhas.
+Se nota=200, todos pts_perdidos=0.
+
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c4_score": <0,40,80,120,160,200>, "c4_ded": {"conectivos_inadequados": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "conectivos_repetidos": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "paragrafos_sem_operador": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "retomada_inadequada": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "repeticao_lexical": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
+{"c4_score": <nota>, "c4_ded": {"conectivos_inadequados": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "conectivos_repetidos": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "paragrafos_sem_operador": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "retomada_inadequada": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "repeticao_lexical": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
 
             5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
-Avalie APENAS a Competência V da redação abaixo.
+Avalie a Competência V — Proposta de Intervenção.
 
-CRITÉRIOS C5 (5 elementos: agente, ação, modo/meio, finalidade, detalhamento):
-- 200pts: 2 propostas para os 2 temas-problema, todos os 5 elementos válidos e articulados
-- 160pts: 2 propostas, 4 dos 5 elementos válidos
-- 120pts: 2 propostas, 3 dos 5 elementos válidos
-- 80pts: 2 propostas, 2 dos 5 elementos — estruturas condicionais/hipotéticas limita a 80
-- 40pts: tangencia o tema, elementos inválidos ou apenas 1 elemento válido
-- 0pts: proposta ausente, fere direitos humanos, ou não relacionada ao tema
+PASSO 1 — IDENTIFIQUE os 5 elementos em CADA proposta de intervenção:
+- agente: substantivo com artigo definido como sujeito (ex: "o Ministério da Educação")
+- acao: verbo de ação como predicado (ex: "deve implementar")
+- modo_meio: como/por qual meio a ação será realizada (ex: "por meio de campanhas")
+- finalidade: para que serve a ação — conectivo de finalidade (ex: "a fim de conscientizar")
+- detalhamento: termo ou oração que especifica/aprofunda outro elemento
 
-AGENTE: substantivo (instituição/cargo) com artigo definido como sujeito.
-AÇÃO: predicado com verbo de ação.
-MODO/MEIO: objeto + adjuntos adverbiais.
-FINALIDADE: oração com conectivo de finalidade.
-DETALHAMENTO: termo/oração que elabora outro elemento.
+PASSO 2 — DETERMINE A NOTA (cada elemento válido = 40pts, máx 200 com 2 propostas):
+- 2 propostas com todos os 5 elementos válidos → 200pts
+- 2 propostas com 4 elementos válidos → 160pts
+- 2 propostas com 3 elementos válidos → 120pts
+- 2 propostas com 2 elementos válidos → 80pts
+- 1 proposta ou elementos inválidos → 40pts
+- Sem proposta ou fere direitos humanos → 0pts
 
-IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
-No campo "c5_ded" avalie cada um dos 5 elementos.
+PASSO 3 — pts_perdidos por elemento: 40 se ausente/inválido, 0 se presente e válido.
+Total pts_perdidos deve ser igual a (200 - c5_score). Se nota=200, todos pts_perdidos=0.
+
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c5_score": <0,40,80,120,160,200>, "c5_ded": {"agente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "acao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "modo_meio": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "finalidade": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "detalhamento": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`
+{"c5_score": <nota>, "c5_ded": {"agente": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho da proposta>"}, "acao": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}, "modo_meio": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}, "finalidade": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}, "detalhamento": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}}}`
         };
 
         const systemPrompt = PROMPTS[i];
