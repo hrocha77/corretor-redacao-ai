@@ -903,8 +903,16 @@ function setComp(n) {
     const impBox = document.getElementById('impBox');
     posBox.innerText = pos || 'Aguardando correção...';
     posBox.classList.toggle('empty', !pos);
-    impBox.innerText = imp || 'Aguardando correção...';
-    impBox.classList.toggle('empty', !imp);
+    if (imp) {
+        const impItems = imp.split('|').map(s => s.trim()).filter(Boolean);
+        impBox.innerHTML = impItems.length > 1
+            ? impItems.map(it => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;"><span style="color:var(--success);flex-shrink:0;">→</span><span>${it}</span></div>`).join('')
+            : imp;
+        impBox.classList.remove('empty');
+    } else {
+        impBox.innerText = 'Aguardando correção...';
+        impBox.classList.add('empty');
+    }
 
     // Onde perdeu pontos
     const ded = feedbackData[`c${n}_ded`];
@@ -1204,34 +1212,105 @@ async function startCorrection() {
 
         const PROMPTS = {
             1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência I da redação abaixo, seguindo os critérios oficiais do ENEM.
-Seja BREVE. No campo c1_ded liste no máximo 5 erros principais separados por | no formato: trecho = tipo (impacto).
+Avalie APENAS a Competência I (Domínio da norma-padrão) da redação abaixo.
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200pts: no máximo 1 falha sintática e/ou 2 desvios de escrita
+- 160pts: até 2 falhas sintáticas e/ou até 5 desvios
+- 120pts: até 4 falhas sintáticas e/ou até 6 desvios distintos
+- 80pts: até 5 falhas sintáticas e/ou mais de 6 desvios distintos com mais de 3 ocorrências em algum desvio
+- 40pts: mais de 6 falhas sintáticas ou mais de 6 desvios com mais de 3 ocorrências
+- 0pts: sem estrutura sintática de acordo com a norma-padrão
+
+FALHAS SINTÁTICAS: truncamento/fragmentação de período, uso inadequado de pontuação, justaposição/encadeamento excessivo de vírgulas, parágrafo com apenas um período, termo sintático faltando/sobrando/duplicado, construção confusa.
+DESVIOS DE ESCRITA: grafia incorreta, acento incorreto, uso inadequado de maiúsculas/minúsculas, translineação inadequada, uso inadequado de hífen, sujeito preposicionado, falta de paralelismo, colocação pronominal inadequada, uso inadequado de pronome/pronome relativo/crase, desvio de regência verbal/nominal, desvio de concordância verbal/nominal, tempo/modo verbal inadequado, vocabulário impreciso/informal/conotativo.
+
+No campo c1_imp: indique AÇÕES CONCRETAS e específicas para melhorar, como por exemplo corrigir a regência do verbo X, substituir a vírgula por ponto-e-vírgula em Y, rever a concordância nominal de Z. Máximo 3 ações diretas.
+No campo c1_ded: liste no máximo 5 erros encontrados no formato "trecho problemático = tipo de erro".
+
 Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<max 2 frases>", "c1_imp": "<max 2 frases>", "c1_ded": "<erro1 | erro2 | erro3>"}`,
+{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos fortes da norma-padrão>", "c1_imp": "<ação 1 | ação 2 | ação 3>", "c1_ded": "<trecho = erro | trecho = erro | trecho = erro>"}`,
 
             2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência II da redação abaixo, seguindo os critérios oficiais do ENEM.${tema ? ` Tema: "${tema}".` : ''}
-Seja BREVE. No campo c2_ded liste no máximo 3 motivos de perda de pontos separados por |.
+Avalie APENAS a Competência II (Compreensão do tema e gênero dissertativo-argumentativo) da redação abaixo.${tema ? ` Tema: "${tema}".` : ''}
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200pts: abordagem completa do tema, introdução/desenvolvimento/conclusão bem desenvolvidas (nenhuma embrionária), repertório legítimo, pertinente e produtivo
+- 160pts: estrutura completa e bem desenvolvida, mas repertório legítimo porém pouco produtivo
+- 120pts: abordagem completa mas uma parte embrionária OU repertório não legitimado/impertinente. Teto: 120 se as três partes não forem bem evidentes ou repertórios parecerem copiados/genéricos
+- 80pts: duas partes embrionárias ou conclusão com frase incompleta. Teto: 80 se trechos copiados da internet em mais de duas partes
+- 40pts: tangenciamento do tema ou aglomerado caótico de frases
+
+ESTRUTURA ESPERADA: Introdução (contextualização + tese por antecipação), Desenvolvimento 1 (tópico frasal + fundamentação + fechamento), Desenvolvimento 2 (igual), Conclusão (retomada + proposta de intervenção com 5 elementos).
+REPERTÓRIO PRODUTIVO: usado para fundamentar causa e consequência, relacionado ao tema, não apenas como citação decorativa.
+
+No campo c2_imp: indique AÇÕES CONCRETAS e específicas, como por exemplo desenvolver a conclusão que está embrionária adicionando proposta de intervenção, conectar o repertório de X à tese explicitando sua relação com o tema. Máximo 3 ações diretas.
+No campo c2_ded: liste no máximo 3 problemas estruturais encontrados.
+
 Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<max 2 frases>", "c2_imp": "<max 2 frases>", "c2_ded": "<motivo1 | motivo2 | motivo3>"}`,
+{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos fortes de estrutura e tema>", "c2_imp": "<ação 1 | ação 2 | ação 3>", "c2_ded": "<problema 1 | problema 2 | problema 3>"}`,
 
             3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência III da redação abaixo, seguindo os critérios oficiais do ENEM.
-Seja BREVE. No campo c3_ded liste no máximo 3 motivos de perda de pontos separados por |.
+Avalie APENAS a Competência III (Seleção e organização das informações) da redação abaixo.
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200pts: projeto estratégico (4 parágrafos, tese por antecipação com 2 temas-problema, desenvolvimento de cada tema em parágrafo próprio), palavras-chave usadas pertinentemente, argumentos bem relacionados, repertório com demonstração/relação direta com o tema, fatos e opiniões fundamentados, propostas de intervenção resolvem os 2 temas-problema
+- 160pts: projeto estratégico com poucas falhas, tese pouco clara mas 2 temas-problema, falta fundamentação em uma parte, lacunas pontuais
+- 120pts: tese confusa, argumentos poucos relacionados, repertório sem demonstração em um caso, algumas incoerências/generalizações. Teto: 120 se repertório for pouco pertinente/copiado
+- 80pts: sem tese clara, apenas 1 tema-problema, argumentos quase sem relação, muita incoerência/contradição. Teto: 80 se contradição grave ou apenas 1 tema-problema
+- 40pts: tangencia o tema, sem estrutura definida
+
+PROJETO ESTRATÉGICO: parágrafo 1 apresenta 2 temas-problema como causas do tema; parágrafo 2 desenvolve tema-problema 1; parágrafo 3 desenvolve tema-problema 2; parágrafo 4 propõe intervenção para os 2 temas.
+
+No campo c3_imp: indique AÇÕES CONCRETAS e específicas, como por exemplo reformular a tese para apresentar 2 temas-problema explícitos, adicionar marcadores de opinião no parágrafo 2, conectar o repertório de X ao tema-problema demonstrando sua relação causal. Máximo 3 ações diretas.
+No campo c3_ded: liste no máximo 3 falhas do projeto argumentativo encontradas.
+
 Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<max 2 frases>", "c3_imp": "<max 2 frases>", "c3_ded": "<motivo1 | motivo2 | motivo3>"}`,
+{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos fortes da argumentação>", "c3_imp": "<ação 1 | ação 2 | ação 3>", "c3_ded": "<falha 1 | falha 2 | falha 3>"}`,
 
             4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência IV da redação abaixo, seguindo os critérios oficiais do ENEM.
-Seja BREVE. No campo c4_ded liste no máximo 4 problemas de coesão separados por |.
+Avalie APENAS a Competência IV (Coesão textual) da redação abaixo.
+
+CRITÉRIOS DE PONTUAÇÃO:
+- 200pts: uso expressivo de coesivos, relações lógico-semânticas adequadas em todas as conexões, parágrafos 2/3/4 iniciados com operador argumentativo adequado, retomadas variadas e corretas
+- 160pts: uso constante mas com até 2 repetições de conectivo. Teto 160: qualquer relação lógico-semântica inadequada, parágrafo 2 sem operador argumentativo, retomada inadequada
+- 120pts: uso regular com algumas repetições. Teto 120: mesmo conectivo usado 3+ vezes, 2 relações lógico-semânticas inadequadas, apenas 1 parágrafo com operador argumentativo
+- 80pts: uso pontual com muitas repetições. Teto 80: mesmo conectivo 5+ vezes, 3 relações inadequadas, nenhum parágrafo com operador argumentativo, texto em 1 único parágrafo
+- 40pts: uso raro com repetições excessivas, 3+ relações inadequadas
+- 0pts: ausência total de articulação coesiva
+
+MECANISMOS COESIVOS DE RETOMADA: pronomes, sinonímia, hiperonímia, hiponímia, elipse, repetição de partes de expressões.
+OPERADORES ARGUMENTATIVOS: conjunções e conectivos que expressam reforço, adição, exemplificação, comparação, justificativa, consequência, concessão, contraposição, finalidade, conformidade, tempo, modo.
+
+No campo c4_imp: indique AÇÕES CONCRETAS e específicas, como por exemplo substituir as 4 ocorrências de "além disso" por conectivos variados (outrossim, ademais, somado a isso), iniciar o parágrafo 3 com operador argumentativo de contraposição, substituir a repetição do nome X por pronome ou sinônimo. Máximo 3 ações diretas.
+No campo c4_ded: liste no máximo 4 problemas de coesão encontrados no texto.
+
 Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<max 2 frases>", "c4_imp": "<max 2 frases>", "c4_ded": "<problema1 | problema2 | problema3>"}`,
+{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos fortes da coesão>", "c4_imp": "<ação 1 | ação 2 | ação 3>", "c4_ded": "<problema 1 | problema 2 | problema 3 | problema 4>"}`,
 
             5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Avalie APENAS a Competência V da redação abaixo, seguindo os critérios oficiais do ENEM.
-Seja BREVE. No campo c5_ded indique quais dos 5 elementos (agente, ação, modo/meio, finalidade, detalhamento) estão ausentes ou inadequados, separados por |.
+Avalie APENAS a Competência V (Proposta de intervenção) da redação abaixo.
+
+CRITÉRIOS DE PONTUAÇÃO (baseados nos 5 elementos: agente, ação, modo/meio, finalidade, detalhamento):
+- 200pts: proposta para os 2 temas-problema, todos os 5 elementos válidos, reconhecíveis e articulados
+- 160pts: proposta para os 2 temas-problema, 4 dos 5 elementos válidos e articulados
+- 120pts: proposta para os 2 temas-problema, 3 dos 5 elementos válidos e articulados
+- 80pts: proposta para os 2 temas-problema, 2 dos 5 elementos válidos. Teto 80: elementos apresentados via estruturas condicionais, hipotéticas ou verbos abstratos
+- 40pts: tangencia o tema, contradiz o projeto de texto, ou apenas 1 elemento válido
+- 0pts: proposta ausente, fere direitos humanos ou não relacionada ao tema
+
+DEFINIÇÕES DOS 5 ELEMENTOS:
+- Agente: substantivo (nome próprio ou comum) na função de sujeito, representando instituição ou cargo, com artigo definido
+- Ação: predicado do agente com verbo de ação concreto
+- Modo/Meio: objeto/complemento do verbo + adjuntos adverbiais de modo, meio ou lugar
+- Finalidade: oração subordinada adverbial com conectivo de finalidade (para que, a fim de)
+- Detalhamento: termo ou oração que elabora/especifica pelo menos um dos outros elementos
+
+No campo c5_imp: indique AÇÕES CONCRETAS e específicas para completar/melhorar a proposta, como por exemplo adicionar o elemento finalidade com "a fim de + objetivo claro", especificar o agente com cargo e artigo definido (ex: "O Ministério da Educação"), trocar o verbo abstrato "promover" por ação concreta como "implementar currículos". Máximo 3 ações diretas.
+No campo c5_ded: indique quais dos 5 elementos estão ausentes ou inadequados na proposta.
+
 Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
-{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<max 2 frases>", "c5_imp": "<max 2 frases>", "c5_ded": "<elemento1 ausente | elemento2 inadequado>"}`
+{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos fortes da proposta de intervenção>", "c5_imp": "<ação 1 | ação 2 | ação 3>", "c5_ded": "<elemento ausente/inadequado 1 | elemento ausente/inadequado 2>"}`
         };
 
         const systemPrompt = PROMPTS[i];
