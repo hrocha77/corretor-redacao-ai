@@ -1,1158 +1,837 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correção ENEM Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0d0d14; --surface: #13131f; --surface2: #1a1a2e;
-            --border: #2a2a45; --accent: #e63946; --accent2: #ff6b6b;
-            --gold: #f4a261; --text: #e8e8f0; --muted: #7070a0;
-            --success: #2ec4b6; --radius: 12px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-
-        /* LOGIN */
-        #login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 3rem 2.5rem; width: 360px; text-align: center; box-shadow: 0 0 60px rgba(230,57,70,0.15); }
-        .login-logo { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: .25rem; }
-        .login-sub { color: var(--muted); font-size: .85rem; margin-bottom: 2rem; }
-        .login-card input { width: 100%; padding: 14px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 1rem; outline: none; margin-bottom: 1rem; transition: border-color .2s; }
-        .login-card input:focus { border-color: var(--accent); }
-        .btn-login { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; border: none; border-radius: var(--radius); font-weight: 700; font-size: 1rem; cursor: pointer; transition: opacity .2s, transform .1s; }
-        .btn-login:hover { opacity: .9; transform: translateY(-1px); }
-        .login-err { color: var(--accent2); font-size: .8rem; margin-top: .5rem; min-height: 1rem; }
-
-        /* HEADER */
-        #main-system { display: none; flex-direction: column; height: 100vh; }
-        header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-        .header-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, var(--accent), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header-status { display: flex; align-items: center; gap: 8px; font-size: .75rem; color: var(--muted); }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; transition: background .3s; }
-        .status-dot.online { background: var(--success); box-shadow: 0 0 6px var(--success); }
-        .status-dot.error  { background: var(--accent);  box-shadow: 0 0 6px var(--accent); }
-
-        /* NAV */
-        nav { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: center; gap: 4px; padding: 0 16px; flex-shrink: 0; }
-        .nav-link { border: none; background: none; padding: 14px 22px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: .8rem; letter-spacing: 1px; text-transform: uppercase; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
-        .nav-link:hover { color: var(--text); }
-        .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-        /* MAIN */
-        main { flex: 1; overflow-y: auto; padding: 24px; }
-        .tab-pane { display: none; max-width: 860px; margin: 0 auto; animation: fadeIn .3s; }
-        .tab-pane.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* CARDS */
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
-        .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-
-        /* UPLOAD */
-        .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; position: relative; }
-        .upload-zone:hover { border-color: var(--accent); background: rgba(230,57,70,.04); }
-        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-        .upload-text { color: var(--muted); font-size: .9rem; }
-        .upload-text span { color: var(--accent); font-weight: 600; }
-        #prevImg { max-width: 100%; border-radius: var(--radius); margin: 16px 0; border: 1px solid var(--border); display: none; }
-        .ocr-progress { display: none; margin-top: 12px; }
-
-        /* EDITOR */
-        .editor-meta { display: flex; gap: 12px; margin-bottom: 12px; font-size: .8rem; color: var(--muted); }
-        .meta-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; }
-        textarea { width: 100%; height: 380px; padding: 18px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: .95rem; line-height: 1.75; resize: vertical; outline: none; transition: border-color .2s; font-family: 'Georgia', serif; }
-        textarea:focus { border-color: var(--accent); }
-        textarea::placeholder { color: var(--muted); }
-
-        /* BUTTONS */
-        .btn-group { display: flex; gap: 10px; margin-top: 14px; }
-        .btn { flex: 1; padding: 14px; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 700; font-size: .9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s, transform .1s; }
-        .btn:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-        .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-        .btn-primary   { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
-        .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); flex: 0 0 auto; padding: 14px 20px; }
-        .btn-pdf       { background: linear-gradient(135deg, #2ec4b6, #1a9e92); color: white; border: none; }
-
-        /* CONFIG */
-        .api-config { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .api-config label { font-size: .8rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
-        .api-config input { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: .85rem; outline: none; transition: border-color .2s; }
-        .api-config input:focus { border-color: var(--accent); }
-        .btn-test { padding: 8px 16px; background: transparent; border: 1px solid var(--success); color: var(--success); border-radius: 8px; cursor: pointer; font-size: .8rem; font-weight: 600; transition: background .2s; }
-        .btn-test:hover { background: rgba(46,196,182,.1); }
-
-        /* PROGRESS */
-        .progress-wrap { margin-bottom: 24px; display: none; }
-        .progress-header { display: flex; justify-content: space-between; font-size: .8rem; margin-bottom: 8px; }
-        .progress-label { color: var(--muted); }
-        .progress-pct { color: var(--accent); font-weight: 700; }
-        .progress-track { background: var(--surface2); border-radius: 100px; height: 8px; overflow: hidden; }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 100px; transition: width .5s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden; }
-        .progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent); animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-        .comp-steps { display: flex; gap: 6px; margin-top: 12px; }
-        .comp-step { flex: 1; height: 4px; border-radius: 100px; background: var(--surface2); transition: background .4s; }
-        .comp-step.done   { background: var(--success); }
-        .comp-step.active { background: var(--accent); animation: pulse 1s infinite; }
-        .comp-step.error  { background: var(--accent); }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
-
-        /* SCORE BANNER */
-        .score-banner { background: linear-gradient(135deg, var(--surface2), var(--surface)); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; display: none; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .score-total { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, var(--gold), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .score-label { font-size: .8rem; color: var(--muted); margin-top: 2px; }
-        .score-bars { display: flex; gap: 8px; align-items: flex-end; height: 40px; }
-        .score-bar-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .score-bar-fill { width: 18px; background: var(--border); border-radius: 4px; transition: height .5s, background .3s; }
-        .score-bar-lbl { font-size: .65rem; color: var(--muted); }
-
-        /* SUB TABS */
-        .sub-tabs { display: flex; gap: 2px; margin-bottom: 20px; background: var(--surface2); border-radius: 10px; padding: 4px; }
-        .sub-tab { flex: 1; padding: 9px; border: none; background: none; color: var(--muted); font-weight: 600; font-size: .8rem; letter-spacing: .5px; cursor: pointer; border-radius: 8px; transition: background .2s, color .2s; }
-        .sub-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
-
-        /* COMP PILLS */
-        .comp-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
-        .comp-pill { padding: 8px 18px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-weight: 700; font-size: .85rem; cursor: pointer; transition: all .2s; position: relative; }
-        .comp-pill:hover { border-color: var(--accent); color: var(--text); }
-        .comp-pill.active { background: var(--accent); border-color: var(--accent); color: white; }
-        .comp-pill .pill-score { font-size: .65rem; position: absolute; top: -6px; right: -6px; background: var(--gold); color: #111; border-radius: 100px; padding: 1px 5px; font-weight: 800; display: none; }
-        .comp-pill .pill-score.visible { display: block; }
-
-        .comp-desc { background: rgba(230,57,70,.08); border: 1px solid rgba(230,57,70,.2); border-radius: var(--radius); padding: 14px 18px; font-size: .88rem; line-height: 1.6; color: var(--text); margin-bottom: 20px; }
-
-        .score-row { display: flex; align-items: center; gap: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; }
-        .score-row label { font-size: .8rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
-        .score-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-        .score-badge { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: .85rem; font-weight: 700; cursor: default; }
-        .score-badge.selected { background: var(--gold); border-color: var(--gold); color: #111; }
-
-        .feedback-section { margin-bottom: 20px; }
-        .field-label { font-size: .75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .field-label::before { content: ''; display: block; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
-        .feedback-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; font-size: .9rem; line-height: 1.75; color: var(--text); min-height: 80px; white-space: pre-wrap; }
-        .feedback-box.empty { color: var(--muted); font-style: italic; }
-        .field-pos .field-label::before { background: var(--success); }
-        .field-ded .field-label::before { background: var(--accent); }
-        .field-ded .feedback-box { border-color: rgba(230,57,70,.2); background: rgba(230,57,70,.04); }
-
-        /* CRIT GRID */
-        .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .crit-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: .82rem; display: flex; align-items: center; gap: 10px; color: var(--text); }
-        .crit-num { min-width: 24px; height: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; color: var(--muted); }
-
-        /* TOAST */
-        #toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; font-size: .88rem; z-index: 9998; transform: translateY(80px); opacity: 0; transition: all .3s; max-width: 320px; display: flex; align-items: center; gap: 10px; }
-        #toast.show { transform: translateY(0); opacity: 1; }
-        #toast.success { border-color: var(--success); }
-        #toast.error   { border-color: var(--accent); }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--surface); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        /* BREAKDOWN TABLE */
-        .breakdown-table { width: 100%; border-collapse: collapse; }
-        .breakdown-table th { font-size: .7rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        .breakdown-table th:nth-child(2), .breakdown-table td:nth-child(2) { text-align: center; }
-        .breakdown-table th:last-child,   .breakdown-table td:last-child   { text-align: right; }
-        .breakdown-table td { padding: 9px 12px; font-size: .83rem; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--text); }
-        .breakdown-table tr:last-child td { border-bottom: none; }
-        .breakdown-table tr:hover td { background: rgba(255,255,255,.02); }
-        .bd-name { font-weight: 600; }
-        .bd-obs  { font-size: .74rem; color: var(--muted); margin-top: 3px; font-style: italic; }
-        .bd-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 8px; border-radius: 100px; font-size: .74rem; font-weight: 800; }
-        .bd-badge.red   { background: rgba(230,57,70,.15); color: var(--accent2); border: 1px solid rgba(230,57,70,.3); }
-        .bd-badge.green { background: rgba(46,196,182,.1);  color: var(--success); border: 1px solid rgba(46,196,182,.3); }
-        .bd-pts      { font-weight: 800; font-size: .85rem; color: var(--accent2); }
-        .bd-pts.zero { color: var(--success); }
-
-        /* OCR HIGHLIGHT */
-        #highlight-wrap { position: relative; display: block; }
-        #highlight-overlay { position: absolute; inset: 0; padding: 18px; font-size: .95rem; line-height: 1.75; font-family: 'Georgia', serif; color: transparent; pointer-events: none; white-space: pre-wrap; word-wrap: break-word; border: 1px solid transparent; border-radius: var(--radius); overflow: hidden; background: var(--surface2); }
-        #essayText.with-highlight { background: transparent !important; position: relative; z-index: 1; caret-color: var(--text); }
-        .hl-suspect { background: rgba(244,162,97,.4); border-bottom: 2px solid var(--gold); border-radius: 2px; color: transparent; }
-        .hl-error   { background: rgba(230,57,70,.3);  border-bottom: 2px solid var(--accent); border-radius: 2px; color: transparent; }
-        .review-banner { display: none; background: rgba(244,162,97,.08); border: 1px solid rgba(244,162,97,.35); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 12px; font-size: .82rem; color: var(--gold); }
-        .review-banner.active { display: flex; align-items: flex-start; gap: 10px; }
-        .btn-clear-hl { margin-left: auto; background: none; border: 1px solid rgba(244,162,97,.4); color: var(--gold); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: .75rem; white-space: nowrap; flex-shrink: 0; }
-
-        /* PDF PRINT */
-        @media print {
-            @page { margin: 20mm 15mm; size: A4; }
-            body { background: #fff !important; color: #111 !important; overflow: visible !important; height: auto !important; }
-            #login-overlay, #main-system > header, nav, #avatar-btn, #avatar-bubble, #toast,
-            .btn-group, .sub-tabs, .comp-pills, #compPillsInd, .progress-wrap, #errorLog,
-            #progWrap, #pdfBtnWrap, .review-banner, #highlight-overlay { display: none !important; }
-            #main-system { display: block !important; height: auto !important; }
-            main { overflow: visible !important; padding: 0 !important; }
-            .tab-pane { display: none !important; max-width: 100% !important; }
-            #results { display: block !important; }
-            .card { background: #fff !important; border: 1px solid #ddd !important; padding: 16px !important; margin-bottom: 16px !important; break-inside: avoid; }
-            .score-banner { display: flex !important; background: #f8f8f8 !important; border: 1px solid #ddd !important; }
-            .score-total { font-size: 2rem !important; color: #e63946 !important; -webkit-text-fill-color: #e63946 !important; }
-            .score-label, .score-bar-lbl { color: #666 !important; }
-            .comp-desc { background: #f9f9f9 !important; border: 1px solid #ddd !important; color: #333 !important; }
-            .score-row { background: #f5f5f5 !important; border: 1px solid #ddd !important; }
-            .score-row label { color: #666 !important; }
-            .score-badge { background: #eee !important; border: 1px solid #ccc !important; color: #666 !important; }
-            .score-badge.selected { background: #f4a261 !important; border-color: #f4a261 !important; color: #111 !important; }
-            .feedback-box { background: #f9f9f9 !important; border: 1px solid #ddd !important; color: #333 !important; min-height: unset !important; }
-            .feedback-box.empty { color: #aaa !important; }
-            .field-label { color: #555 !important; }
-            .comp-pill { display: none !important; }
-            #view-ind { display: none !important; }
-            #view-par { display: block !important; }
-            .breakdown-table td, .breakdown-table th { color: #333 !important; border-color: #ddd !important; }
-            .bd-pts { color: #c0392b !important; }
-            .bd-pts.zero { color: #27ae60 !important; }
-            .bd-badge.red   { background: #fde8e8 !important; color: #c0392b !important; border-color: #f5c6cb !important; }
-            .bd-badge.green { background: #e8fdf5 !important; color: #27ae60 !important; border-color: #c3e6cb !important; }
-            .bd-obs { color: #555 !important; }
-            .pdf-report-header { display: block !important; }
-            .pdf-all-comps    { display: block !important; }
-            .pdf-comp-block { break-inside: avoid; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #fff; }
-            .pdf-comp-title { font-size: 1rem; font-weight: 700; color: #e63946; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-            .pdf-score-chip { display: inline-block; font-weight: 800; padding: 3px 12px; border-radius: 100px; font-size: .85rem; margin-left: 10px; color: #fff; }
-        }
-        .pdf-report-header { display: none; }
-        .pdf-all-comps    { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENEM PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d14;--surface:#13131f;--surface2:#1a1a2e;--border:#2a2a45;--accent:#e63946;--accent2:#ff6b6b;--gold:#f4a261;--text:#e8e8f0;--muted:#7070a0;--success:#2ec4b6;--radius:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+#login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3rem 2.5rem;width:360px;text-align:center;box-shadow:0 0 60px rgba(230,57,70,.15)}
+.login-logo{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem}
+.login-sub{color:var(--muted);font-size:.85rem;margin-bottom:2rem}
+.login-card input{width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:1rem;outline:none;margin-bottom:1rem;transition:border-color .2s}
+.login-card input:focus{border-color:var(--accent)}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius);font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .2s}
+.btn-login:hover{opacity:.9}
+.login-err{color:var(--accent2);font-size:.8rem;margin-top:.5rem;min-height:1rem}
+#main-system{display:none;flex-direction:column;height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.header-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-status{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--muted)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#555;transition:background .3s}
+.status-dot.online{background:var(--success);box-shadow:0 0 6px var(--success)}
+.status-dot.error{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:4px;padding:0 16px;flex-shrink:0}
+.nav-link{border:none;background:none;padding:14px 22px;cursor:pointer;color:var(--muted);font-weight:600;font-size:.8rem;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.nav-link:hover{color:var(--text)}
+.nav-link.active{color:var(--accent);border-bottom-color:var(--accent)}
+main{flex:1;overflow-y:auto;padding:24px}
+.tab-pane{display:none;max-width:860px;margin:0 auto;animation:fadeIn .3s}
+.tab-pane.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.upload-zone:hover{border-color:var(--accent);background:rgba(230,57,70,.04)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-text{color:var(--muted);font-size:.9rem}
+.upload-text span{color:var(--accent);font-weight:600}
+#prevImg{max-width:100%;border-radius:var(--radius);margin:16px 0;border:1px solid var(--border);display:none}
+.ocr-progress{display:none;margin-top:12px}
+.editor-meta{display:flex;gap:12px;margin-bottom:12px;font-size:.8rem;color:var(--muted)}
+.meta-badge{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+textarea{width:100%;height:380px;padding:18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:.95rem;line-height:1.75;resize:vertical;outline:none;transition:border-color .2s;font-family:'Georgia',serif}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--muted)}
+.btn-group{display:flex;gap:10px;margin-top:14px}
+.btn{flex:1;padding:14px;border:none;border-radius:var(--radius);cursor:pointer;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s,transform .1s}
+.btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);flex:0 0 auto;padding:14px 20px}
+.btn-pdf{background:linear-gradient(135deg,#2ec4b6,#1a9e92);color:white;border:none}
+.api-config{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.api-config input{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none;transition:border-color .2s}
+.api-config input:focus{border-color:var(--accent)}
+.btn-test{padding:8px 16px;background:transparent;border:1px solid var(--success);color:var(--success);border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:background .2s}
+.btn-test:hover{background:rgba(46,196,182,.1)}
+.progress-wrap{margin-bottom:24px;display:none}
+.progress-header{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:8px}
+.progress-label{color:var(--muted)}
+.progress-pct{color:var(--accent);font-weight:700}
+.progress-track{background:var(--surface2);border-radius:100px;height:8px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+.progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shimmer 1.5s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.comp-steps{display:flex;gap:6px;margin-top:12px}
+.comp-step{flex:1;height:4px;border-radius:100px;background:var(--surface2);transition:background .4s}
+.comp-step.done{background:var(--success)}
+.comp-step.active{background:var(--accent);animation:pulse 1s infinite}
+.comp-step.error{background:var(--accent)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.score-banner{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:none;align-items:center;justify-content:space-between;margin-bottom:20px}
+.score-total{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-label{font-size:.8rem;color:var(--muted);margin-top:2px}
+.score-bars{display:flex;gap:8px;align-items:flex-end;height:40px}
+.score-bar-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.score-bar-fill{width:18px;background:var(--border);border-radius:4px;transition:height .5s,background .3s}
+.score-bar-lbl{font-size:.65rem;color:var(--muted)}
+.sub-tabs{display:flex;gap:2px;margin-bottom:20px;background:var(--surface2);border-radius:10px;padding:4px}
+.sub-tab{flex:1;padding:9px;border:none;background:none;color:var(--muted);font-weight:600;font-size:.8rem;letter-spacing:.5px;cursor:pointer;border-radius:8px;transition:background .2s,color .2s}
+.sub-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.comp-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.comp-pill{padding:8px 18px;border-radius:100px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;position:relative}
+.comp-pill:hover{border-color:var(--accent);color:var(--text)}
+.comp-pill.active{background:var(--accent);border-color:var(--accent);color:white}
+.comp-pill .pill-score{font-size:.65rem;position:absolute;top:-6px;right:-6px;background:var(--gold);color:#111;border-radius:100px;padding:1px 5px;font-weight:800;display:none}
+.comp-pill .pill-score.visible{display:block}
+.comp-desc{background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);border-radius:var(--radius);padding:14px 18px;font-size:.88rem;line-height:1.6;color:var(--text);margin-bottom:20px}
+.score-row{display:flex;align-items:center;gap:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px}
+.score-row label{font-size:.8rem;color:var(--muted);font-weight:600;white-space:nowrap}
+.score-badges{display:flex;gap:6px;flex-wrap:wrap}
+.score-badge{padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.85rem;font-weight:700;cursor:default}
+.score-badge.selected{background:var(--gold);border-color:var(--gold);color:#111}
+.feedback-section{margin-bottom:20px}
+.field-label{font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.field-label::before{content:'';display:block;width:3px;height:14px;background:var(--accent);border-radius:2px}
+.feedback-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:.9rem;line-height:1.75;color:var(--text);min-height:80px;white-space:pre-wrap}
+.feedback-box.empty{color:var(--muted);font-style:italic}
+.field-pos .field-label::before{background:var(--success)}
+.field-ded .field-label::before{background:var(--accent)}
+.field-ded .feedback-box{border-color:rgba(230,57,70,.2);background:rgba(230,57,70,.04)}
+.crit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.crit-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.82rem;display:flex;align-items:center;gap:10px;color:var(--text)}
+.crit-num{min-width:24px;height:24px;background:var(--surface);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--muted)}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;font-size:.88rem;z-index:9998;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;display:flex;align-items:center;gap:10px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:var(--success)}
+#toast.error{border-color:var(--accent)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+.breakdown-table{width:100%;border-collapse:collapse}
+.breakdown-table th{font-size:.7rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.breakdown-table th:nth-child(2),.breakdown-table td:nth-child(2){text-align:center}
+.breakdown-table th:last-child,.breakdown-table td:last-child{text-align:right}
+.breakdown-table td{padding:9px 12px;font-size:.83rem;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text)}
+.breakdown-table tr:last-child td{border-bottom:none}
+.bd-name{font-weight:600}
+.bd-obs{font-size:.74rem;color:var(--muted);margin-top:3px;font-style:italic}
+.bd-badge{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 8px;border-radius:100px;font-size:.74rem;font-weight:800}
+.bd-badge.red{background:rgba(230,57,70,.15);color:var(--accent2);border:1px solid rgba(230,57,70,.3)}
+.bd-badge.green{background:rgba(46,196,182,.1);color:var(--success);border:1px solid rgba(46,196,182,.3)}
+.bd-pts{font-weight:800;font-size:.85rem;color:var(--accent2)}
+.bd-pts.zero{color:var(--success)}
+#highlight-wrap{position:relative;display:block}
+#highlight-overlay{position:absolute;inset:0;padding:18px;font-size:.95rem;line-height:1.75;font-family:'Georgia',serif;color:transparent;pointer-events:none;white-space:pre-wrap;word-wrap:break-word;border:1px solid transparent;border-radius:var(--radius);overflow:hidden;background:var(--surface2)}
+#essayText.with-highlight{background:transparent!important;position:relative;z-index:1;caret-color:var(--text)}
+.hl-suspect{background:rgba(244,162,97,.4);border-bottom:2px solid var(--gold);border-radius:2px;color:transparent}
+.hl-error{background:rgba(230,57,70,.3);border-bottom:2px solid var(--accent);border-radius:2px;color:transparent}
+.review-banner{display:none;background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.35);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;font-size:.82rem;color:var(--gold)}
+.review-banner.active{display:flex;align-items:flex-start;gap:10px}
+.btn-clear-hl{margin-left:auto;background:none;border:1px solid rgba(244,162,97,.4);color:var(--gold);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.75rem;white-space:nowrap;flex-shrink:0}
+.pdf-report-header{display:none}
+.pdf-all-comps{display:none}
+@media print{
+@page{margin:20mm 15mm;size:A4}
+body{background:#fff!important;color:#111!important;overflow:visible!important;height:auto!important}
+#login-overlay,#main-system > header,nav,#avatar-btn,#avatar-bubble,#toast,.btn-group,.sub-tabs,.comp-pills,#compPillsInd,.progress-wrap,#errorLog,#progWrap,#pdfBtnWrap,.review-banner,#highlight-overlay{display:none!important}
+#main-system{display:block!important;height:auto!important}
+main{overflow:visible!important;padding:0!important}
+.tab-pane{display:none!important;max-width:100%!important}
+#results{display:block!important}
+.card{background:#fff!important;border:1px solid #ddd!important;padding:16px!important;margin-bottom:16px!important;break-inside:avoid}
+.score-banner{display:flex!important;background:#f8f8f8!important;border:1px solid #ddd!important}
+.score-total{font-size:2rem!important;color:#e63946!important;-webkit-text-fill-color:#e63946!important}
+.feedback-box{background:#f9f9f9!important;border:1px solid #ddd!important;color:#333!important;min-height:unset!important}
+.comp-pill{display:none!important}
+#view-ind{display:none!important}
+#view-par{display:block!important}
+.breakdown-table td,.breakdown-table th{color:#333!important;border-color:#ddd!important}
+.bd-pts{color:#c0392b!important}
+.bd-pts.zero{color:#27ae60!important}
+.pdf-report-header{display:block!important}
+.pdf-all-comps{display:block!important}
+.pdf-comp-block{break-inside:avoid;border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:16px;background:#fff}
+.pdf-comp-title{font-size:1rem;font-weight:700;color:#e63946;margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px}
+.pdf-score-chip{display:inline-block;font-weight:800;padding:3px 12px;border-radius:100px;font-size:.85rem;margin-left:10px;color:#fff}
+}
+</style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login-overlay">
-    <div class="login-card">
-        <div class="login-logo">ENEM PRO</div>
-        <div class="login-sub">Plataforma de Correção Inteligente</div>
-        <input type="password" id="passInput" placeholder="Senha de acesso">
-        <button class="btn-login" onclick="login()">Acessar Plataforma</button>
-        <div class="login-err" id="loginErr"></div>
-    </div>
+  <div class="login-card">
+    <div class="login-logo">ENEM PRO</div>
+    <div class="login-sub">Plataforma de Correcao Inteligente</div>
+    <input type="password" id="passInput" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">Acessar Plataforma</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
 </div>
 
 <div id="toast"></div>
 
 <div id="main-system">
-    <header>
-        <div class="header-brand">ENEM PRO</div>
-        <div class="header-status">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusTxt">Servidor desconectado</span>
+  <header>
+    <div class="header-brand">ENEM PRO</div>
+    <div class="header-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusTxt">Servidor desconectado</span>
+    </div>
+  </header>
+  <nav>
+    <button class="nav-link active" onclick="showTab('scanner')">Digitalizar</button>
+    <button class="nav-link" onclick="showTab('editor')">Redacao</button>
+    <button class="nav-link" onclick="showTab('results')">Resultado</button>
+    <button class="nav-link" onclick="showTab('config')">Configuracoes</button>
+  </nav>
+  <main>
+
+    <div id="scanner" class="tab-pane active">
+      <div class="card">
+        <div class="card-title">Digitalizar Redacao</div>
+        <div class="upload-zone">
+          <input type="file" id="fileIn" accept="image/*" onchange="previewImg(this)">
+          <div style="font-size:2.5rem;margin-bottom:10px">📁</div>
+          <div class="upload-text">Arraste uma imagem ou <span>clique para selecionar</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:6px">PNG, JPG, WEBP</div>
         </div>
-    </header>
-
-    <nav>
-        <button class="nav-link active" onclick="showTab('scanner')">Digitalizar</button>
-        <button class="nav-link" onclick="showTab('editor')">Redação</button>
-        <button class="nav-link" onclick="showTab('results')">Resultado</button>
-        <button class="nav-link" onclick="showTab('config')">Configurações</button>
-    </nav>
-
-    <main>
-
-        <!-- SCANNER -->
-        <div id="scanner" class="tab-pane active">
-            <div class="card">
-                <div class="card-title">📷 Digitalizar Redação</div>
-                <div class="upload-zone">
-                    <input type="file" id="fileIn" accept="image/*" onchange="previewImg(this)">
-                    <div style="font-size:2.5rem; margin-bottom:10px;">📁</div>
-                    <div class="upload-text">Arraste uma imagem ou <span>clique para selecionar</span></div>
-                    <div style="font-size:.78rem; color:var(--muted); margin-top:6px;">PNG, JPG, WEBP — até 10MB</div>
-                </div>
-                <img id="prevImg">
-                <div style="margin-top:16px; padding:8px 12px; background:rgba(244,162,97,.08); border:1px solid rgba(244,162,97,.25); border-radius:8px; font-size:.78rem; color:var(--gold);">
-                    ⚠️ O modelo de IA lerá a imagem manuscrita. Certifique-se de que a <b>URL do servidor</b> está configurada e que o modelo suporta visão.
-                </div>
-                <div class="ocr-progress" id="ocrProgress" style="margin-top:12px;">
-                    <div class="progress-track" style="height:6px;"><div class="progress-fill" id="ocrBar" style="width:0%"></div></div>
-                    <div style="font-size:.78rem; color:var(--muted); margin-top:6px; text-align:center;" id="ocrMsg">Processando...</div>
-                </div>
-                <button class="btn btn-primary" id="btnOCR" onclick="doOCR()" style="margin-top:14px;" disabled>
-                    🤖 Extrair Texto com IA
-                </button>
-            </div>
+        <img id="prevImg">
+        <div style="margin-top:16px;padding:8px 12px;background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.25);border-radius:8px;font-size:.78rem;color:var(--gold)">
+          O modelo de IA lera a imagem manuscrita. Certifique-se de que a URL do servidor esta configurada e que o modelo suporta visao.
         </div>
-
-        <!-- EDITOR -->
-        <div id="editor" class="tab-pane">
-            <div class="card" style="margin-bottom:14px;">
-                <div class="card-title" style="margin-bottom:12px;">📋 Tema da Redação</div>
-                <div style="font-size:.8rem; color:var(--muted); margin-bottom:8px;">Informe o tema para que a correção avalie se a redação está de acordo com a proposta.</div>
-                <input type="text" id="temaInput"
-                    placeholder="Ex: A persistência da violência contra a mulher na sociedade brasileira"
-                    style="width:100%; padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:.92rem; outline:none; transition:border-color .2s; font-family:inherit;"
-                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="saveTema()">
-                <div id="tema-warning" style="display:none; margin-top:8px; font-size:.78rem; color:var(--gold);">⚠️ Sem tema definido — a C2 será avaliada sem referência à proposta.</div>
-            </div>
-            <div class="card">
-                <div class="card-title">✏️ Editor de Redação</div>
-                <div class="editor-meta">
-                    <div class="meta-badge" id="wordCount">0 palavras</div>
-                    <div class="meta-badge" id="lineCount">0 linhas</div>
-                    <div class="meta-badge" id="charCount">0 caracteres</div>
-                </div>
-                <div class="review-banner" id="reviewBanner">
-                    <div style="flex:1">
-                        <b>⚠️ Revisão necessária</b> — o OCR pode ter erros. Verifique os trechos marcados antes de corrigir.
-                        <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
-                            <div style="display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--muted);"><div style="width:14px;height:4px;border-radius:2px;background:var(--gold)"></div> Palavra suspeita</div>
-                            <div style="display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--muted);"><div style="width:14px;height:4px;border-radius:2px;background:var(--accent)"></div> Possível erro grave</div>
-                            <span id="suspectCount" style="color:var(--muted); font-size:.75rem;"></span>
-                        </div>
-                    </div>
-                    <button class="btn-clear-hl" onclick="clearHighlights()">✕ Limpar</button>
-                </div>
-                <div id="highlight-wrap">
-                    <div id="highlight-overlay"></div>
-                    <textarea id="essayText" placeholder="Cole ou escreva sua redação aqui..." oninput="updateMeta(); syncScroll()" onscroll="syncScroll()" class="with-highlight"></textarea>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">⚡ Corrigir Agora</button>
-                    <button class="btn btn-secondary" onclick="clearEssay()" title="Limpar">🗑</button>
-                </div>
-            </div>
+        <div class="ocr-progress" id="ocrProgress">
+          <div class="progress-track" style="height:6px"><div class="progress-fill" id="ocrBar" style="width:0%"></div></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:6px;text-align:center" id="ocrMsg">Processando...</div>
         </div>
+        <button class="btn btn-primary" id="btnOCR" onclick="doOCR()" style="margin-top:14px" disabled>Extrair Texto com IA</button>
+      </div>
+    </div>
 
-        <!-- RESULTS -->
-        <div id="results" class="tab-pane">
-
-            <!-- PDF header (print only) -->
-            <div class="pdf-report-header" id="pdfReportHeader">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; border-bottom:2px solid #e63946; padding-bottom:14px;">
-                    <div>
-                        <div style="font-size:1.5rem; font-weight:800; color:#e63946; font-family:'Syne',sans-serif;">ENEM PRO — Relatório de Correção</div>
-                        <div id="pdf-tema-line" style="font-size:.85rem; color:#555; margin-top:4px;"></div>
-                    </div>
-                    <div id="pdf-date-line" style="text-align:right; font-size:.78rem; color:#777;"></div>
-                </div>
-            </div>
-
-            <div class="score-banner" id="scoreBanner">
-                <div>
-                    <div class="score-total" id="totalScore">—</div>
-                    <div class="score-label">Nota Total / 1000</div>
-                </div>
-                <div class="score-bars" id="scoreBarsViz"></div>
-            </div>
-
-            <div class="card">
-                <div id="errorLog" style="display:none; background:#1a0a0a; border:1px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin-bottom:16px; font-size:.82rem; font-family:monospace; color:#ff9999; max-height:160px; overflow-y:auto; white-space:pre-wrap;"></div>
-
-                <div class="progress-wrap" id="progWrap">
-                    <div class="progress-header">
-                        <span class="progress-label" id="progLabel">Iniciando análise...</span>
-                        <span class="progress-pct" id="progPct">0%</span>
-                    </div>
-                    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
-                    <div class="comp-steps">
-                        <div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div>
-                    </div>
-                </div>
-
-                <!-- Botão PDF -->
-                <div id="pdfBtnWrap" style="display:none; margin-bottom:16px;">
-                    <button class="btn btn-pdf" onclick="printReport()" style="max-width:240px;">
-                        🖨️ Imprimir Relatório PDF
-                    </button>
-                </div>
-
-                <div class="sub-tabs">
-                    <button class="sub-tab active" onclick="toggleSub('par')">Competências</button>
-                    <button class="sub-tab" onclick="toggleSub('ind')">Indicadores</button>
-                </div>
-
-                <div id="view-par">
-                    <div class="comp-pills" id="compPills">
-                        <div class="comp-pill active" onclick="setComp(1)">C1<span class="pill-score" id="ps1"></span></div>
-                        <div class="comp-pill" onclick="setComp(2)">C2<span class="pill-score" id="ps2"></span></div>
-                        <div class="comp-pill" onclick="setComp(3)">C3<span class="pill-score" id="ps3"></span></div>
-                        <div class="comp-pill" onclick="setComp(4)">C4<span class="pill-score" id="ps4"></span></div>
-                        <div class="comp-pill" onclick="setComp(5)">C5<span class="pill-score" id="ps5"></span></div>
-                    </div>
-                    <div class="comp-desc" id="compDesc">Selecione uma competência após a correção.</div>
-                    <div class="score-row">
-                        <label>NOTA</label>
-                        <div class="score-badges" id="scoreBadges"><div class="score-badge">—</div></div>
-                    </div>
-                    <div class="feedback-section field-pos">
-                        <div class="field-label">Pontos positivos</div>
-                        <div class="feedback-box empty" id="posBox">Aguardando correção...</div>
-                    </div>
-                    <div class="feedback-section field-ded">
-                        <div class="field-label">Como melhorar</div>
-                        <div class="feedback-box empty" id="impBox">Aguardando correção...</div>
-                    </div>
-                    <div class="feedback-section field-ded">
-                        <div class="field-label">Onde perdeu pontos</div>
-                        <div id="dedBox" class="feedback-box empty">Aguardando correção...</div>
-                    </div>
-                </div>
-
-                <div id="view-ind" style="display:none;">
-                    <div class="comp-pills" id="compPillsInd">
-                        <div class="comp-pill active" onclick="setCompInd(1)">C1</div>
-                        <div class="comp-pill" onclick="setCompInd(2)">C2</div>
-                        <div class="comp-pill" onclick="setCompInd(3)">C3</div>
-                        <div class="comp-pill" onclick="setCompInd(4)">C4</div>
-                        <div class="comp-pill" onclick="setCompInd(5)">C5</div>
-                    </div>
-                    <div class="crit-grid" id="critList"></div>
-                </div>
-            </div>
-
-            <!-- All comps block (print only) -->
-            <div class="pdf-all-comps" id="pdfAllComps"></div>
+    <div id="editor" class="tab-pane">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title" style="margin-bottom:12px">Tema da Redacao</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Informe o tema para que a correcao avalie se a redacao esta de acordo com a proposta.</div>
+        <input type="text" id="temaInput" placeholder="Ex: A invisibilidade do trabalho de cuidado realizado pela mulher no Brasil"
+          style="width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:.92rem;outline:none;transition:border-color .2s;font-family:inherit"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="saveTema()">
+        <div id="tema-warning" style="display:none;margin-top:8px;font-size:.78rem;color:var(--gold)">Sem tema definido — a C2 sera avaliada sem referencia a proposta.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Editor de Redacao</div>
+        <div class="editor-meta">
+          <div class="meta-badge" id="wordCount">0 palavras</div>
+          <div class="meta-badge" id="lineCount">0 linhas</div>
+          <div class="meta-badge" id="charCount">0 caracteres</div>
         </div>
-
-        <!-- CONFIG -->
-        <div id="config" class="tab-pane">
-            <div class="card">
-                <div class="card-title">⚙️ Configurações</div>
-                <div style="margin-bottom:20px;">
-                    <div class="field-label">URL do Servidor (Ngrok)</div>
-                    <div class="api-config">
-                        <input type="text" id="apiUrlInput" placeholder="https://xxxx.ngrok-free.app/v1/chat/completions">
-                        <button class="btn-test" onclick="testConnection()">Testar</button>
-                    </div>
-                    <div style="font-size:.78rem; color:var(--muted);">Atualize sempre que reiniciar o Ngrok.</div>
-                </div>
-                <div style="margin-bottom:20px;">
-                    <div class="field-label">Modelo</div>
-                    <div class="api-config">
-                        <input type="text" id="modelInput" placeholder="local-model" value="local-model">
-                    </div>
-                </div>
-                <div>
-                    <div class="field-label">Temperatura</div>
-                    <div class="api-config">
-                        <input type="number" id="tempInput" min="0" max="1" step="0.05" value="0.1" style="max-width:120px;">
-                        <span style="font-size:.8rem; color:var(--muted);">Recomendado: 0.1</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary" style="margin-top:20px; max-width:200px;" onclick="saveConfig()">💾 Salvar</button>
+        <div class="review-banner" id="reviewBanner">
+          <div style="flex:1">
+            <b>Revisao necessaria</b> — o OCR pode ter erros. Verifique os trechos marcados antes de corrigir.
+            <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted)"><span style="width:14px;height:4px;border-radius:2px;background:var(--gold);display:inline-block"></span>Palavra suspeita</span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted)"><span style="width:14px;height:4px;border-radius:2px;background:var(--accent);display:inline-block"></span>Possivel erro grave</span>
+              <span id="suspectCount" style="color:var(--muted);font-size:.75rem"></span>
             </div>
+          </div>
+          <button class="btn-clear-hl" onclick="clearHighlights()">Limpar</button>
         </div>
+        <div id="highlight-wrap">
+          <div id="highlight-overlay"></div>
+          <textarea id="essayText" placeholder="Cole ou escreva sua redacao aqui..." oninput="updateMeta();syncScroll()" onscroll="syncScroll()" class="with-highlight"></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">Corrigir Agora</button>
+          <button class="btn btn-secondary" onclick="clearEssay()">🗑</button>
+        </div>
+      </div>
+    </div>
 
-    </main>
+    <div id="results" class="tab-pane">
+      <div class="pdf-report-header" id="pdfReportHeader">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:2px solid #e63946;padding-bottom:14px">
+          <div>
+            <div style="font-size:1.5rem;font-weight:800;color:#e63946;font-family:'Syne',sans-serif">ENEM PRO — Relatorio de Correcao</div>
+            <div id="pdf-tema-line" style="font-size:.85rem;color:#555;margin-top:4px"></div>
+          </div>
+          <div id="pdf-date-line" style="text-align:right;font-size:.78rem;color:#777"></div>
+        </div>
+      </div>
+      <div class="score-banner" id="scoreBanner">
+        <div>
+          <div class="score-total" id="totalScore">—</div>
+          <div class="score-label">Nota Total / 1000</div>
+        </div>
+        <div class="score-bars" id="scoreBarsViz"></div>
+      </div>
+      <div class="card">
+        <div id="errorLog" style="display:none;background:#1a0a0a;border:1px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;font-size:.82rem;font-family:monospace;color:#ff9999;max-height:160px;overflow-y:auto;white-space:pre-wrap"></div>
+        <div class="progress-wrap" id="progWrap">
+          <div class="progress-header">
+            <span class="progress-label" id="progLabel">Iniciando analise...</span>
+            <span class="progress-pct" id="progPct">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+          <div class="comp-steps">
+            <div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div>
+          </div>
+        </div>
+        <div id="pdfBtnWrap" style="display:none;margin-bottom:16px">
+          <button class="btn btn-pdf" onclick="printReport()" style="max-width:240px">Imprimir Relatorio PDF</button>
+        </div>
+        <div class="sub-tabs">
+          <button class="sub-tab active" onclick="toggleSub('par')">Competencias</button>
+          <button class="sub-tab" onclick="toggleSub('ind')">Indicadores</button>
+        </div>
+        <div id="view-par">
+          <div class="comp-pills" id="compPills">
+            <div class="comp-pill active" onclick="setComp(1)">C1<span class="pill-score" id="ps1"></span></div>
+            <div class="comp-pill" onclick="setComp(2)">C2<span class="pill-score" id="ps2"></span></div>
+            <div class="comp-pill" onclick="setComp(3)">C3<span class="pill-score" id="ps3"></span></div>
+            <div class="comp-pill" onclick="setComp(4)">C4<span class="pill-score" id="ps4"></span></div>
+            <div class="comp-pill" onclick="setComp(5)">C5<span class="pill-score" id="ps5"></span></div>
+          </div>
+          <div class="comp-desc" id="compDesc">Selecione uma competencia apos a correcao.</div>
+          <div class="score-row">
+            <label>NOTA</label>
+            <div class="score-badges" id="scoreBadges"><div class="score-badge">—</div></div>
+          </div>
+          <div class="feedback-section field-pos">
+            <div class="field-label">Pontos positivos</div>
+            <div class="feedback-box empty" id="posBox">Aguardando correcao...</div>
+          </div>
+          <div class="feedback-section field-ded">
+            <div class="field-label">Como melhorar</div>
+            <div class="feedback-box empty" id="impBox">Aguardando correcao...</div>
+          </div>
+          <div class="feedback-section field-ded">
+            <div class="field-label">Onde perdeu pontos</div>
+            <div id="dedBox" class="feedback-box empty">Aguardando correcao...</div>
+          </div>
+        </div>
+        <div id="view-ind" style="display:none">
+          <div class="comp-pills" id="compPillsInd">
+            <div class="comp-pill active" onclick="setCompInd(1)">C1</div>
+            <div class="comp-pill" onclick="setCompInd(2)">C2</div>
+            <div class="comp-pill" onclick="setCompInd(3)">C3</div>
+            <div class="comp-pill" onclick="setCompInd(4)">C4</div>
+            <div class="comp-pill" onclick="setCompInd(5)">C5</div>
+          </div>
+          <div class="crit-grid" id="critList"></div>
+        </div>
+      </div>
+      <div class="pdf-all-comps" id="pdfAllComps"></div>
+    </div>
+
+    <div id="config" class="tab-pane">
+      <div class="card">
+        <div class="card-title">Configuracoes</div>
+        <div style="margin-bottom:20px">
+          <div class="field-label">URL do Servidor (Ngrok)</div>
+          <div class="api-config">
+            <input type="text" id="apiUrlInput" placeholder="https://xxxx.ngrok-free.app/v1/chat/completions">
+            <button class="btn-test" onclick="testConnection()">Testar</button>
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div class="field-label">Modelo</div>
+          <div class="api-config">
+            <input type="text" id="modelInput" placeholder="local-model" value="local-model">
+          </div>
+        </div>
+        <div>
+          <div class="field-label">Temperatura</div>
+          <div class="api-config">
+            <input type="number" id="tempInput" min="0" max="1" step="0.05" value="0.1" style="max-width:120px">
+            <span style="font-size:.8rem;color:var(--muted)">Recomendado: 0.1</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;max-width:200px" onclick="saveConfig()">Salvar</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="avatar-btn" onclick="toggleAvatar()" style="position:fixed;bottom:24px;left:24px;z-index:9990;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#e63946,#f4a261);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(230,57,70,.4);border:2px solid rgba(255,255,255,.15)">
+  <svg width="34" height="34" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/><rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/><ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><circle cx="27" cy="25" r=".8" fill="white"/><circle cx="39" cy="25" r=".8" fill="white"/><ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/><path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/></svg>
+</div>
+<div id="avatar-bubble" style="position:fixed;bottom:90px;left:24px;z-index:9989;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;display:none;box-shadow:0 8px 30px rgba(0,0,0,.4)">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
+    <div><b style="font-size:.9rem">ENEM Assistente</b><br><span style="font-size:.72rem;color:var(--success)">Online</span></div>
+    <button onclick="toggleAvatar()" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">X</button>
+  </div>
+  <div id="avatar-msg" style="font-size:.85rem;line-height:1.6;color:var(--text);min-height:60px"></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px" id="avatar-options"></div>
 </div>
 
 <script>
-/* ── CONFIG ── */
-let config = {
-    apiUrl: localStorage.getItem('apiUrl') || '',
-    model:  localStorage.getItem('model')  || 'local-model',
-    temp:   parseFloat(localStorage.getItem('temp') || '0.1')
+var cfg = {
+  apiUrl: localStorage.getItem('apiUrl') || '',
+  model:  localStorage.getItem('model')  || 'local-model',
+  temp:   parseFloat(localStorage.getItem('temp') || '0.1')
 };
+
+function doLogin() {
+  var p = document.getElementById('passInput').value;
+  if (p === 'beatriz') {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-system').style.display = 'flex';
+    loadConfig(); loadTema();
+    if (cfg.apiUrl) testConnection();
+    document.getElementById('avatar-btn').style.display = 'flex';
+  } else {
+    document.getElementById('loginErr').textContent = 'Senha incorreta.';
+    document.getElementById('passInput').value = '';
+  }
+}
+
 function loadConfig() {
-    document.getElementById('apiUrlInput').value = config.apiUrl;
-    document.getElementById('modelInput').value  = config.model;
-    document.getElementById('tempInput').value   = config.temp;
+  document.getElementById('apiUrlInput').value = cfg.apiUrl;
+  document.getElementById('modelInput').value  = cfg.model;
+  document.getElementById('tempInput').value   = cfg.temp;
 }
 function saveConfig() {
-    config.apiUrl = document.getElementById('apiUrlInput').value.trim();
-    config.model  = document.getElementById('modelInput').value.trim() || 'local-model';
-    config.temp   = parseFloat(document.getElementById('tempInput').value) || 0.1;
-    localStorage.setItem('apiUrl', config.apiUrl);
-    localStorage.setItem('model',  config.model);
-    localStorage.setItem('temp',   config.temp);
-    showToast('Configurações salvas!', 'success');
-    testConnection();
+  cfg.apiUrl = document.getElementById('apiUrlInput').value.trim();
+  cfg.model  = document.getElementById('modelInput').value.trim() || 'local-model';
+  cfg.temp   = parseFloat(document.getElementById('tempInput').value) || 0.1;
+  localStorage.setItem('apiUrl', cfg.apiUrl);
+  localStorage.setItem('model',  cfg.model);
+  localStorage.setItem('temp',   cfg.temp);
+  showToast('Configuracoes salvas!', 'success');
+  testConnection();
 }
-
-/* ── TEMA ── */
 function saveTema() {
-    const t = document.getElementById('temaInput').value.trim();
-    localStorage.setItem('tema', t);
-    document.getElementById('tema-warning').style.display = t ? 'none' : 'block';
+  var t = document.getElementById('temaInput').value.trim();
+  localStorage.setItem('tema', t);
+  document.getElementById('tema-warning').style.display = t ? 'none' : 'block';
 }
 function loadTema() {
-    const t = localStorage.getItem('tema') || '';
-    document.getElementById('temaInput').value = t;
-    document.getElementById('tema-warning').style.display = t ? 'none' : 'block';
+  var t = localStorage.getItem('tema') || '';
+  document.getElementById('temaInput').value = t;
+  document.getElementById('tema-warning').style.display = t ? 'none' : 'block';
 }
-
-/* ── LOGIN ── */
-function login() {
-    if (document.getElementById('passInput').value === 'beatriz') {
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('main-system').style.display = 'flex';
-        loadConfig(); loadTema();
-        if (config.apiUrl) testConnection();
-        document.getElementById('avatar-btn').style.display = 'flex';
-    } else {
-        document.getElementById('loginErr').textContent = 'Senha incorreta.';
-        document.getElementById('passInput').value = '';
-    }
+function testConnection() {
+  var dot = document.getElementById('statusDot');
+  var txt = document.getElementById('statusTxt');
+  var url = cfg.apiUrl.trim();
+  if (!url) { dot.className='status-dot error'; txt.textContent='URL nao configurada'; return; }
+  var ok = /^https?:\/\/.+/.test(url);
+  dot.className = 'status-dot ' + (ok ? 'online' : 'error');
+  txt.textContent = ok ? 'URL configurada' : 'URL invalida';
 }
-document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-
-/* ── TABS ── */
 function showTab(id) {
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    const map = { scanner:0, editor:1, results:2, config:3 };
-    document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
-    if (avatarOpen) showAvatarForTab();
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-link').forEach(function(l){l.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  var map = {scanner:0,editor:1,results:2,config:3};
+  document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
 }
-
-/* ── SUB-TABS ── */
 function toggleSub(t) {
-    const isPar = t === 'par';
-    document.getElementById('view-par').style.display = isPar ? 'block' : 'none';
-    document.getElementById('view-ind').style.display = isPar ? 'none'  : 'block';
-    document.querySelectorAll('.sub-tab').forEach((b,i) => b.classList.toggle('active', i === (isPar?0:1)));
-    if (!isPar) renderCrits(curCompInd);
+  var isPar = t === 'par';
+  document.getElementById('view-par').style.display = isPar ? 'block' : 'none';
+  document.getElementById('view-ind').style.display = isPar ? 'none'  : 'block';
+  document.querySelectorAll('.sub-tab').forEach(function(b,i){b.classList.toggle('active', i===(isPar?0:1))});
+  if (!isPar) renderCrits(curCompInd);
 }
 
-/* ── COMPETÊNCIAS ── */
-const COMPS = {
-    1: "Demonstrar domínio da modalidade escrita formal da língua portuguesa.",
-    2: "Compreender a proposta de redação e aplicar conceitos das várias áreas do conhecimento para desenvolver o tema.",
-    3: "Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos em defesa de um ponto de vista.",
-    4: "Demonstrar conhecimento dos mecanismos linguísticos necessários para a construção da argumentação.",
-    5: "Elaborar proposta de intervenção para o problema abordado, respeitando os direitos humanos."
+var COMPS = {
+  1:'Demonstrar dominio da modalidade escrita formal da lingua portuguesa.',
+  2:'Compreender a proposta de redacao e aplicar conceitos das varias areas do conhecimento para desenvolver o tema.',
+  3:'Selecionar, relacionar, organizar e interpretar informacoes, fatos, opinioes e argumentos em defesa de um ponto de vista.',
+  4:'Demonstrar conhecimento dos mecanismos linguisticos necessarios para a construcao da argumentacao.',
+  5:'Elaborar proposta de intervencao para o problema abordado, respeitando os direitos humanos.'
 };
-const CRITERIA = {
-    1: ["Ilegibilidade/Rasuras","Maiúsculas/Minúsculas","Ortografia","Acentuação","Translineação","Hífen","Pontuação/Truncamento","Pontuação/Justaposição","Outros de pontuação","Sintaxe/Falta","Sintaxe/Excesso","Crase","Regência","Concordância","Modo/Tempo Verbal","Pronomes","Paralelismo","Vocabulário","Coloquialismo","Linguagem Figurada"],
-    2: ["Tangenciamento","Tipo textual inadequado","Repertório restrito","Repertório não legitimado","Repertório não pertinente","Repertório improdutivo","Repertório legitimado/produtivo"],
-    3: ["Tangenciamento temático","Relacionamento de ideias","Texto expositivo","Desenvolvimento inadequado","Argumentação confusa","Contradição","Repetição de ideias","Prolixo","Modalização","Progressão textual","Tese clara","Proposta de intervenção","Bem argumentado","Estratégico"],
-    4: ["Coesivo interparágrafo","Uso de operadores","Ambiguidade","Mau uso de conectivos","Repetição léxica"],
-    5: ["Sem proposta","Proposta sem relação com assunto","Respeito aos direitos humanos","Tangenciamento da proposta","Proposta condicional","Agente especificado","Ação detalhada","Meio/Modo especificado","Efeito esperado","Detalhamento completo","Proposta completa"]
+var CRITERIA = {
+  1:['Ilegibilidade/Rasuras','Maiusculas/Minusculas','Ortografia','Acentuacao','Translineacao','Hifen','Pontuacao/Truncamento','Pontuacao/Justaposicao','Outros de pontuacao','Sintaxe/Falta','Sintaxe/Excesso','Crase','Regencia','Concordancia','Modo/Tempo Verbal','Pronomes','Paralelismo','Vocabulario','Coloquialismo','Linguagem Figurada'],
+  2:['Tangenciamento','Tipo textual inadequado','Repertorio restrito','Repertorio nao legitimado','Repertorio nao pertinente','Repertorio improdutivo','Repertorio legitimado/produtivo'],
+  3:['Tangenciamento tematico','Relacionamento de ideias','Texto expositivo','Desenvolvimento inadequado','Argumentacao confusa','Contradicao','Repeticao de ideias','Prolixo','Modalizacao','Progressao textual','Tese clara','Proposta de intervencao','Bem argumentado','Estrategico'],
+  4:['Coesivo interparagrafo','Uso de operadores','Ambiguidade','Mau uso de conectivos','Repeticao lexical'],
+  5:['Sem proposta','Proposta sem relacao com assunto','Respeito aos direitos humanos','Tangenciamento da proposta','Proposta condicional','Agente especificado','Acao detalhada','Meio/Modo especificado','Efeito esperado','Detalhamento completo','Proposta completa']
 };
-const SCORES = [0,40,80,120,160,200];
-let feedbackData = {}, curComp = 1, curCompInd = 1;
+var SCORES = [0,40,80,120,160,200];
+var feedbackData = {}, curComp = 1, curCompInd = 1;
 
-/* ── AUTO-CORRECT pts_perdidos SUM ── */
-function autoCorrectPts(comp, ded, score) {
-    if (!ded || typeof ded !== 'object') return ded;
-    const expected = 200 - (score || 0);
-    const keys = Object.keys(ded);
-    let sum = keys.reduce((a, k) => a + (ded[k].pts_perdidos || 0), 0);
-    if (sum === expected) return ded; // already correct
-    // Distribute difference into the key with the most pts_perdidos (or first non-zero)
-    const diff = expected - sum;
-    let targetKey = keys.find(k => (ded[k].pts_perdidos || 0) > 0) || keys[0];
-    // If diff would make it negative, spread across all keys proportionally
-    if (sum > 0 && diff !== 0) {
-        const corrected = { ...ded };
-        // Scale each pts_perdidos proportionally
-        keys.forEach(k => {
-            corrected[k] = { ...ded[k], pts_perdidos: Math.round((ded[k].pts_perdidos || 0) * expected / sum) };
-        });
-        // Fix rounding residual
-        let newSum = keys.reduce((a,k) => a + corrected[k].pts_perdidos, 0);
-        let residual = expected - newSum;
-        if (residual !== 0) {
-            const adj = keys.find(k => corrected[k].pts_perdidos > 0) || keys[0];
-            corrected[adj].pts_perdidos += residual;
-        }
-        return corrected;
+function autoCorrectPts(i, ded, score) {
+  if (!ded || typeof ded !== 'object') return ded;
+  var expected = 200 - (score || 0);
+  var keys = Object.keys(ded);
+  // Fix ok=true with pts_perdidos > 0
+  keys.forEach(function(k) {
+    if (ded[k].ok === true && (ded[k].pts_perdidos || 0) > 0) {
+      ded[k] = Object.assign({}, ded[k], {pts_perdidos: 0});
     }
-    // sum === 0 but expected > 0: put all in first key
-    const corrected = { ...ded };
-    corrected[targetKey] = { ...ded[targetKey], pts_perdidos: expected };
-    return corrected;
+  });
+  var sum = keys.reduce(function(a,k){return a+(ded[k].pts_perdidos||0)},0);
+  if (sum === expected) return ded;
+  if (sum === 0) {
+    var first = keys[0];
+    var fixed = Object.assign({}, ded);
+    fixed[first] = Object.assign({}, ded[first], {pts_perdidos: expected});
+    return fixed;
+  }
+  var fixed = Object.assign({}, ded);
+  keys.forEach(function(k) {
+    fixed[k] = Object.assign({}, ded[k], {pts_perdidos: Math.round((ded[k].pts_perdidos||0)*expected/sum)});
+  });
+  var newSum = keys.reduce(function(a,k){return a+fixed[k].pts_perdidos},0);
+  var res = expected - newSum;
+  if (res !== 0) {
+    var adj = keys.find(function(k){return fixed[k].pts_perdidos>0}) || keys[0];
+    fixed[adj] = Object.assign({}, fixed[adj], {pts_perdidos: fixed[adj].pts_perdidos + res});
+  }
+  return fixed;
 }
 
 function setComp(n) {
-    curComp = n;
-    document.querySelectorAll('#compPills .comp-pill').forEach((b,i) => b.classList.toggle('active', i+1===n));
-    document.getElementById('compDesc').innerText = COMPS[n];
-    const score = feedbackData[`c${n}_score`];
-    document.getElementById('scoreBadges').innerHTML = SCORES.map(s =>
-        `<div class="score-badge${s===score?' selected':''}">${s}</div>`).join('');
-    const pos = feedbackData[`c${n}_pos`], imp = feedbackData[`c${n}_imp`];
-    const posBox = document.getElementById('posBox'), impBox = document.getElementById('impBox');
-    posBox.innerText = pos || 'Aguardando correção...'; posBox.classList.toggle('empty', !pos);
-    impBox.innerText = imp || 'Aguardando correção...'; impBox.classList.toggle('empty', !imp);
-    const ded = feedbackData[`c${n}_ded`];
-    const dedBox = document.getElementById('dedBox');
-    if (!ded) { dedBox.innerHTML='Aguardando correção...'; dedBox.classList.add('empty'); }
-    else {
-        dedBox.classList.remove('empty');
-        dedBox.style.cssText = 'padding:0;background:transparent;border:none;';
-        dedBox.innerHTML = renderDedTable(n, ded);
-    }
+  curComp = n;
+  document.querySelectorAll('#compPills .comp-pill').forEach(function(b,i){b.classList.toggle('active',i+1===n)});
+  document.getElementById('compDesc').innerText = COMPS[n];
+  var score = feedbackData['c'+n+'_score'];
+  document.getElementById('scoreBadges').innerHTML = SCORES.map(function(s){
+    return '<div class="score-badge'+(s===score?' selected':'')+'">'+s+'</div>';
+  }).join('');
+  var pos = feedbackData['c'+n+'_pos'], imp = feedbackData['c'+n+'_imp'];
+  var posBox = document.getElementById('posBox'), impBox = document.getElementById('impBox');
+  posBox.innerText = pos || 'Aguardando correcao...'; posBox.classList.toggle('empty',!pos);
+  impBox.innerText = imp || 'Aguardando correcao...'; impBox.classList.toggle('empty',!imp);
+  var ded = feedbackData['c'+n+'_ded'];
+  var dedBox = document.getElementById('dedBox');
+  if (!ded) { dedBox.innerHTML='Aguardando correcao...'; dedBox.classList.add('empty'); }
+  else { dedBox.classList.remove('empty'); dedBox.style.cssText='padding:0;background:transparent;border:none'; dedBox.innerHTML=renderDedTable(n,ded); }
 }
 
 function renderDedTable(comp, ded) {
-    const LABELS = {
-        1: { falhas_sintaticas:'Falhas sintáticas', desvios_ortografia:'Ortografia', desvios_pontuacao:'Pontuação', desvios_concordancia:'Concordância', desvios_regencia:'Regência', desvios_vocabulario:'Vocabulário', outros_desvios:'Outros desvios' },
-        2: { abordagem_tema:'Abordagem do tema', estrutura_dissertativa:'Estrutura dissertativa', partes_embrionarias:'Partes embrionárias', repertorio_legitimado:'Repertório legitimado', repertorio_pertinente:'Repertório pertinente', repertorio_produtivo:'Repertório produtivo' },
-        3: { tese_antecipacao:'Tese por antecipação', dois_temas_problema:'Dois temas-problema', palavras_chave:'Palavras-chave do tema', argumentos_relacionados:'Argumentos relacionados', repertorio_demonstrado:'Repertório demonstrado', marcadores_opiniao:'Marcadores de opinião', incoerencias:'Incoerências/contradições', proposta_resolve_temas:'Proposta resolve os temas' },
-        4: { conectivos_inadequados:'Conectivos inadequados', conectivos_repetidos:'Conectivos repetidos', paragrafos_sem_operador:'Parágrafos sem operador', retomada_inadequada:'Retomada inadequada', repeticao_lexical:'Repetição lexical' },
-        5: { agente:'Agente', acao:'Ação', modo_meio:'Modo / Meio', finalidade:'Finalidade', detalhamento:'Detalhamento' }
-    };
-    if (typeof ded === 'string') return `<div class="feedback-box" style="white-space:pre-wrap">${ded}</div>`;
-    const labels = LABELS[comp] || {};
-    let rows = '', totalFalhas = 0;
-    const actualScore = feedbackData[`c${comp}_score`] || 0;
-    const truePtsLost = 200 - actualScore;
-
-    for (const [key, val] of Object.entries(ded)) {
-        const label = labels[key] || key.replace(/_/g,' ');
-        const pts = val.pts_perdidos || 0;
-        const obs = val.exemplos ?? val.obs ?? '';
-        let badgeHtml = '';
-        if ('falhas' in val) {
-            const f = val.falhas || 0; totalFalhas += f;
-            badgeHtml = `<span class="bd-badge ${f===0?'green':'red'}">${f} ${f===1?'falha':'falhas'}</span>`;
-        } else if ('ok' in val) {
-            badgeHtml = `<span class="bd-badge ${val.ok?'green':'red'}">${val.ok?'✓ OK':'✗ Falhou'}</span>`;
-        }
-        // render exemplos as numbered list if array
-        let exemplosHtml = '';
-        if (Array.isArray(obs) && obs.length > 0) {
-            exemplosHtml = obs.map((ex, idx) =>
-                `<div class="bd-obs" style="margin-top:${idx===0?3:2}px;">
-                    <span style="color:var(--accent);font-size:.68rem;font-weight:700;margin-right:4px;">${idx+1}.</span>"${ex.slice(0,160)}${ex.length>160?'…':''}"
-                </div>`).join('');
-        } else if (typeof obs === 'string' && obs) {
-            exemplosHtml = `<div class="bd-obs">"${obs.slice(0,160)}${obs.length>160?'…':''}"</div>`;
-        }
-        rows += `<tr><td><div class="bd-name">${label}</div>${exemplosHtml}</td><td>${badgeHtml}</td><td><span class="bd-pts ${pts===0?'zero':''}">−${pts} pts</span></td></tr>`;
+  var LABELS = {
+    1:{falhas_sintaticas:'Falhas sintaticas',desvios_ortografia:'Ortografia',desvios_pontuacao:'Pontuacao',desvios_concordancia:'Concordancia',desvios_regencia:'Regencia',desvios_vocabulario:'Vocabulario',outros_desvios:'Outros desvios'},
+    2:{abordagem_tema:'Abordagem do tema',estrutura_dissertativa:'Estrutura dissertativa',partes_embrionarias:'Partes embrionarias',repertorio_legitimado:'Repertorio legitimado',repertorio_pertinente:'Repertorio pertinente',repertorio_produtivo:'Repertorio produtivo'},
+    3:{tese_antecipacao:'Tese por antecipacao',dois_temas_problema:'Dois temas-problema',palavras_chave:'Palavras-chave do tema',argumentos_relacionados:'Argumentos relacionados',repertorio_demonstrado:'Repertorio demonstrado',marcadores_opiniao:'Marcadores de opiniao',incoerencias:'Incoerencias',proposta_resolve_temas:'Proposta resolve os temas'},
+    4:{conectivos_inadequados:'Conectivos inadequados',conectivos_repetidos:'Conectivos repetidos',paragrafos_sem_operador:'Paragrafos sem operador',retomada_inadequada:'Retomada inadequada',repeticao_lexical:'Repeticao lexical'},
+    5:{agente:'Agente',acao:'Acao',modo_meio:'Modo / Meio',finalidade:'Finalidade',detalhamento:'Detalhamento'}
+  };
+  if (typeof ded === 'string') return '<div class="feedback-box" style="white-space:pre-wrap">'+ded+'</div>';
+  var labels = LABELS[comp] || {};
+  var rows = '', totalFalhas = 0;
+  var actualScore = feedbackData['c'+comp+'_score'] || 0;
+  var truePtsLost = 200 - actualScore;
+  Object.keys(ded).forEach(function(key) {
+    var val = ded[key];
+    var label = labels[key] || key.replace(/_/g,' ');
+    var pts = val.pts_perdidos || 0;
+    var obs = val.exemplos !== undefined ? val.exemplos : (val.obs || '');
+    var badgeHtml = '';
+    if ('falhas' in val) {
+      var f = val.falhas || 0; totalFalhas += f;
+      badgeHtml = '<span class="bd-badge '+(f===0?'green':'red')+'">'+f+' '+(f===1?'falha':'falhas')+'</span>';
+    } else if ('ok' in val) {
+      badgeHtml = '<span class="bd-badge '+(val.ok?'green':'red')+'">'+(val.ok?'OK':'Falhou')+'</span>';
     }
-    const hasFalhas = Object.values(ded).some(v => 'falhas' in v);
-    return `<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
-        <table class="breakdown-table">
-            <thead><tr><th>Elemento</th><th>${hasFalhas?'Ocorrências':'Status'}</th><th>Pts perdidos</th></tr></thead>
-            <tbody>${rows}</tbody>
-            <tfoot><tr style="border-top:1px solid var(--border);">
-                <td style="font-weight:700;">Total</td>
-                <td>${hasFalhas?`<span class="bd-badge ${totalFalhas===0?'green':'red'}">${totalFalhas}</span>`:''}</td>
-                <td><span class="bd-pts ${truePtsLost===0?'zero':''}" style="font-size:.9rem;">−${truePtsLost} pts</span></td>
-            </tr></tfoot>
-        </table>
-    </div>`;
+    var exemplosHtml = '';
+    if (Array.isArray(obs) && obs.length > 0) {
+      exemplosHtml = obs.map(function(ex,idx){
+        return '<div class="bd-obs" style="margin-top:'+(idx===0?3:2)+'px"><span style="color:var(--accent);font-size:.68rem;font-weight:700;margin-right:4px">'+(idx+1)+'.</span>"'+ex.slice(0,140)+(ex.length>140?'..':'')+'\"</div>';
+      }).join('');
+    } else if (typeof obs === 'string' && obs) {
+      exemplosHtml = '<div class="bd-obs">"'+obs.slice(0,140)+(obs.length>140?'..':'')+'\"</div>';
+    }
+    rows += '<tr><td><div class="bd-name">'+label+'</div>'+exemplosHtml+'</td><td>'+badgeHtml+'</td><td><span class="bd-pts '+(pts===0?'zero':'')+'">-'+pts+' pts</span></td></tr>';
+  });
+  var hasFalhas = Object.values(ded).some(function(v){return 'falhas' in v});
+  return '<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden"><table class="breakdown-table"><thead><tr><th>Elemento</th><th>'+(hasFalhas?'Ocorrencias':'Status')+'</th><th>Pts perdidos</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr style="border-top:1px solid var(--border)"><td style="font-weight:700">Total</td><td>'+(hasFalhas?'<span class="bd-badge '+(totalFalhas===0?'green':'red')+'">'+totalFalhas+'</span>':'')+'</td><td><span class="bd-pts '+(truePtsLost===0?'zero':'')+'" style="font-size:.9rem">-'+truePtsLost+' pts</span></td></tr></tfoot></table></div>';
 }
 
 function setCompInd(n) {
-    curCompInd = n;
-    document.querySelectorAll('#compPillsInd .comp-pill').forEach((b,i) => b.classList.toggle('active', i+1===n));
-    renderCrits(n);
+  curCompInd = n;
+  document.querySelectorAll('#compPillsInd .comp-pill').forEach(function(b,i){b.classList.toggle('active',i+1===n)});
+  renderCrits(n);
 }
 function renderCrits(n) {
-    const off = [0,0,20,27,41,46];
-    document.getElementById('critList').innerHTML = CRITERIA[n].map((c,i) =>
-        `<div class="crit-item"><div class="crit-num">${off[n]+i+1}</div>${c}</div>`).join('');
+  var off=[0,0,20,27,41,46];
+  document.getElementById('critList').innerHTML = CRITERIA[n].map(function(c,i){
+    return '<div class="crit-item"><div class="crit-num">'+(off[n]+i+1)+'</div>'+c+'</div>';
+  }).join('');
 }
 
-/* ── PDF PRINT ── */
 function printReport() {
-    const total = [1,2,3,4,5].reduce((a,n) => a+(feedbackData[`c${n}_score`]||0), 0);
-    const tema = document.getElementById('temaInput').value.trim();
-    const now = new Date();
-    document.getElementById('pdf-tema-line').textContent = `Tema: ${tema || 'não informado'}`;
-    document.getElementById('pdf-date-line').innerHTML =
-        `Data: ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}<br>` +
-        `Nota Total: <strong style="color:#e63946;font-size:1.1rem;">${total}/1000</strong>`;
-    document.getElementById('pdfAllComps').innerHTML = [1,2,3,4,5].map(n => {
-        const score = feedbackData[`c${n}_score`] ?? '—';
-        const pos = feedbackData[`c${n}_pos`] || '—';
-        const imp = feedbackData[`c${n}_imp`] || '—';
-        const ded = feedbackData[`c${n}_ded`];
-        const col = score>=160?'#27ae60':score>=80?'#e67e22':'#c0392b';
-        return `<div class="pdf-comp-block">
-            <div class="pdf-comp-title">Competência ${n} — ${COMPS[n]}<span class="pdf-score-chip" style="background:${col}">${score}/200</span></div>
-            <div style="margin-bottom:10px;"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px;">✅ Pontos positivos</div><div style="font-size:.85rem;line-height:1.6;color:#333;">${pos}</div></div>
-            <div style="margin-bottom:10px;"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px;">💡 Como melhorar</div><div style="font-size:.85rem;line-height:1.6;color:#333;">${imp}</div></div>
-            <div><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:6px;">📉 Onde perdeu pontos</div>${ded?renderDedTable(n,ded):'<span style="color:#aaa">Sem dados</span>'}</div>
-        </div>`;
-    }).join('');
-    window.print();
+  var total = [1,2,3,4,5].reduce(function(a,n){return a+(feedbackData['c'+n+'_score']||0)},0);
+  var tema = document.getElementById('temaInput').value.trim();
+  var now = new Date();
+  document.getElementById('pdf-tema-line').textContent = 'Tema: '+(tema||'nao informado');
+  document.getElementById('pdf-date-line').innerHTML = 'Data: '+now.toLocaleDateString('pt-BR')+' as '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'<br>Nota Total: <strong style="color:#e63946;font-size:1.1rem">'+total+'/1000</strong>';
+  document.getElementById('pdfAllComps').innerHTML = [1,2,3,4,5].map(function(n){
+    var score = feedbackData['c'+n+'_score'] !== undefined ? feedbackData['c'+n+'_score'] : '-';
+    var pos = feedbackData['c'+n+'_pos'] || '-';
+    var imp = feedbackData['c'+n+'_imp'] || '-';
+    var ded = feedbackData['c'+n+'_ded'];
+    var col = score>=160?'#27ae60':score>=80?'#e67e22':'#c0392b';
+    return '<div class="pdf-comp-block"><div class="pdf-comp-title">Competencia '+n+' - '+COMPS[n]+'<span class="pdf-score-chip" style="background:'+col+'">'+score+'/200</span></div><div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px">Pontos positivos</div><div style="font-size:.85rem;line-height:1.6;color:#333">'+pos+'</div></div><div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px">Como melhorar</div><div style="font-size:.85rem;line-height:1.6;color:#333">'+imp+'</div></div><div><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:6px">Onde perdeu pontos</div>'+(ded?renderDedTable(n,ded):'<span style="color:#aaa">Sem dados</span>')+'</div></div>';
+  }).join('');
+  window.print();
 }
 
-/* ── OCR (AI only) ── */
 function previewImg(input) {
-    const file = input.files[0]; if (!file) return;
-    const r = new FileReader();
-    r.onload = e => { const img=document.getElementById('prevImg'); img.src=e.target.result; img.style.display='block'; document.getElementById('btnOCR').disabled=false; };
-    r.readAsDataURL(file);
-}
-async function doOCR() {
-    if (!config.apiUrl) { showToast('Configure a URL do servidor!','error'); return; }
-    const btn=document.getElementById('btnOCR'), prog=document.getElementById('ocrProgress'), bar=document.getElementById('ocrBar'), msg=document.getElementById('ocrMsg');
-    btn.disabled=true; prog.style.display='block'; bar.style.width='10%';
-    const file=document.getElementById('fileIn').files[0];
-    if (!file) { showToast('Nenhuma imagem carregada.','error'); prog.style.display='none'; btn.disabled=false; return; }
-    const dataUrl = await new Promise((res,rej) => { const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); });
-    const mime=file.type||'image/jpeg', base64=dataUrl.split(',')[1];
-    try {
-        msg.textContent='IA lendo manuscrito...'; bar.style.width='50%';
-        const resp = await fetch(config.apiUrl, {
-            method:'POST', headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
-            body: JSON.stringify({ model:config.model, messages:[{role:'user',content:[
-                {type:'image_url',image_url:{url:`data:${mime};base64,${base64}`}},
-                {type:'text',text:'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- NÃO numere as linhas\n- Para cada palavra que você NÃO tem certeza da leitura (letra ambígua, rasura, sobreposição, caligrafia difícil), marque-a entre colchetes duplos: [[palavra]] — mesmo que você tenha feito uma leitura provável\n- Se uma palavra for absolutamente ilegível, escreva [[ilegível]]\n- Palavras claras e seguras NÃO devem ser marcadas\n- NÃO corrija erros do autor, NÃO omita trechos\n- Preserve a divisão em parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}
-O numere as linhas — a saída não deve ter números no início das linhas\n- Se uma palavra for difícil de ler, marque-a: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}
-            ]}], temperature:0.1, max_tokens:4000 }),
-            signal: AbortSignal.timeout(180000)
-        });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data=await resp.json();
-        const text=data.choices?.[0]?.message?.content;
-        if (!text) throw new Error('IA não retornou texto');
-        bar.style.width='100%'; msg.textContent='Transcrição concluída!';
-        applyOcrHighlights(removeLineNumbers(text)); updateMeta();
-        setTimeout(() => { prog.style.display='none'; btn.disabled=false; showToast('Texto extraído! Palavras suspeitas marcadas em laranja.','success'); showTab('editor'); }, 700);
-    } catch(e) { prog.style.display='none'; btn.disabled=false; showToast('Erro: '+e.message,'error'); }
+  var file = input.files[0]; if (!file) return;
+  var r = new FileReader();
+  r.onload = function(e) {
+    var img = document.getElementById('prevImg');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('btnOCR').disabled = false;
+  };
+  r.readAsDataURL(file);
 }
 
-/* ── OCR HIGHLIGHTS ── */
-let highlightActive = false;
-function applyOcrHighlights(raw) {
-    const plain = raw.replace(/\[\[([^\]]+)\]\]/g,'$1');
-    document.getElementById('essayText').value = plain;
-    const suspects=[]; let p='', i=0;
-    while(i<raw.length){
-        if(raw[i]==='['&&raw[i+1]==='['){const end=raw.indexOf(']]',i);if(end>i){const w=raw.slice(i+2,end);suspects.push({start:p.length,end:p.length+w.length,type:w==='ilegível'?'error':'suspect'});p+=w;i=end+2;continue;}}
-        p+=raw[i];i++;
-    }
-    if(suspects.length>0){
-        highlightActive=true;
-        let html='',pos=0;
-        for(const s of suspects){html+=escHtml(p.slice(pos,s.start));html+=`<mark class="hl-${s.type}">${escHtml(p.slice(s.start,s.end))}</mark>`;pos=s.end;}
-        html+=escHtml(p.slice(pos));
-        document.getElementById('highlight-overlay').innerHTML=html;
-        document.getElementById('reviewBanner').classList.add('active');
-        document.getElementById('suspectCount').textContent=suspects.length+' trecho'+(suspects.length>1?'s':'')+' para revisar';
-    } else { highlightActive=false; }
-    syncScroll();
-}
 function removeLineNumbers(text) {
-    // Remove números de linha no início de cada linha: "1 texto", "23 texto", "1\ttexto"
-    return text
-        .split('\n')
-        .map(line => line.replace(/^\s*\d{1,3}[\s\t]+/, ''))
-        .join('\n')
-        .replace(/\n{3,}/g, '\n\n') // colapsa linhas em branco extras
-        .trim();
+  return text.split('\n').map(function(line){return line.replace(/^\s*\d{1,3}[\s\t]+/,'')}).join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
 
-function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function syncScroll(){const ta=document.getElementById('essayText'),ov=document.getElementById('highlight-overlay');ov.scrollTop=ta.scrollTop;ov.scrollLeft=ta.scrollLeft;}
-function clearHighlights(){highlightActive=false;document.getElementById('highlight-overlay').innerHTML='';document.getElementById('reviewBanner').classList.remove('active');}
+function doOCR() {
+  if (!cfg.apiUrl) { showToast('Configure a URL do servidor!','error'); return; }
+  var btn=document.getElementById('btnOCR'), prog=document.getElementById('ocrProgress'), bar=document.getElementById('ocrBar'), msg=document.getElementById('ocrMsg');
+  btn.disabled=true; prog.style.display='block'; bar.style.width='10%';
+  var file=document.getElementById('fileIn').files[0];
+  if (!file) { showToast('Nenhuma imagem carregada.','error'); prog.style.display='none'; btn.disabled=false; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    var mime = file.type || 'image/jpeg';
+    var base64 = dataUrl.split(',')[1];
+    msg.textContent='IA lendo manuscrito...'; bar.style.width='50%';
+    var ocrPrompt = 'Transcreva o texto manuscrito desta folha de redacao do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- NAO numere as linhas\n- Para cada palavra que voce NAO tem certeza da leitura, marque-a entre colchetes duplos: [[palavra]]\n- Se absolutamente ilegivel, escreva [[ilegivel]]\n- Palavras claras NAO devem ser marcadas\n- NAO corrija erros do autor, NAO omita trechos\n- Preserve a divisao em paragrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentarios, sem numeracao de linhas';
+    fetch(cfg.apiUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+      body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:[{type:'image_url',image_url:{url:'data:'+mime+';base64,'+base64}},{type:'text',text:ocrPrompt}]}],temperature:0.1,max_tokens:4000}),
+      signal:AbortSignal.timeout(180000)
+    }).then(function(resp){
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      return resp.json();
+    }).then(function(data){
+      var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if (!text) throw new Error('IA nao retornou texto');
+      bar.style.width='100%'; msg.textContent='Transcricao concluida!';
+      applyOcrHighlights(removeLineNumbers(text)); updateMeta();
+      setTimeout(function(){ prog.style.display='none'; btn.disabled=false; showToast('Texto extraido!','success'); showTab('editor'); }, 700);
+    }).catch(function(e){
+      prog.style.display='none'; btn.disabled=false; showToast('Erro: '+e.message,'error');
+    });
+  };
+  reader.readAsDataURL(file);
+}
 
-/* ── META ── */
+function applyOcrHighlights(raw) {
+  var plain = raw.replace(/\[\[([^\]]+)\]\]/g,'$1');
+  document.getElementById('essayText').value = plain;
+  var suspects=[], p='', i=0;
+  while(i<raw.length){
+    if(raw[i]==='['&&raw[i+1]==='['){var end=raw.indexOf(']]',i);if(end>i){var w=raw.slice(i+2,end);suspects.push({start:p.length,end:p.length+w.length,type:w==='ilegivel'?'error':'suspect'});p+=w;i=end+2;continue;}}
+    p+=raw[i];i++;
+  }
+  if(suspects.length>0){
+    var html='',pos=0;
+    suspects.forEach(function(s){html+=escHtml(p.slice(pos,s.start));html+='<mark class="hl-'+s.type+'">'+escHtml(p.slice(s.start,s.end))+'</mark>';pos=s.end;});
+    html+=escHtml(p.slice(pos));
+    document.getElementById('highlight-overlay').innerHTML=html;
+    document.getElementById('reviewBanner').classList.add('active');
+    document.getElementById('suspectCount').textContent=suspects.length+' trecho'+(suspects.length>1?'s':'')+' para revisar';
+  }
+  syncScroll();
+}
+function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function syncScroll(){var ta=document.getElementById('essayText'),ov=document.getElementById('highlight-overlay');ov.scrollTop=ta.scrollTop;ov.scrollLeft=ta.scrollLeft}
+function clearHighlights(){document.getElementById('highlight-overlay').innerHTML='';document.getElementById('reviewBanner').classList.remove('active')}
 function updateMeta(){
-    const t=document.getElementById('essayText').value;
-    document.getElementById('wordCount').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palavras';
-    document.getElementById('lineCount').textContent=(t.trim()?t.split('\n').length:0)+' linhas';
-    document.getElementById('charCount').textContent=t.length+' caracteres';
+  var t=document.getElementById('essayText').value;
+  document.getElementById('wordCount').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palavras';
+  document.getElementById('lineCount').textContent=(t.trim()?t.split('\n').length:0)+' linhas';
+  document.getElementById('charCount').textContent=t.length+' caracteres';
 }
-function clearEssay(){document.getElementById('essayText').value='';updateMeta();}
+function clearEssay(){document.getElementById('essayText').value='';updateMeta()}
 
-/* ── CONNECTION TEST ── */
-function testConnection(){
-    const dot=document.getElementById('statusDot'),txt=document.getElementById('statusTxt'),url=(config.apiUrl||'').trim();
-    if(!url){dot.className='status-dot error';txt.textContent='URL não configurada';return false;}
-    const ok=/^https?:\/\/.+/.test(url);
-    dot.className='status-dot '+(ok?'online':'error');
-    txt.textContent=ok?'URL configurada ✓':'URL inválida';
-    return ok;
+function buildPrompts(txt, tema) {
+  var temaInfo = tema ? '\nTema da proposta: "' + tema + '"' : '';
+  var calibracao = 'ESCALA DE NOTAS: 0|40|80|120|160|200\n200=sem falhas|160=1 leve|120=2-3 moderadas|80=varias falhas|40=falha grave|0=ausencia total';
+  var regraSoma = 'REGRA MATEMATICA: some todos pts_perdidos. Deve ser EXATAMENTE igual a (200 - score). Se nao bater, ajuste antes de finalizar o JSON.\nREGRA OK: se ok=true entao pts_perdidos=0 obrigatoriamente.\nREGRA EXEMPLOS: campo exemplos eh array, um item por falha, max 60 chars cada, max 3 itens, sem falhas usa [].';
+
+  var p1 = 'Voce eh corretor oficial do ENEM.' + temaInfo + '\n' + calibracao + '\n' + regraSoma + '\n\nAvalie Competencia I - Norma Culta.\n\nCONTE falhas:\n- falhas_sintaticas: frase truncada, fragmento sem verbo, justaposicao sem conectivo. NAO eh erro: inversao sintatica formal, oracao subordinada longa bem construida.\n- desvios_ortografia: grafia errada, acento incorreto. NAO eh erro: vocabulario erudito correto.\n- desvios_pontuacao: virgula ausente em adjunto adverbial deslocado, ponto final ausente.\n- desvios_concordancia: discordancia sujeito/verbo ou substantivo/artigo. EXEMPLOS DE ERRO: "o escassez", "faz-se imperioso a tomada", "as marginalidade". NAO eh erro: sujeito posposto em concordancia correta.\n- desvios_regencia: preposicao errada ou ausente. NAO eh erro: regencia formal correta.\n- desvios_vocabulario: palavra com sentido errado, coloquialismo. NAO eh erro: vocabulario erudito correto.\n- outros_desvios: outros desvios da norma culta.\n\nNOTA: 0sint+0-2desv=200|1-2sint+3-5desv=160|3-4sint+6-8desv=120|5-6sint+9+desv=80|7+sint=40|sem estrutura=0\n\nRetorne SOMENTE JSON (substitua os valores de exemplo pelos reais):\n{"c1_score":120,"c1_ded":{"falhas_sintaticas":{"falhas":2,"pts_perdidos":40,"exemplos":["trecho1","trecho2"]},"desvios_ortografia":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"desvios_pontuacao":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"desvios_concordancia":{"falhas":2,"pts_perdidos":40,"exemplos":["trecho1"]},"desvios_regencia":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"desvios_vocabulario":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"outros_desvios":{"falhas":0,"pts_perdidos":0,"exemplos":[]}}}';
+
+  var p2 = 'Voce eh corretor oficial do ENEM.' + temaInfo + '\n' + calibracao + '\n' + regraSoma + '\n\nAvalie Competencia II - Tema e Repertorio.' + (tema ? ' Tema: "' + tema + '".' : '') + '\n\nVERIFIQUE:\n- abordagem_tema: tema em todas as partes?\n- estrutura_dissertativa: introducao, desenvolvimento e conclusao?\n- partes_embrionarias: paragrafos com menos de 3 linhas?\n- repertorio_legitimado: fonte real e reconhecida? OK: IBGE, Djamila Ribeiro, Bauman. NAO OK: fonte inventada.\n- repertorio_pertinente: relaciona-se ao tema?\n- repertorio_produtivo: constroi o argumento (nao so decorativo)? OK se: autor citado + teoria explicada + conectada ao argumento. ATENCAO: se candidato explica a teoria E conecta ao argumento, marque ok=true obrigatoriamente.\n\nNOTA: todos+produtivo=200|todos+nao produtivo=160|1 embrionario=120|2+ embrionarios=80|tangenciamento=40|fuga=0\n\nRetorne SOMENTE JSON:\n{"c2_score":160,"c2_ded":{"abordagem_tema":{"ok":true,"pts_perdidos":0,"obs":""},"estrutura_dissertativa":{"ok":true,"pts_perdidos":0,"obs":""},"partes_embrionarias":{"falhas":0,"pts_perdidos":0,"obs":""},"repertorio_legitimado":{"ok":true,"pts_perdidos":0,"obs":""},"repertorio_pertinente":{"ok":true,"pts_perdidos":0,"obs":""},"repertorio_produtivo":{"ok":false,"pts_perdidos":40,"obs":"motivo"}}}';
+
+  var p3 = 'Voce eh corretor oficial do ENEM.' + temaInfo + '\n' + calibracao + '\n' + regraSoma + '\n\nAvalie Competencia III - Projeto de Texto.\n\nVERIFIQUE:\n- tese_antecipacao: tese clara no 1o paragrafo?\n- dois_temas_problema: exatamente 2 problemas na tese?\n- palavras_chave: palavras do tema em todas as partes?\n- argumentos_relacionados: cada argumento desenvolve o tema-problema do paragrafo?\n- repertorio_demonstrado: repertorio explicado e conectado ao argumento?\n- marcadores_opiniao: marcadores de autoria presentes?\n- incoerencias: contradicoes que se anulam?\n- proposta_resolve_temas: proposta resolve os 2 temas-problema?\n\nREGRA CRITICA: ok=true significa pts_perdidos=0. ok=false significa pts_perdidos>0.\n\nNOTA: todos ok=200|1 leve=160|2 falhas=120|3+=80|sem projeto=40|caotico=0\n\nRetorne SOMENTE JSON:\n{"c3_score":160,"c3_ded":{"tese_antecipacao":{"ok":true,"pts_perdidos":0,"obs":""},"dois_temas_problema":{"ok":true,"pts_perdidos":0,"obs":""},"palavras_chave":{"ok":true,"pts_perdidos":0,"obs":""},"argumentos_relacionados":{"ok":true,"pts_perdidos":0,"obs":""},"repertorio_demonstrado":{"ok":true,"pts_perdidos":0,"obs":""},"marcadores_opiniao":{"ok":true,"pts_perdidos":0,"obs":""},"incoerencias":{"falhas":0,"pts_perdidos":0,"obs":""},"proposta_resolve_temas":{"ok":false,"pts_perdidos":40,"obs":"motivo"}}}';
+
+  var p4 = 'Voce eh corretor oficial do ENEM.' + temaInfo + '\n' + calibracao + '\n' + regraSoma + '\n\nAvalie Competencia IV - Coesao Textual.\n\nCONTE:\n- conectivos_inadequados: conectivos com sentido errado.\n- conectivos_repetidos: mesmo conectivo 3+ vezes no texto inteiro.\n- paragrafos_sem_operador: paragrafos 2/3/4 sem operador argumentativo no inicio.\n- retomada_inadequada: pronome/sinonimo que nao retoma o referente.\n- repeticao_lexical: mesma palavra 3+ vezes em 5 linhas consecutivas.\n\nNOTA: nenhum=200|1 leve=160|2 problemas=120|3+=80|constante=40|sem articulacao=0\n\nRetorne SOMENTE JSON:\n{"c4_score":160,"c4_ded":{"conectivos_inadequados":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"conectivos_repetidos":{"falhas":1,"pts_perdidos":40,"exemplos":["trecho1"]},"paragrafos_sem_operador":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"retomada_inadequada":{"falhas":0,"pts_perdidos":0,"exemplos":[]},"repeticao_lexical":{"falhas":0,"pts_perdidos":0,"exemplos":[]}}}';
+
+  var p5 = 'Voce eh corretor oficial do ENEM.' + temaInfo + '\n' + calibracao + '\n' + regraSoma + '\n\nAvalie Competencia V - Proposta de Intervencao.\n\nIDENTIFIQUE os 5 elementos em cada proposta:\n- agente: sujeito com artigo definido.\n- acao: verbo de acao como predicado.\n- modo_meio: como/por qual meio.\n- finalidade: conectivo de finalidade.\n- detalhamento: termo que especifica outro elemento.\n\nNOTA: 2 propostas 5 elem=200|4 elem=160|3 elem=120|2 elem=80|1 proposta=40|sem proposta=0\npts_perdidos: elemento ausente/invalido=40, presente=0.\n\nRetorne SOMENTE JSON:\n{"c5_score":200,"c5_ded":{"agente":{"ok":true,"pts_perdidos":0,"obs":""},"acao":{"ok":true,"pts_perdidos":0,"obs":""},"modo_meio":{"ok":true,"pts_perdidos":0,"obs":""},"finalidade":{"ok":true,"pts_perdidos":0,"obs":""},"detalhamento":{"ok":true,"pts_perdidos":0,"obs":""}}}';
+
+  return [p1, p2, p3, p4, p5];
 }
 
-/* ── CORREÇÃO ── */
-async function startCorrection(){
-    const txt=document.getElementById('essayText').value.trim();
-    if(!txt){showToast('Cole sua redação antes de corrigir!','error');return;}
-    if(!config.apiUrl){showToast('Configure a URL do servidor primeiro!','error');showTab('config');return;}
-    const tema=document.getElementById('temaInput').value.trim();
-    if(!tema) document.getElementById('tema-warning').style.display='block';
-    const btn=document.getElementById('btnCorr'),errorLog=document.getElementById('errorLog');
-    btn.disabled=true; feedbackData={}; showTab('results');
-    document.getElementById('scoreBanner').style.display='none';
-    document.getElementById('progWrap').style.display='block';
-    document.getElementById('pdfBtnWrap').style.display='none';
-    errorLog.style.display='none'; errorLog.textContent='';
-    document.querySelectorAll('.comp-step').forEach(s=>s.className='comp-step');
-    setComp(1);
+function repairJson(raw) {
+  var match = raw.match(/\{[\s\S]*/);
+  if (!match) return null;
+  var s = match[0];
+  try { return JSON.parse(s); } catch(e){}
+  // close open strings
+  var qc = (s.match(/(?<!\\)"/g)||[]).length;
+  if (qc % 2 !== 0) s += '"';
+  // close open brackets/braces
+  var stack = [];
+  for (var ci=0; ci<s.length; ci++) {
+    if (s[ci]==='{') stack.push('}');
+    else if (s[ci]==='[') stack.push(']');
+    else if (s[ci]==='}'||s[ci]===']') stack.pop();
+  }
+  s = s.replace(/,\s*$/, '') + stack.reverse().join('');
+  try { return JSON.parse(s); } catch(e){ return null; }
+}
 
-    const log=m=>{errorLog.style.display='block';errorLog.textContent+=`[${new Date().toLocaleTimeString()}] ${m}\n`;errorLog.scrollTop=errorLog.scrollHeight;};
-    const setP=(pct,lbl)=>{document.getElementById('progFill').style.width=pct+'%';document.getElementById('progLabel').textContent=lbl;document.getElementById('progPct').textContent=pct+'%';};
+async function startCorrection() {
+  var txt = document.getElementById('essayText').value.trim();
+  if (!txt) { showToast('Cole sua redacao antes de corrigir!','error'); return; }
+  if (!cfg.apiUrl) { showToast('Configure a URL do servidor!','error'); showTab('config'); return; }
+  var tema = document.getElementById('temaInput').value.trim();
+  if (!tema) document.getElementById('tema-warning').style.display = 'block';
+  var btn = document.getElementById('btnCorr');
+  var errorLog = document.getElementById('errorLog');
+  btn.disabled=true; feedbackData={}; showTab('results');
+  document.getElementById('scoreBanner').style.display='none';
+  document.getElementById('progWrap').style.display='block';
+  document.getElementById('pdfBtnWrap').style.display='none';
+  errorLog.style.display='none'; errorLog.textContent='';
+  document.querySelectorAll('.comp-step').forEach(function(s){s.className='comp-step'});
+  setComp(1);
 
-    const temaInfo = tema?`\nTema da proposta de redação: "${tema}"`:'';
+  var prompts = buildPrompts(txt, tema);
 
-    const CALIBRACAO=`
-=== RÉGUA DE CALIBRAÇÃO — CRITÉRIOS OFICIAIS ENEM ===
-ESCALA DE NOTAS (por competência): 0 | 40 | 80 | 120 | 160 | 200
-- 200 pts → SEM falhas identificáveis
-- 160 pts → 1 falha leve
-- 120 pts → 2-3 falhas moderadas
-- 80 pts  → várias falhas ou descumprimento central
-- 40 pts  → tangenciamento ou falha grave
-- 0 pts   → ausência total de domínio
-=== FIM DA RÉGUA ===`;
+  function log(m){errorLog.style.display='block';errorLog.textContent+='['+new Date().toLocaleTimeString()+'] '+m+'\n';errorLog.scrollTop=errorLog.scrollHeight}
+  function setP(pct,lbl){document.getElementById('progFill').style.width=pct+'%';document.getElementById('progLabel').textContent=lbl;document.getElementById('progPct').textContent=pct+'%'}
 
-    const REGRA_SOMA=`
-REGRA MATEMÁTICA OBRIGATÓRIA:
-1. Determine c_score pela tabela.
-2. TOTAL_PTS_PERDIDOS = 200 − c_score.
-3. Distribua TOTAL_PTS_PERDIDOS entre categorias com falha. A SOMA de todos os "pts_perdidos" DEVE ser EXATAMENTE igual a TOTAL_PTS_PERDIDOS.
-4. Categorias sem falha → pts_perdidos = 0.
-5. Antes de fechar o JSON: some todos os pts_perdidos e confirme soma == TOTAL_PTS_PERDIDOS. Se não bater, ajuste.
+  var TOKEN_LADDER = [9000, 4096, 2048];
 
-REGRA DE EXEMPLOS OBRIGATÓRIA:
-- "exemplos" deve ser um ARRAY de strings, uma por falha.
-- Se há 3 falhas → array com 3 strings, cada uma com o trecho exato do texto.
-- Sem falhas → [].
-- NUNCA coloque múltiplas falhas numa única string.
-Correto: "exemplos": ["trecho 1", "trecho 2"]
-Errado:  "exemplos": "trecho 1, trecho 2"`;
+  for (var i=1; i<=5; i++) {
+    (function(ci){
+      document.querySelectorAll('.comp-step').forEach(function(s,idx){
+        if(idx+1<ci) s.className='comp-step done';
+        else if(idx+1===ci) s.className='comp-step active';
+        else s.className='comp-step';
+      });
+    })(i);
+    setP((i-1)*20, 'Analisando Competencia '+i+' de 5...');
+    await new Promise(function(r){setTimeout(r,80)});
 
-    const PROMPTS={
-        1:`Você é um corretor oficial de redações do ENEM.${temaInfo}
-${CALIBRACAO}
-${REGRA_SOMA}
-Avalie a Competência I — Norma Culta da língua portuguesa.
-
-PASSO 1 — CONTE cada falha individualmente. Seja rigoroso: só marque o que for inequivocamente errado.
-
-CATEGORIAS E CRITÉRIOS EXATOS:
-
-- falhas_sintaticas: frase truncada, fragmento sem verbo principal, justaposição de orações sem conectivo.
-  ✓ NÃO é erro: inversão sintática formal, oração subordinada longa bem construída, voz passiva sintética.
-
-- desvios_ortografia: palavra grafada errada, acento obrigatório ausente ou incorreto.
-  ✓ NÃO é erro: vocabulário erudito correto (nebulosidade, imperioso, primordial, outrossim).
-
-- desvios_pontuacao: vírgula ausente em adjunto adverbial deslocado, ponto final ausente, uso incorreto de ponto e vírgula.
-  ✓ NÃO é erro: vírgula antes de "que" em orações relativas explicativas.
-
-- desvios_concordancia: discordância entre sujeito/verbo ou substantivo/adjetivo/artigo.
-  EXEMPLOS REAIS DE ERRO: "o escassez" (art. masc. + sust. fem.), "faz-se imperioso a tomada" (pred. masc. + suj. fem.), "as marginalidade" (art. pl. + sust. sing.).
-  ✓ NÃO é erro: sujeito posposto ao verbo em concordância correta, concordância ideológica válida.
-
-- desvios_regencia: preposição errada ou ausente exigida pelo verbo/nome.
-  ✓ NÃO é erro: regência formal correta mesmo que diferente da coloquial (ex: "a que" em vez de "que").
-
-- desvios_vocabulario: palavra usada com sentido errado, registro coloquial inadequado.
-  ✓ NÃO é erro: vocabulário erudito usado corretamente (nebulosidade, fomenta, perpetuam, mitigar).
-
-- outros_desvios: qualquer outro desvio claro da norma culta não encaixado acima.
-
-PASSO 2 — NOTA:
-0 sint. E 0-2 desv.→200 | 1-2 sint. OU 3-5 desv.→160 | 3-4 sint. OU 6-8 desv.→120 | 5-6 sint. OU 9+ desv.→80 | 7+ sint.→40 | sem estrutura→0
-
-PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua proporcionalmente. Confirme a soma.
-
-REGRAS DE COMPACTAÇÃO DO JSON:
-- Cada string em "exemplos" deve ter no máximo 60 caracteres.
-- Liste no máximo 3 exemplos por categoria. O campo "falhas" continua com o total real.
-- Categorias com 0 falhas: use "exemplos":[].
-
-Retorne SOMENTE JSON válido:
-{"c1_score":<nota>,"c1_ded":{"falhas_sintaticas":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>","<≤60 chars>"]},"desvios_ortografia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_pontuacao":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_concordancia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_regencia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_vocabulario":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"outros_desvios":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]}}}`,
-
-        2:`Você é um corretor oficial de redações do ENEM.${temaInfo}
-${CALIBRACAO}
-${REGRA_SOMA}
-Avalie a Competência II — Tema e Repertório.${tema?`\nTema: "${tema}".`:''}
-
-PASSO 1 — VERIFIQUE cada critério com rigor:
-
-- abordagem_tema: o tema aparece explicitamente em TODAS as partes (introdução, desenvolvimento, conclusão)?
-  ✓ OK se: o tema é desenvolvido em todos os parágrafos, mesmo com abordagens distintas.
-  ✗ Falhou se: alguma parte ignora o tema ou desvia para assunto não relacionado.
-
-- estrutura_dissertativa: há introdução com tese, desenvolvimento com argumentos e conclusão com proposta?
-  ✓ OK se: 4 parágrafos bem delimitados com funções claras.
-  ✗ Falhou se: falta uma das partes ou estão fundidas sem distinção.
-
-- partes_embrionarias: conte parágrafos com menos de 3 linhas (aproximadamente menos de 50 palavras).
-  ✓ 0 falhas se todos os parágrafos têm desenvolvimento suficiente.
-
-- repertorio_legitimado: a fonte citada é real e reconhecida (acadêmica, cultural, científica, histórica)?
-  ✓ OK: IBGE, Djamila Ribeiro, Zygmunt Bauman, ONU, filósofos, sociólogos, dados oficiais.
-  ✗ Falhou: fonte inventada, desconhecida ou popular sem reconhecimento acadêmico/cultural.
-
-- repertorio_pertinente: o repertório se relaciona diretamente com o tema e os argumentos do parágrafo?
-  ✓ OK: usar Bauman para falar de omissão estatal, usar IBGE para contextualizar o problema.
-  ✗ Falhou: citar uma teoria sem conexão com o argumento do parágrafo.
-
-- repertorio_produtivo: o repertório é USADO para construir e sustentar o argumento — não apenas mencionado?
-  ✓ OK (produtivo): autor citado + teoria explicada + conectada ao argumento central do parágrafo.
-    Exemplo produtivo: "Bauman define Instituição Zumbi → aplica ao Estado → conclui que o Estado falha com as cuidadoras."
-    Exemplo produtivo: "Djamila Ribeiro defende tirar da invisibilidade → conecta ao panorama nacional de descaso."
-  ✗ Falhou (não produtivo): autor apenas mencionado ou citado sem que a ideia seja desenvolvida e aplicada ao argumento.
-    Exemplo não produtivo: "Como disse Bauman, as instituições falham." (sem explicar nem conectar ao tema)
-  ATENÇÃO: Se o candidato explica a teoria E a conecta ao argumento do parágrafo, marque ok=true OBRIGATORIAMENTE.
-
-PASSO 2 — NOTA:
-Todos ok + produtivo→200 | Todos ok + não produtivo→160 | 1 embrionário OU não legitimado→120 | 2+ embrionários→80 | tangenciamento→40 | fuga→0
-
-PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre critérios que falharam. Confirme a soma.
-
-Retorne SOMENTE JSON válido:
-{"c2_score":<nota>,"c2_ded":{"abordagem_tema":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"estrutura_dissertativa":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"partes_embrionarias":{"falhas":<n>,"pts_perdidos":<n>,"obs":"<t>"},"repertorio_legitimado":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"repertorio_pertinente":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"repertorio_produtivo":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"}}}`,
-
-        3:`Você é um corretor oficial de redações do ENEM.${temaInfo}
-${CALIBRACAO}
-${REGRA_SOMA}
-Avalie a Competência III — Projeto de Texto.
-
-PASSO 1 — VERIFIQUE:
-- tese_antecipacao: tese clara no 1º parágrafo?
-- dois_temas_problema: exatamente 2 problemas na tese?
-- palavras_chave: palavras do tema em todas as partes?
-- argumentos_relacionados: cada argumento desenvolve o tema-problema do parágrafo?
-- repertorio_demonstrado: repertório explicado e conectado ao argumento?
-- marcadores_opiniao: marcadores de autoria presentes?
-- incoerencias: contradições que se anulam?
-- proposta_resolve_temas: proposta resolve os 2 temas-problema?
-
-PASSO 2 — NOTA:
-Todos ok→200 | 1 leve→160 | 2 falhas→120 | 3+→80 | sem projeto→40 | caótico→0
-
-PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre critérios que falharam. Confirme a soma.
-
-Retorne SOMENTE JSON válido:
-{"c3_score":<nota>,"c3_ded":{"tese_antecipacao":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"dois_temas_problema":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"palavras_chave":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"argumentos_relacionados":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"repertorio_demonstrado":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"marcadores_opiniao":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"incoerencias":{"falhas":<n>,"pts_perdidos":<n>,"obs":"<t>"},"proposta_resolve_temas":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"}}}`,
-
-        4:`Você é um corretor oficial de redações do ENEM.${temaInfo}
-${CALIBRACAO}
-${REGRA_SOMA}
-Avalie a Competência IV — Coesão Textual.
-
-PASSO 1 — CONTE:
-- conectivos_inadequados: conectivos com sentido errado.
-- conectivos_repetidos: mesmo conectivo 3+ vezes no texto.
-- paragrafos_sem_operador: parágrafos 2/3/4 sem operador no início.
-- retomada_inadequada: pronome/sinônimo que não retoma o referente.
-- repeticao_lexical: mesma palavra 3+ vezes em 5 linhas.
-
-PASSO 2 — NOTA:
-Nenhum→200 | 1 leve→160 | 2 problemas→120 | 3+→80 | constante→40 | sem articulação→0
-
-PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre categorias com falha. Confirme a soma.
-
-REGRAS DE COMPACTAÇÃO DO JSON (obrigatório para caber no limite de tokens):
-- Cada string em "exemplos" deve ter no máximo 60 caracteres — corte com "…" se necessário.
-- Liste no máximo 3 exemplos por categoria, mesmo que haja mais falhas. O campo "falhas" continua com o total real.
-- Categorias com 0 falhas: use "exemplos":[].
-
-Retorne SOMENTE JSON válido:
-{"c4_score":<nota>,"c4_ded":{"conectivos_inadequados":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>","<≤60 chars>"]},"conectivos_repetidos":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"paragrafos_sem_operador":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"retomada_inadequada":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"repeticao_lexical":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]}}}`,
-
-        5:`Você é um corretor oficial de redações do ENEM.${temaInfo}
-${CALIBRACAO}
-${REGRA_SOMA}
-Avalie a Competência V — Proposta de Intervenção.
-
-PASSO 1 — IDENTIFIQUE os 5 elementos em cada proposta:
-- agente: sujeito com artigo definido.
-- acao: verbo de ação como predicado.
-- modo_meio: como/por qual meio.
-- finalidade: conectivo de finalidade.
-- detalhamento: termo que especifica outro elemento.
-
-PASSO 2 — NOTA:
-2 propostas 5 elem.→200 | 4 elem.→160 | 3 elem.→120 | 2 elem.→80 | 1 proposta→40 | sem proposta→0
-
-PASSO 3 — pts_perdidos: elemento ausente/inválido=40, presente=0. TOTAL=200−nota. Confirme a soma.
-
-Retorne SOMENTE JSON válido:
-{"c5_score":<nota>,"c5_ded":{"agente":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"acao":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"modo_meio":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"finalidade":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"},"detalhamento":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<t>"}}}`
-    };
-
-    for(let i=1;i<=5;i++){
-        document.querySelectorAll('.comp-step').forEach((s,idx)=>{
-            if(idx+1<i) s.className='comp-step done';
-            else if(idx+1===i) s.className='comp-step active';
-            else s.className='comp-step';
+    var success = false;
+    for (var t=0; t<TOKEN_LADDER.length; t++) {
+      var maxTok = TOKEN_LADDER[t];
+      try {
+        log('C'+i+' - tentativa '+(t+1)+' (max_tokens='+maxTok+'): enviando...');
+        var resp = await fetch(cfg.apiUrl, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+          body:JSON.stringify({model:cfg.model,messages:[{role:'system',content:prompts[i-1]},{role:'user',content:txt}],temperature:cfg.temp,max_tokens:maxTok}),
+          signal:AbortSignal.timeout(120000)
         });
-        setP((i-1)*20,`Analisando Competência ${i} de 5...`);
-        await new Promise(r=>setTimeout(r,80));
-
-        let success=false;
-        const TOKEN_LADDER=[9000,4096,2048];
-        for(let attempt=1;attempt<=TOKEN_LADDER.length;attempt++){
-            const maxTok=TOKEN_LADDER[attempt-1];
-            try{
-                log(`C${i} — tentativa ${attempt} (max_tokens=${maxTok}): enviando...`);
-                const resp=await fetch(config.apiUrl,{
-                    method:'POST',headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
-                    body:JSON.stringify({model:config.model,messages:[{role:'system',content:PROMPTS[i]},{role:'user',content:txt}],temperature:config.temp,max_tokens:maxTok}),
-                    signal:AbortSignal.timeout(120000)
-                });
-                if(!resp.ok){
-                    const errBody=await resp.text();
-                    log(`C${i} — HTTP ${resp.status}: ${errBody.slice(0,300)}`);
-                    if(resp.status===400&&attempt<TOKEN_LADDER.length){
-                        log(`C${i} — 400 recebido, reduzindo max_tokens para ${TOKEN_LADDER[attempt]}...`);
-                        continue;
-                    }
-                    throw new Error(`HTTP ${resp.status}: ${errBody.slice(0,200)}`);
-                }
-                const data=await resp.json();
-                log(`C${i} — resposta recebida, parseando JSON...`);
-                if(!data.choices?.[0]?.message?.content) throw new Error('Resposta sem conteúdo');
-                const raw=data.choices[0].message.content;
-                log(`C${i} — conteúdo bruto: ${raw.slice(0,200)}`);
-                const match=raw.match(/\{[\s\S]*\}/);
-                if(!match) throw new Error(`JSON não encontrado. Resp: ${raw.slice(0,200)}`);
-
-                let parsed;
-                try { parsed=JSON.parse(match[0]); }
-                catch(jsonErr){
-                    log(`C${i} — JSON inválido, tentando reparar...`);
-                    let rep=match[0];
-                    try{
-                        const qc=(rep.match(/(?<!\\)"/g)||[]).length;
-                        if(qc%2!==0) rep+='"';
-                        const stack=[];
-                        for(const ch of rep){if(ch==='{'||ch==='[')stack.push(ch==='{'?'}':']');else if(ch==='}'||ch===']')stack.pop();}
-                        rep=rep.replace(/,\s*$/,'');
-                        rep+=stack.reverse().join('');
-                        parsed=JSON.parse(rep);
-                        log(`C${i} — JSON reparado com sucesso`);
-                    }catch(re){
-                        log(`C${i} — reparo falhou, extraindo campos manualmente...`);
-                        parsed={};
-                        const sm=match[0].match(/"c\d_score"\s*:\s*(\d+)/);
-                        if(sm) parsed[`c${i}_score`]=parseInt(sm[1]);
-                        const di=match[0].indexOf(`"c${i}_ded"`);
-                        if(di>=0){
-                            const after=match[0].slice(di),vs=after.indexOf(':')+1,ds=after.slice(vs).trim();
-                            if(ds.startsWith('{')){
-                                let dr=ds,dstack=[];
-                                for(const ch of dr){if(ch==='{'||ch==='[')dstack.push(ch==='{'?'}':']');else if(ch==='}'||ch===']')dstack.pop();}
-                                dr=dr.replace(/,\s*$/,'')+dstack.reverse().join('');
-                                try{parsed[`c${i}_ded`]=JSON.parse(dr);}catch(e2){parsed[`c${i}_ded`]='(truncado)';}
-                            }
-                        }
-                        if(!parsed[`c${i}_score`]&&parsed[`c${i}_score`]!==0) throw new Error('Não extraiu nota do JSON truncado.');
-                    }
-                }
-
-                // ── AUTO-CORRECT pts_perdidos sum ──
-                const scoreKey=`c${i}_score`, dedKey=`c${i}_ded`;
-                if(parsed[dedKey]&&typeof parsed[dedKey]==='object'){
-                    // Fix ok=true with pts_perdidos > 0 (contradição)
-                    Object.keys(parsed[dedKey]).forEach(k => {
-                        const v = parsed[dedKey][k];
-                        if (v.ok === true && v.pts_perdidos > 0) {
-                            log(`C${i} — corrigindo contradição: ${k} ok=true mas pts_perdidos=${v.pts_perdidos} → zerando`);
-                            parsed[dedKey][k] = { ...v, pts_perdidos: 0 };
-                        }
-                    });
-                    parsed[dedKey]=autoCorrectPts(i, parsed[dedKey], parsed[scoreKey]);
-                    const newSum=Object.values(parsed[dedKey]).reduce((a,v)=>a+(v.pts_perdidos||0),0);
-                    const expected=200-(parsed[scoreKey]||0);
-                    if(newSum!==expected) log(`C${i} — ⚠️ soma ainda diverge após autocorreção: ${newSum} vs ${expected}`);
-                    else log(`C${i} — ✓ soma pts_perdidos ok: ${newSum}`);
-                }
-
-                feedbackData={...feedbackData,...parsed};
-                const ps=document.getElementById(`ps${i}`);
-                if(ps){ps.textContent=parsed[`c${i}_score`]??'?';ps.classList.add('visible');}
-                log(`C${i} — ✓ nota: ${parsed['c'+i+'_score']}`);
-
-                // Feedback request
-                try{
-                    setP((i-1)*20+10,`C${i} — buscando feedback...`);
-                    const sp2=`Você é um corretor oficial do ENEM.${temaInfo}\nPara a Competência ${i}, nota ${parsed['c'+i+'_score']||0}/200.\nEscreva dois textos curtos (max 2 frases cada).\nRetorne SOMENTE JSON: {"c${i}_pos":"...","c${i}_imp":"..."}`;
-                    const r2=await fetch(config.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},body:JSON.stringify({model:config.model,messages:[{role:'system',content:sp2},{role:'user',content:txt}],temperature:config.temp,max_tokens:600}),signal:AbortSignal.timeout(60000)});
-                    if(r2.ok){const d2=await r2.json();const rw=d2.choices?.[0]?.message?.content||'';const m2=rw.match(/\{[\s\S]*\}/);if(m2){feedbackData={...feedbackData,...JSON.parse(m2[0])};log(`C${i} — ✓ feedback recebido`);}}
-                }catch(e2){log(`C${i} — feedback ignorado: ${e2.message}`);}
-
-                success=true; break;
-            }catch(e){
-                log(`C${i} — ERRO tentativa ${attempt}: ${e.message}`);
-                if(attempt<TOKEN_LADDER.length){setP((i-1)*20,`C${i} — Retentando...`);await new Promise(r=>setTimeout(r,2000));}
-            }
+        if (!resp.ok) {
+          var errBody = await resp.text();
+          log('C'+i+' - HTTP '+resp.status+': '+errBody.slice(0,300));
+          if (resp.status===400 && t<TOKEN_LADDER.length-1) { log('C'+i+' - reduzindo tokens...'); continue; }
+          throw new Error('HTTP '+resp.status);
         }
-        if(!success){
-            document.querySelectorAll('.comp-step').forEach((s,idx)=>{if(idx+1===i)s.className='comp-step error';});
-            setP((i-1)*20,`❌ Falha na Competência ${i}`);
-            btn.disabled=false;
-            showToast(`Falha na C${i} — veja o log de erros acima`,'error');
-            return;
+        var data = await resp.json();
+        var raw = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+        if (!raw) throw new Error('Resposta sem conteudo');
+        log('C'+i+' - bruto: '+raw.slice(0,150));
+
+        var parsed = repairJson(raw);
+        if (!parsed) throw new Error('JSON invalido mesmo apos reparo');
+
+        // auto-correct
+        var dedKey = 'c'+i+'_ded', scoreKey = 'c'+i+'_score';
+        if (parsed[dedKey] && typeof parsed[dedKey]==='object') {
+          parsed[dedKey] = autoCorrectPts(i, parsed[dedKey], parsed[scoreKey]);
+          var newSum = Object.values(parsed[dedKey]).reduce(function(a,v){return a+(v.pts_perdidos||0)},0);
+          log('C'+i+' - nota='+parsed[scoreKey]+' pts_perdidos_sum='+newSum+' esperado='+(200-(parsed[scoreKey]||0)));
         }
+        Object.assign(feedbackData, parsed);
+        var ps = document.getElementById('ps'+i);
+        if (ps){ps.textContent=parsed['c'+i+'_score'];ps.classList.add('visible')}
+        log('C'+i+' - OK nota='+parsed['c'+i+'_score']);
+
+        // feedback
+        try {
+          setP((i-1)*20+10,'C'+i+' - buscando feedback...');
+          var sp2 = 'Voce eh corretor do ENEM.'+(tema?'\nTema: "'+tema+'"':'')+'\nPara a Competencia '+i+', nota '+(parsed['c'+i+'_score']||0)+'/200.\nEscreva dois textos curtos (max 2 frases cada).\nRetorne SOMENTE JSON: {"c'+i+'_pos":"...","c'+i+'_imp":"..."}';
+          var r2 = await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},body:JSON.stringify({model:cfg.model,messages:[{role:'system',content:sp2},{role:'user',content:txt}],temperature:cfg.temp,max_tokens:600}),signal:AbortSignal.timeout(60000)});
+          if (r2.ok){var d2=await r2.json();var rw=d2.choices&&d2.choices[0]&&d2.choices[0].message&&d2.choices[0].message.content;var p2=repairJson(rw||'');if(p2){Object.assign(feedbackData,p2);log('C'+i+' - feedback ok')}}
+        } catch(fe){log('C'+i+' - feedback ignorado: '+fe.message)}
+
+        success=true; break;
+      } catch(e) {
+        log('C'+i+' - ERRO: '+e.message);
+        if (t<TOKEN_LADDER.length-1){setP((i-1)*20,'C'+i+' - Retentando...');await new Promise(function(r){setTimeout(r,2000)})}
+      }
     }
+    if (!success) {
+      document.querySelectorAll('.comp-step').forEach(function(s,idx){if(idx+1===i)s.className='comp-step error'});
+      setP((i-1)*20,'Falha na Competencia '+i);
+      btn.disabled=false;
+      showToast('Falha na C'+i+' - veja o log','error');
+      return;
+    }
+  }
 
-    document.querySelectorAll('.comp-step').forEach(s=>s.className='comp-step done');
-    setP(100,'✅ Correção finalizada!');
-    const total=[1,2,3,4,5].reduce((a,n)=>a+(feedbackData[`c${n}_score`]||0),0);
-    document.getElementById('totalScore').textContent=total;
-    document.getElementById('scoreBanner').style.display='flex';
-    renderScoreBars();
-    errorLog.style.display='none';
-    await new Promise(r=>setTimeout(r,800));
-    document.getElementById('progWrap').style.display='none';
-    document.getElementById('pdfBtnWrap').style.display='flex';
-    btn.disabled=false;
-    setComp(1);
-    const el=document.getElementById('toast');
-    el.innerHTML=`<span style="color:var(--success);font-weight:700;font-size:1.1rem;">✓</span> <span>Correção concluída! <b>Nota total: ${total}/1000</b></span>`;
-    el.className='show success';
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>el.className='',8000);
+  document.querySelectorAll('.comp-step').forEach(function(s){s.className='comp-step done'});
+  setP(100,'Correcao finalizada!');
+  var total=[1,2,3,4,5].reduce(function(a,n){return a+(feedbackData['c'+n+'_score']||0)},0);
+  document.getElementById('totalScore').textContent=total;
+  document.getElementById('scoreBanner').style.display='flex';
+  renderScoreBars();
+  errorLog.style.display='none';
+  await new Promise(function(r){setTimeout(r,800)});
+  document.getElementById('progWrap').style.display='none';
+  document.getElementById('pdfBtnWrap').style.display='flex';
+  btn.disabled=false;
+  setComp(1);
+  var el=document.getElementById('toast');
+  el.innerHTML='<span style="color:var(--success);font-weight:700;font-size:1.1rem">OK</span> <span>Correcao concluida! <b>Nota total: '+total+'/1000</b></span>';
+  el.className='show success';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.className=''},8000);
 }
 
 function renderScoreBars(){
-    document.getElementById('scoreBarsViz').innerHTML=[1,2,3,4,5].map(n=>{
-        const s=feedbackData[`c${n}_score`]||0,h=Math.round((s/200)*40);
-        const col=s>=160?'var(--success)':s>=80?'var(--gold)':'var(--accent)';
-        return `<div class="score-bar-item"><div class="score-bar-fill" style="height:${h}px;background:${col};"></div><div class="score-bar-lbl">C${n}</div></div>`;
-    }).join('');
+  document.getElementById('scoreBarsViz').innerHTML=[1,2,3,4,5].map(function(n){
+    var s=feedbackData['c'+n+'_score']||0,h=Math.round((s/200)*40);
+    var col=s>=160?'var(--success)':s>=80?'var(--gold)':'var(--accent)';
+    return '<div class="score-bar-item"><div class="score-bar-fill" style="height:'+h+'px;background:'+col+'"></div><div class="score-bar-lbl">C'+n+'</div></div>';
+  }).join('');
 }
 
-/* ── TOAST ── */
-let toastTimer;
-function showToast(msg,type=''){
-    const el=document.getElementById('toast'),icon=type==='success'?'✓':type==='error'?'✕':'ℹ';
-    el.innerHTML=`<span style="color:${type==='success'?'var(--success)':'var(--accent)'};font-weight:700;">${icon}</span> ${msg}`;
-    el.className=`show ${type}`; clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>el.className='',3500);
+var toastTimer;
+function showToast(msg,type){
+  var el=document.getElementById('toast');
+  var icon=type==='success'?'OK':type==='error'?'X':'i';
+  el.innerHTML='<span style="color:'+(type==='success'?'var(--success)':'var(--accent)')+';font-weight:700">'+icon+'</span> '+msg;
+  el.className='show '+(type||'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.className=''},3500);
 }
 
 renderCrits(1);
-</script>
 
-<!-- AVATAR -->
-<div id="avatar-btn" onclick="toggleAvatar()" title="Ajuda" style="position:fixed;bottom:24px;left:24px;z-index:9990;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#e63946,#f4a261);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(230,57,70,0.4);transition:transform .2s;border:2px solid rgba(255,255,255,.15);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-    <svg width="34" height="34" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/><rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/><ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><circle cx="27" cy="25" r=".8" fill="white"/><circle cx="39" cy="25" r=".8" fill="white"/><path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/><path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/><ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity=".35"/><ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity=".35"/><path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/></svg>
-</div>
-<div id="avatar-bubble" style="position:fixed;bottom:90px;left:24px;z-index:9989;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;display:none;box-shadow:0 8px 30px rgba(0,0,0,.4);">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px;">
-        <svg width="42" height="42" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/><rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/><ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><circle cx="27" cy="25" r=".8" fill="white"/><circle cx="39" cy="25" r=".8" fill="white"/><path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/><path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/><ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity=".35"/><ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity=".35"/><path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/></svg>
-        <div><div style="font-weight:700;font-size:.9rem;font-family:'Syne',sans-serif;">ENEM Assistente</div><div style="font-size:.72rem;color:var(--success);">● Online</div></div>
-        <button onclick="toggleAvatar()" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>
-    </div>
-    <div id="avatar-msg" style="font-size:.85rem;line-height:1.6;color:var(--text);min-height:60px;"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;" id="avatar-options"></div>
-</div>
-
-<script>
-const AVATAR_TIPS={
-    scanner:{msg:'📷 <b>Digitalizar</b><br><br>Envie uma foto da redação manuscrita. A IA extrai o texto automaticamente.<br><br>➡️ Clique em <b>"Extrair Texto com IA"</b> após carregar a imagem.',opts:['Como tirar a foto?','Ir para Redação']},
-    editor: {msg:'✏️ <b>Redação</b><br><br>1. Preencha o <b>tema</b>.<br>2. Cole ou escreva a redação.<br>3. Clique em <b>⚡ Corrigir Agora</b>.',opts:['O que é C2?','Ir para Resultado']},
-    results:{msg:'📊 <b>Resultado</b><br><br>Veja nota total, C1-C5 e onde perdeu pontos.<br><br>Use <b>🖨️ Imprimir Relatório PDF</b> para salvar.',opts:['O que são C1-C5?','Voltar ao início']},
-    config: {msg:'⚙️ <b>Configurações</b><br><br>Configure a <b>URL do Ngrok</b> gerada ao iniciar o servidor local.',opts:['Como obter a URL?','O que é modelo?']}
-};
-const AVATAR_ANSWERS={
-    'Como tirar a foto?':'Boa iluminação, sem sombras, folha plana. PNG, JPG ou WEBP.',
-    'Ir para Redação':()=>{showTab('editor');toggleAvatar();},
-    'O que é C2?':'Avalia se você desenvolveu o tema proposto com repertório pertinente e produtivo.',
-    'Ir para Resultado':()=>{showTab('results');toggleAvatar();},
-    'O que são C1-C5?':'C1: Língua formal | C2: Tema | C3: Argumentação | C4: Coesão | C5: Proposta',
-    'Voltar ao início':()=>{showTab('scanner');toggleAvatar();},
-    'Como obter a URL?':'Rode <code style="background:#111;padding:2px 6px;border-radius:4px;">ngrok http 1234</code> e copie o link. Acrescente <b>/v1/chat/completions</b>.',
-    'O que é modelo?':'Nome do modelo carregado no servidor (ex: <code style="background:#111;padding:2px 4px;border-radius:4px;">local-model</code>).'
-};
-let avatarOpen=false;
-function toggleAvatar(){avatarOpen=!avatarOpen;document.getElementById('avatar-bubble').style.display=avatarOpen?'block':'none';if(avatarOpen)showAvatarForTab();}
-function showAvatarForTab(){const a=document.querySelector('.tab-pane.active'),id=a?a.id:'scanner',tip=AVATAR_TIPS[id]||AVATAR_TIPS.scanner;document.getElementById('avatar-msg').innerHTML=tip.msg;document.getElementById('avatar-options').innerHTML=tip.opts.map(o=>`<button onclick="avatarAnswer('${o}')" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;color:var(--text);font-size:.75rem;cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">${o}</button>`).join('');}
-function avatarAnswer(q){const a=AVATAR_ANSWERS[q];if(typeof a==='function'){a();return;}document.getElementById('avatar-msg').innerHTML=`<b>${q}</b><br><br>${a}`;document.getElementById('avatar-options').innerHTML=`<button onclick="showAvatarForTab()" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;color:var(--muted);font-size:.75rem;cursor:pointer;">← Voltar</button>`;}
+var avatarOpen=false;
+function toggleAvatar(){
+  avatarOpen=!avatarOpen;
+  document.getElementById('avatar-bubble').style.display=avatarOpen?'block':'none';
+  if(avatarOpen){
+    var tips={scanner:'Aba Digitalizar: envie uma foto da redacao. A IA extrai o texto.',editor:'Aba Redacao: preencha o tema e clique em Corrigir Agora.',results:'Aba Resultado: veja nota total e C1-C5. Use Imprimir PDF para salvar.',config:'Aba Configuracoes: informe a URL do Ngrok e o modelo.'};
+    var active=document.querySelector('.tab-pane.active');
+    var id=active?active.id:'scanner';
+    document.getElementById('avatar-msg').textContent=tips[id]||tips.scanner;
+  }
+}
 </script>
 </body>
 </html>
