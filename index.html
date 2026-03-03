@@ -913,7 +913,7 @@ function setComp(n) {
         if (ded) {
             const items = ded.split('|').map(s => s.trim()).filter(Boolean);
             dedBox.innerHTML = items.length > 1
-                ? items.map(i => `<div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.07); display:flex; gap:8px;"><span style="color:var(--accent);flex-shrink:0;">▸</span><span>${i}</span></div>`).join('')
+                ? items.map(i => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;"><span style="color:var(--accent);flex-shrink:0;">▸</span><span>${i}</span></div>`).join('')
                 : ded;
         } else {
             dedBox.innerText = 'Aguardando correção...';
@@ -1337,8 +1337,15 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
     document.getElementById('scoreBanner').style.display = 'flex';
     renderScoreBars();
 
-    // Esconde log se tudo OK
-    errorLog.style.display = 'none';
+    // Mantém log visível — usuário pode fechar manualmente
+    if (errorLog.textContent.trim() && !document.getElementById('logCloseBtn')) {
+        const closeBtn = document.createElement('button');
+        closeBtn.id = 'logCloseBtn';
+        closeBtn.textContent = '✕ Fechar log';
+        closeBtn.style.cssText = 'display:block;margin-top:8px;padding:4px 10px;background:transparent;border:1px solid #ff9999;border-radius:6px;color:#ff9999;cursor:pointer;font-size:0.75rem;';
+        closeBtn.onclick = () => { errorLog.style.display = 'none'; closeBtn.remove(); };
+        errorLog.parentNode.insertBefore(closeBtn, errorLog.nextSibling);
+    }
 
     await new Promise(r => setTimeout(r, 800));
     document.getElementById('progWrap').style.display = 'none';
