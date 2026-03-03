@@ -33,7 +33,6 @@
             flex-direction: column;
         }
 
-        /* ── LOGIN ─────────────────────────────── */
         #login-overlay {
             position: fixed; inset: 0;
             background: var(--bg);
@@ -81,7 +80,6 @@
         .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
         .login-err { color: var(--accent2); font-size: 0.8rem; margin-top: 0.5rem; min-height: 1rem; }
 
-        /* ── HEADER ────────────────────────────── */
         #main-system { display: none; flex-direction: column; height: 100vh; }
         header {
             background: var(--surface);
@@ -111,7 +109,6 @@
             50%       { opacity: 0.15; box-shadow: none; }
         }
 
-        /* ── NAVBAR ────────────────────────────── */
         nav {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -130,13 +127,11 @@
         .nav-link:hover { color: var(--text); }
         .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-        /* ── MAIN ──────────────────────────────── */
         main { flex: 1; overflow-y: auto; padding: 24px; }
         .tab-pane { display: none; max-width: 860px; margin: 0 auto; animation: fadeIn 0.3s; }
         .tab-pane.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ── CARDS ─────────────────────────────── */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -148,9 +143,7 @@
             font-size: 1.1rem; margin-bottom: 20px;
             display: flex; align-items: center; gap: 10px;
         }
-        .card-title svg { color: var(--accent); }
 
-        /* ── SCANNER ───────────────────────────── */
         .upload-zone {
             border: 2px dashed var(--border);
             border-radius: var(--radius);
@@ -168,7 +161,6 @@
         #prevImg { max-width: 100%; border-radius: var(--radius); margin: 16px 0; border: 1px solid var(--border); display: none; }
         .ocr-progress { display: none; margin-top: 12px; }
 
-        /* ── EDITOR ────────────────────────────── */
         .editor-meta {
             display: flex; gap: 12px; margin-bottom: 12px;
             font-size: 0.8rem; color: var(--muted);
@@ -200,8 +192,11 @@
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
         .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); flex: 0 0 auto; padding: 14px 20px; }
+        .btn-pdf {
+            background: linear-gradient(135deg, #2ec4b6, #1a9e92);
+            color: white; flex: 0 0 auto; padding: 14px 20px;
+        }
 
-        /* ── API CONFIG ────────────────────────── */
         .api-config {
             background: var(--surface2);
             border: 1px solid var(--border);
@@ -228,7 +223,6 @@
         }
         .btn-test:hover { background: rgba(46,196,182,0.1); }
 
-        /* ── PROGRESS ──────────────────────────── */
         .progress-wrap { margin-bottom: 24px; display: none; }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; }
         .progress-label { color: var(--muted); }
@@ -261,7 +255,6 @@
         .comp-step.error { background: var(--accent); }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        /* ── RESULTS ───────────────────────────── */
         .score-banner {
             background: linear-gradient(135deg, var(--surface2), var(--surface));
             border: 1px solid var(--border);
@@ -348,8 +341,6 @@
         .field-pos .field-label::before { background: var(--success); }
         .field-ded .field-label::before { background: var(--accent); }
         .field-ded .feedback-box { border-color: rgba(230,57,70,0.2); background: rgba(230,57,70,0.04); }
-        .field-ded .field-label::before { background: var(--accent); }
-        .field-ded .feedback-box { border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.04); }
 
         .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .crit-item {
@@ -365,43 +356,6 @@
             font-size: 0.7rem; font-weight: 700; color: var(--muted);
         }
 
-        /* ── DEDUÇÕES ──────────────────────────── */
-        .deducoes-section { margin-bottom: 20px; }
-        .deducao-item {
-            background: rgba(230,57,70,0.06);
-            border: 1px solid rgba(230,57,70,0.2);
-            border-left: 3px solid var(--accent);
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
-        .deducao-trecho {
-            font-family: 'Georgia', serif;
-            color: var(--gold);
-            font-style: italic;
-            margin-bottom: 4px;
-            line-height: 1.5;
-        }
-        .deducao-erro {
-            color: var(--accent2);
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .deducao-impacto {
-            color: var(--muted);
-            font-size: 0.78rem;
-        }
-        .deducoes-empty {
-            color: var(--success);
-            font-size: 0.85rem;
-            padding: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* ── ERROS ────────────────────────────── */
         .erro-item {
             background: rgba(230,57,70,0.06);
             border: 1px solid rgba(230,57,70,0.2);
@@ -410,32 +364,7 @@
             padding: 12px 16px;
             margin-bottom: 8px;
         }
-        .erro-trecho {
-            font-family: 'Georgia', serif;
-            font-size: 0.85rem;
-            color: var(--gold);
-            background: rgba(244,162,97,0.08);
-            border-radius: 6px;
-            padding: 4px 10px;
-            margin-bottom: 6px;
-            display: inline-block;
-            font-style: italic;
-        }
-        .erro-tipo {
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
-        .erro-explicacao {
-            font-size: 0.85rem;
-            color: var(--text);
-            line-height: 1.6;
-        }
 
-        /* ── TOAST ─────────────────────────────── */
         #toast {
             position: fixed; bottom: 24px; right: 24px;
             background: var(--surface); border: 1px solid var(--border);
@@ -449,12 +378,10 @@
         #toast.success { border-color: var(--success); }
         #toast.error { border-color: var(--accent); }
 
-        /* ── SCROLLBAR ─────────────────────────── */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--surface); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        /* ── BREAKDOWN TABLE ─────────────────── */
         .breakdown-table { width:100%; border-collapse:collapse; }
         .breakdown-table th {
             font-size:0.7rem; font-weight:700; letter-spacing:0.8px;
@@ -481,12 +408,7 @@
         .bd-badge.green { background:rgba(46,196,182,0.1); color:var(--success); border:1px solid rgba(46,196,182,0.3); }
         .bd-pts { font-weight:800; font-size:0.85rem; color:var(--accent2); }
         .bd-pts.zero { color:var(--success); }
-        .bd-footer td { font-weight:700; border-top:1px solid var(--border) !important; padding-top:10px !important; }
-        .bd-total { color:var(--accent); font-size:0.9rem; font-weight:800; }
-        .field-pos .field-label::before { background:var(--success); }
-        .field-ded .field-label::before { background:var(--accent); }
 
-        /* ── HIGHLIGHT EDITOR ─────────────────── */
         #highlight-wrap { position: relative; display: none; }
         #highlight-wrap.active { display: block; }
         #highlight-overlay {
@@ -515,6 +437,49 @@
         .review-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--muted); }
         .review-dot { width: 14px; height: 4px; border-radius: 2px; }
         .btn-clear-hl { margin-left: auto; background: none; border: 1px solid rgba(244,162,97,0.4); color: var(--gold); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; }
+
+        /* ── PDF PRINT STYLES ──────────────────── */
+        @media print {
+            @page { margin: 20mm 15mm; size: A4; }
+            body { background: #fff !important; color: #111 !important; overflow: visible !important; height: auto !important; }
+            #login-overlay, #main-system > header, nav, #avatar-btn, #avatar-bubble, #toast,
+            .btn-group, .sub-tabs, .comp-pills, #compPillsInd, .progress-wrap, #errorLog,
+            #progWrap, .btn-pdf, .btn-secondary, .review-banner, #highlight-overlay { display: none !important; }
+            #main-system { display: block !important; height: auto !important; }
+            main { overflow: visible !important; padding: 0 !important; }
+            .tab-pane { display: none !important; max-width: 100% !important; }
+            #results { display: block !important; }
+            .card { background: #fff !important; border: 1px solid #ddd !important; border-radius: 8px !important; padding: 16px !important; margin-bottom: 16px !important; break-inside: avoid; }
+            .score-banner { display: flex !important; background: #f8f8f8 !important; border: 1px solid #ddd !important; }
+            .score-total { font-size: 2rem !important; color: #e63946 !important; -webkit-text-fill-color: #e63946 !important; }
+            .score-label { color: #666 !important; }
+            .score-bar-lbl { color: #666 !important; }
+            .comp-desc { background: #f9f9f9 !important; border: 1px solid #ddd !important; color: #333 !important; }
+            .score-row { background: #f5f5f5 !important; border: 1px solid #ddd !important; }
+            .score-row label { color: #666 !important; }
+            .score-badge { background: #eee !important; border: 1px solid #ccc !important; color: #666 !important; }
+            .score-badge.selected { background: #f4a261 !important; border-color: #f4a261 !important; color: #111 !important; }
+            .feedback-box { background: #f9f9f9 !important; border: 1px solid #ddd !important; color: #333 !important; min-height: unset !important; }
+            .feedback-box.empty { color: #aaa !important; }
+            .field-label { color: #555 !important; }
+            .comp-pill { display: none !important; }
+            #view-ind { display: none !important; }
+            #view-par { display: block !important; }
+            .breakdown-table td, .breakdown-table th { color: #333 !important; border-color: #ddd !important; }
+            .bd-pts { color: #c0392b !important; }
+            .bd-pts.zero { color: #27ae60 !important; }
+            .bd-badge.red { background: #fde8e8 !important; color: #c0392b !important; border-color: #f5c6cb !important; }
+            .bd-badge.green { background: #e8fdf5 !important; color: #27ae60 !important; border-color: #c3e6cb !important; }
+            .pdf-report-header { display: block !important; }
+            .pdf-all-comps { display: block !important; }
+            .pdf-comp-block { break-inside: avoid; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #fff; }
+            .pdf-comp-title { font-size: 1rem; font-weight: 700; color: #e63946; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+            .pdf-score-chip { display: inline-block; background: #f4a261; color: #111; font-weight: 800; padding: 3px 12px; border-radius: 100px; font-size: 0.85rem; margin-left: 10px; }
+        }
+
+        /* Hidden in screen, visible only in print */
+        .pdf-report-header { display: none; }
+        .pdf-all-comps { display: none; }
     </style>
 </head>
 <body>
@@ -531,10 +496,8 @@
     </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
-<!-- SISTEMA -->
 <div id="main-system">
     <header>
         <div class="header-brand">ENEM PRO</div>
@@ -557,17 +520,13 @@
         <div id="scanner" class="tab-pane active">
             <div class="card">
                 <div class="card-title">📷 Digitalizar Redação</div>
-
                 <div class="upload-zone" id="uploadZone">
                     <input type="file" id="fileIn" accept="image/*" onchange="previewImg(this)">
                     <div class="upload-icon"><div style="font-size:2.5rem;">📁</div></div>
                     <div class="upload-text">Arraste uma imagem ou <span>clique para selecionar</span></div>
                     <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">PNG, JPG, WEBP — até 10MB</div>
                 </div>
-
                 <img id="prevImg">
-
-                <!-- Método de extração -->
                 <div style="margin-top:16px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
                     <div style="font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Método de extração</div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -586,19 +545,16 @@
                             </div>
                         </label>
                     </div>
-                    <!-- Aviso modelos sem visão -->
                     <div id="ai-vision-warning" style="display:none; margin-top:10px; padding:8px 12px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); border-radius:8px; font-size:0.78rem; color:var(--gold);">
-                        ⚠️ <b>Modelos de texto puro</b> (ex: Qwen 32B sem visão) não processam imagens. Se falhar, o Tesseract será usado automaticamente — ou selecione Tesseract diretamente.
+                        ⚠️ <b>Modelos de texto puro</b> não processam imagens. Se falhar, o Tesseract será usado automaticamente.
                     </div>
                 </div>
-
                 <div class="ocr-progress" id="ocrProgress" style="margin-top:12px;">
                     <div class="progress-track" style="height:6px;">
                         <div class="progress-fill" id="ocrBar" style="width:0%"></div>
                     </div>
                     <div style="font-size:0.78rem; color:var(--muted); margin-top:6px; text-align:center;" id="ocrMsg">Processando...</div>
                 </div>
-
                 <button class="btn btn-primary" id="btnOCR" onclick="doOCR()" style="margin-top:14px;" disabled>
                     Extrair Texto
                 </button>
@@ -625,16 +581,12 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-title">
-                    ✏️
-                    Editor de Redação
-                </div>
+                <div class="card-title">✏️ Editor de Redação</div>
                 <div class="editor-meta">
                     <div class="meta-badge" id="wordCount">0 palavras</div>
                     <div class="meta-badge" id="lineCount">0 linhas</div>
                     <div class="meta-badge" id="charCount">0 caracteres</div>
                 </div>
-                <!-- Banner de revisão OCR -->
                 <div class="review-banner" id="reviewBanner">
                     <div style="flex:1">
                         <b>⚠️ Revisão necessária</b> — o OCR pode ter erros. Verifique os trechos marcados antes de corrigir.
@@ -646,8 +598,6 @@
                     </div>
                     <button class="btn-clear-hl" onclick="clearHighlights()">✕ Limpar marcações</button>
                 </div>
-
-                <!-- Editor com overlay de highlight -->
                 <div id="highlight-wrap" class="active">
                     <div id="highlight-overlay"></div>
                     <textarea id="essayText"
@@ -660,15 +610,25 @@
                     <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">
                         ⚡ Corrigir Agora
                     </button>
-                    <button class="btn btn-secondary" onclick="clearEssay()" title="Limpar">
-                        🗑
-                    </button>
+                    <button class="btn btn-secondary" onclick="clearEssay()" title="Limpar">🗑</button>
                 </div>
             </div>
         </div>
 
         <!-- RESULTS -->
         <div id="results" class="tab-pane">
+
+            <!-- PDF REPORT HEADER (só aparece no print) -->
+            <div class="pdf-report-header" id="pdfReportHeader">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; border-bottom:2px solid #e63946; padding-bottom:14px;">
+                    <div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#e63946; font-family:'Syne',sans-serif;">ENEM PRO — Relatório de Correção</div>
+                        <div id="pdf-tema-line" style="font-size:0.85rem; color:#555; margin-top:4px;"></div>
+                    </div>
+                    <div style="text-align:right; font-size:0.78rem; color:#777;" id="pdf-date-line"></div>
+                </div>
+            </div>
+
             <!-- Score Banner -->
             <div class="score-banner" id="scoreBanner">
                 <div>
@@ -679,8 +639,6 @@
             </div>
 
             <div class="card">
-                <!-- Progress -->
-                <!-- Log de erros visível -->
                 <div id="errorLog" style="display:none; background:#1a0a0a; border:1px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin-bottom:16px; font-size:0.82rem; font-family:monospace; color:#ff9999; max-height:160px; overflow-y:auto; white-space:pre-wrap;"></div>
 
                 <div class="progress-wrap" id="progWrap">
@@ -698,7 +656,13 @@
                     </div>
                 </div>
 
-                <!-- Sub-tabs -->
+                <!-- Botão PDF — visível apenas quando há resultado -->
+                <div id="pdfBtnWrap" style="display:none; margin-bottom:16px;">
+                    <button class="btn btn-pdf" onclick="printReport()" style="max-width:220px;">
+                        🖨️ Imprimir Relatório PDF
+                    </button>
+                </div>
+
                 <div class="sub-tabs">
                     <button class="sub-tab active" onclick="toggleSub('par')">Competências</button>
                     <button class="sub-tab" onclick="toggleSub('ind')">Indicadores</button>
@@ -715,14 +679,10 @@
                     </div>
 
                     <div class="comp-desc" id="compDesc">Selecione uma competência após a correção.</div>
-
                     <div class="score-row">
                         <label>NOTA</label>
-                        <div class="score-badges" id="scoreBadges">
-                            <div class="score-badge">—</div>
-                        </div>
+                        <div class="score-badges" id="scoreBadges"><div class="score-badge">—</div></div>
                     </div>
-
                     <div class="feedback-section field-pos">
                         <div class="field-label">Pontos positivos</div>
                         <div class="feedback-box empty" id="posBox">Aguardando correção...</div>
@@ -731,8 +691,7 @@
                         <div class="field-label">Como melhorar</div>
                         <div class="feedback-box empty" id="impBox">Aguardando correção...</div>
                     </div>
-
-                     <div class="feedback-section field-ded">
+                    <div class="feedback-section field-ded">
                         <div class="field-label">Onde perdeu pontos</div>
                         <div id="dedBox" class="feedback-box empty">Aguardando correção...</div>
                     </div>
@@ -750,34 +709,29 @@
                     <div class="crit-grid" id="critList"></div>
                 </div>
             </div>
+
+            <!-- ALL COMPS BLOCK — só aparece no print -->
+            <div class="pdf-all-comps" id="pdfAllComps"></div>
         </div>
 
         <!-- CONFIG -->
         <div id="config" class="tab-pane">
             <div class="card">
-                <div class="card-title">
-                    ⚙️
-                    Configurações
-                </div>
-
+                <div class="card-title">⚙️ Configurações</div>
                 <div style="margin-bottom: 20px;">
                     <div class="field-label">URL do Servidor (Ngrok)</div>
                     <div class="api-config">
                         <input type="text" id="apiUrlInput" placeholder="https://xxxx.ngrok-free.app/v1/chat/completions">
                         <button class="btn-test" onclick="testConnection()">Testar Conexão</button>
                     </div>
-                    <div style="font-size: 0.78rem; color: var(--muted);">
-                        Atualize sempre que reiniciar o Ngrok. O status aparece no cabeçalho.
-                    </div>
+                    <div style="font-size: 0.78rem; color: var(--muted);">Atualize sempre que reiniciar o Ngrok.</div>
                 </div>
-
                 <div style="margin-bottom: 20px;">
                     <div class="field-label">Modelo</div>
                     <div class="api-config">
                         <input type="text" id="modelInput" placeholder="local-model" value="local-model">
                     </div>
                 </div>
-
                 <div>
                     <div class="field-label">Temperatura</div>
                     <div class="api-config">
@@ -785,7 +739,6 @@
                         <span style="font-size:0.8rem; color:var(--muted);">Valores baixos = respostas mais consistentes (recomendado: 0.1)</span>
                     </div>
                 </div>
-
                 <button class="btn btn-primary" style="margin-top:20px; max-width:200px;" onclick="saveConfig()">
                     💾 Salvar
                 </button>
@@ -796,15 +749,12 @@
 </div>
 
 <script>
-
-
 /* ── CONFIG ──────────────────────────────────────── */
 let config = {
     apiUrl: localStorage.getItem('apiUrl') || '',
     model: localStorage.getItem('model') || 'local-model',
     temp: parseFloat(localStorage.getItem('temp') || '0.1')
 };
-
 function loadConfig() {
     document.getElementById('apiUrlInput').value = config.apiUrl;
     document.getElementById('modelInput').value = config.model;
@@ -817,78 +767,10 @@ function saveTema() {
     localStorage.setItem('tema', tema);
     document.getElementById('tema-warning').style.display = tema ? 'none' : 'block';
 }
-
 function loadTema() {
     const saved = localStorage.getItem('tema') || '';
     document.getElementById('temaInput').value = saved;
     document.getElementById('tema-warning').style.display = saved ? 'none' : 'block';
-}
-
-/* ── AVATAR ──────────────────────────────────────── */
-const AVATAR_TIPS = {
-    scanner: {
-        msg: '📷 <b>Aba Digitalizar</b><br><br>Aqui você envia uma <b>foto da redação manuscrita</b>. O sistema extrai o texto automaticamente via OCR.<br><br>➡️ Depois clique em <b>"Extrair Texto"</b> para ir ao editor.',
-        opts: ['Como tirar a foto?', 'Ir para Redação']
-    },
-    editor: {
-        msg: '✏️ <b>Aba Redação</b><br><br>1. Preencha o <b>tema</b> da proposta no campo acima.<br>2. Cole ou escreva sua redação.<br>3. Clique em <b>⚡ Corrigir Agora</b>.<br><br>O tema ajuda a IA a avaliar a C2 corretamente.',
-        opts: ['O que é C2?', 'Ir para Resultado']
-    },
-    results: {
-        msg: '📊 <b>Aba Resultado</b><br><br>Após a correção você verá:<br>• <b>Nota total</b> de 0 a 1000<br>• <b>C1 a C5</b> com nota, pontos positivos e como melhorar<br>• <b>Indicadores</b> detalhados por competência.',
-        opts: ['O que são C1-C5?', 'Voltar ao início']
-    },
-    config: {
-        msg: '⚙️ <b>Aba Configurações</b><br><br>Configure a <b>URL do Ngrok</b> gerada ao iniciar o servidor local.<br><br>⚠️ A URL muda toda vez que o Ngrok for reiniciado — lembre de atualizar aqui.',
-        opts: ['Como obter a URL?', 'O que é modelo?']
-    }
-};
-
-const AVATAR_ANSWERS = {
-    'Como tirar a foto?': 'Tire com boa iluminação, sem sombras e com a folha bem plana. Prefira fundo claro e letras legíveis. Formatos aceitos: PNG, JPG, WEBP.',
-    'Ir para Redação': () => { showTab('editor'); toggleAvatar(); },
-    'O que é C2?': 'C2 avalia se você compreendeu e desenvolveu o tema proposto, usando repertório de áreas do conhecimento de forma pertinente.',
-    'Ir para Resultado': () => { showTab('results'); toggleAvatar(); },
-    'O que são C1-C5?': 'São as 5 Competências avaliadas pelo ENEM:<br>C1: Língua formal<br>C2: Tema e repertório<br>C3: Argumentação<br>C4: Coesão<br>C5: Proposta de intervenção',
-    'Voltar ao início': () => { showTab('scanner'); toggleAvatar(); },
-    'Como obter a URL?': 'Abra o terminal no seu PC, rode <code style="background:#111;padding:2px 6px;border-radius:4px;">ngrok http 1234</code> (ou a porta do seu servidor) e copie o link <b>https://xxxx.ngrok-free.app</b>. Acrescente <b>/v1/chat/completions</b> no final.',
-    'O que é modelo?': 'É o nome do modelo carregado no seu servidor local (ex: <code style="background:#111;padding:2px 6px;border-radius:4px;">local-model</code>, <code style="background:#111;padding:2px 6px;border-radius:4px;">llama3</code>, etc). Verifique no terminal do seu servidor.'
-};
-
-let avatarOpen = false;
-
-function toggleAvatar() {
-    avatarOpen = !avatarOpen;
-    document.getElementById('avatar-bubble').style.display = avatarOpen ? 'block' : 'none';
-    if (avatarOpen) showAvatarForTab();
-}
-
-function showAvatarForTab() {
-    const active = document.querySelector('.tab-pane.active');
-    const tabId = active ? active.id : 'scanner';
-    const tip = AVATAR_TIPS[tabId] || AVATAR_TIPS.scanner;
-    document.getElementById('avatar-msg').innerHTML = tip.msg;
-    const opts = document.getElementById('avatar-options');
-    opts.innerHTML = tip.opts.map(o =>
-        `<button onclick="avatarAnswer('${o}')" style="
-            padding:6px 12px; background:var(--surface2); border:1px solid var(--border);
-            border-radius:100px; color:var(--text); font-size:0.75rem; cursor:pointer;
-            transition:border-color 0.2s;" 
-            onmouseover="this.style.borderColor='var(--accent)'"
-            onmouseout="this.style.borderColor='var(--border)'">${o}</button>`
-    ).join('');
-}
-
-function avatarAnswer(q) {
-    const ans = AVATAR_ANSWERS[q];
-    if (typeof ans === 'function') { ans(); return; }
-    document.getElementById('avatar-msg').innerHTML = `<b>${q}</b><br><br>${ans}`;
-    document.getElementById('avatar-options').innerHTML = `
-        <button onclick="showAvatarForTab()" style="
-            padding:6px 12px; background:var(--surface2); border:1px solid var(--border);
-            border-radius:100px; color:var(--muted); font-size:0.75rem; cursor:pointer;">
-            ← Voltar
-        </button>`;
 }
 
 /* ── SAVE CONFIG ──────────────────────────────────── */
@@ -927,7 +809,6 @@ function showTab(id) {
     document.getElementById(id).classList.add('active');
     const map = { scanner: 0, editor: 1, results: 2, config: 3 };
     document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
-    // Atualiza o avatar se estiver aberto
     if (avatarOpen) showAvatarForTab();
 }
 
@@ -950,15 +831,14 @@ const COMPS = {
 };
 
 const CRITERIA = {
-    1: ["Ilegibilidade/Rasuras", "Maiúsculas/Minúsculas", "Ortografia", "Acentuação", "Translineação", "Hífen", "Pontuação/Truncamento", "Pontuação/Justaposição", "Outros de pontuação", "Sintaxe/Falta", "Sintaxe/Excesso", "Crase", "Regência", "Concordância", "Modo/Tempo Verbal", "Pronomes", "Paralelismo", "Vocabulário", "Coloquialismo", "Linguagem Figurada"],
-    2: ["Tangenciamento", "Tipo textual inadequado", "Repertório restrito", "Repertório não legitimado", "Repertório não pertinente", "Repertório improdutivo", "Repertório legitimado/produtivo"],
-    3: ["Tangenciamento temático", "Relacionamento de ideias", "Texto expositivo", "Desenvolvimento inadequado", "Argumentação confusa", "Contradição", "Repetição de ideias", "Prolixo", "Modalização", "Progressão textual", "Tese clara", "Proposta de intervenção", "Bem argumentado", "Estratégico"],
-    4: ["Coesivo interparágrafo", "Uso de operadores", "Ambiguidade", "Mau uso de conectivos", "Repetição léxica"],
-    5: ["Sem proposta", "Proposta sem relação com assunto", "Respeito aos direitos humanos", "Tangenciamento da proposta", "Proposta condicional", "Agente especificado", "Ação detalhada", "Meio/Modo especificado", "Efeito esperado", "Detalhamento completo", "Proposta completa"]
+    1: ["Ilegibilidade/Rasuras","Maiúsculas/Minúsculas","Ortografia","Acentuação","Translineação","Hífen","Pontuação/Truncamento","Pontuação/Justaposição","Outros de pontuação","Sintaxe/Falta","Sintaxe/Excesso","Crase","Regência","Concordância","Modo/Tempo Verbal","Pronomes","Paralelismo","Vocabulário","Coloquialismo","Linguagem Figurada"],
+    2: ["Tangenciamento","Tipo textual inadequado","Repertório restrito","Repertório não legitimado","Repertório não pertinente","Repertório improdutivo","Repertório legitimado/produtivo"],
+    3: ["Tangenciamento temático","Relacionamento de ideias","Texto expositivo","Desenvolvimento inadequado","Argumentação confusa","Contradição","Repetição de ideias","Prolixo","Modalização","Progressão textual","Tese clara","Proposta de intervenção","Bem argumentado","Estratégico"],
+    4: ["Coesivo interparágrafo","Uso de operadores","Ambiguidade","Mau uso de conectivos","Repetição léxica"],
+    5: ["Sem proposta","Proposta sem relação com assunto","Respeito aos direitos humanos","Tangenciamento da proposta","Proposta condicional","Agente especificado","Ação detalhada","Meio/Modo especificado","Efeito esperado","Detalhamento completo","Proposta completa"]
 };
 
 const SCORES = [0, 40, 80, 120, 160, 200];
-
 let feedbackData = {};
 let curComp = 1;
 let curCompInd = 1;
@@ -967,13 +847,11 @@ function setComp(n) {
     curComp = n;
     document.querySelectorAll('#compPills .comp-pill').forEach((b, i) => b.classList.toggle('active', i+1 === n));
     document.getElementById('compDesc').innerText = COMPS[n];
-
     const score = feedbackData[`c${n}_score`];
     const badges = document.getElementById('scoreBadges');
     badges.innerHTML = SCORES.map(s =>
         `<div class="score-badge${s === score ? ' selected' : ''}">${s}</div>`
     ).join('');
-
     const pos = feedbackData[`c${n}_pos`];
     const imp = feedbackData[`c${n}_imp`];
     const posBox = document.getElementById('posBox');
@@ -982,8 +860,6 @@ function setComp(n) {
     posBox.classList.toggle('empty', !pos);
     impBox.innerText = imp || 'Aguardando correção...';
     impBox.classList.toggle('empty', !imp);
-
-    // Onde perdeu pontos
     const ded = feedbackData[`c${n}_ded`];
     const dedBox = document.getElementById('dedBox');
     if (dedBox) {
@@ -1001,187 +877,145 @@ function setComp(n) {
 }
 
 function renderDedTable(comp, ded) {
-    // Label maps per competency
     const LABELS = {
-        1: {
-            falhas_sintaticas:    'Falhas sintáticas',
-            desvios_ortografia:   'Ortografia',
-            desvios_pontuacao:    'Pontuação',
-            desvios_concordancia: 'Concordância',
-            desvios_regencia:     'Regência',
-            desvios_vocabulario:  'Vocabulário',
-            outros_desvios:       'Outros desvios'
-        },
-        2: {
-            abordagem_tema:        'Abordagem do tema',
-            estrutura_dissertativa:'Estrutura dissertativa',
-            partes_embrionarias:   'Partes embrionárias',
-            repertorio_legitimado: 'Repertório legitimado',
-            repertorio_pertinente: 'Repertório pertinente',
-            repertorio_produtivo:  'Repertório produtivo'
-        },
-        3: {
-            tese_antecipacao:      'Tese por antecipação',
-            dois_temas_problema:   'Dois temas-problema',
-            palavras_chave:        'Palavras-chave do tema',
-            argumentos_relacionados:'Argumentos relacionados',
-            repertorio_demonstrado:'Repertório demonstrado',
-            marcadores_opiniao:    'Marcadores de opinião',
-            incoerencias:          'Incoerências/contradições',
-            proposta_resolve_temas:'Proposta resolve os temas'
-        },
-        4: {
-            conectivos_inadequados: 'Conectivos inadequados',
-            conectivos_repetidos:   'Conectivos repetidos',
-            paragrafos_sem_operador:'Parágrafos sem operador',
-            retomada_inadequada:    'Retomada inadequada',
-            repeticao_lexical:      'Repetição lexical'
-        },
-        5: {
-            agente:      'Agente',
-            acao:        'Ação',
-            modo_meio:   'Modo / Meio',
-            finalidade:  'Finalidade',
-            detalhamento:'Detalhamento'
-        }
+        1: { falhas_sintaticas:'Falhas sintáticas', desvios_ortografia:'Ortografia', desvios_pontuacao:'Pontuação', desvios_concordancia:'Concordância', desvios_regencia:'Regência', desvios_vocabulario:'Vocabulário', outros_desvios:'Outros desvios' },
+        2: { abordagem_tema:'Abordagem do tema', estrutura_dissertativa:'Estrutura dissertativa', partes_embrionarias:'Partes embrionárias', repertorio_legitimado:'Repertório legitimado', repertorio_pertinente:'Repertório pertinente', repertorio_produtivo:'Repertório produtivo' },
+        3: { tese_antecipacao:'Tese por antecipação', dois_temas_problema:'Dois temas-problema', palavras_chave:'Palavras-chave do tema', argumentos_relacionados:'Argumentos relacionados', repertorio_demonstrado:'Repertório demonstrado', marcadores_opiniao:'Marcadores de opinião', incoerencias:'Incoerências/contradições', proposta_resolve_temas:'Proposta resolve os temas' },
+        4: { conectivos_inadequados:'Conectivos inadequados', conectivos_repetidos:'Conectivos repetidos', paragrafos_sem_operador:'Parágrafos sem operador', retomada_inadequada:'Retomada inadequada', repeticao_lexical:'Repetição lexical' },
+        5: { agente:'Agente', acao:'Ação', modo_meio:'Modo / Meio', finalidade:'Finalidade', detalhamento:'Detalhamento' }
     };
-
     const labels = LABELS[comp] || {};
-    let rows = '';
-    let totalPts = 0;
-    let totalFalhas = 0;
-
-    // If ded is a string (fallback), show as text
-    if (typeof ded === 'string') {
-        return `<div class="feedback-box" style="white-space:pre-wrap">${ded}</div>`;
-    }
-
+    if (typeof ded === 'string') return `<div class="feedback-box" style="white-space:pre-wrap">${ded}</div>`;
+    let rows = ''; let totalPts = 0; let totalFalhas = 0;
     for (const [key, val] of Object.entries(ded)) {
         const label = labels[key] || key.replace(/_/g,' ');
         const pts = val.pts_perdidos || 0;
         const obs = val.exemplos || val.obs || '';
         totalPts += pts;
-
         let badgeHtml = '';
         if ('falhas' in val) {
-            const f = val.falhas || 0;
-            totalFalhas += f;
+            const f = val.falhas || 0; totalFalhas += f;
             badgeHtml = `<span class="bd-badge ${f===0?'green':'red'}">${f} ${f===1?'falha':'falhas'}</span>`;
         } else if ('ok' in val) {
             badgeHtml = `<span class="bd-badge ${val.ok?'green':'red'}">${val.ok?'✓ OK':'✗ Falhou'}</span>`;
         }
-
-        rows += `<tr>
-            <td>
-                <div class="bd-name">${label}</div>
-                ${obs ? `<div class="bd-obs">"${obs.slice(0,120)}${obs.length>120?'…':''}"</div>` : ''}
-            </td>
-            <td>${badgeHtml}</td>
-            <td><span class="bd-pts ${pts===0?'zero':''}">−${pts} pts</span></td>
-        </tr>`;
+        // exemplos pode ser string (legado) ou array
+        let exemplosHtml = '';
+        if (Array.isArray(obs)) {
+            if (obs.length > 0) {
+                exemplosHtml = obs.map((ex, idx) =>
+                    `<div class="bd-obs" style="margin-top:${idx===0?3:2}px;">
+                        <span style="color:var(--accent);font-size:0.68rem;font-weight:700;margin-right:4px;">${idx+1}.</span>"${ex.slice(0,140)}${ex.length>140?'…':''}"
+                    </div>`
+                ).join('');
+            }
+        } else if (obs) {
+            exemplosHtml = `<div class="bd-obs">"${obs.slice(0,140)}${obs.length>140?'…':''}"</div>`;
+        }
+        rows += `<tr><td><div class="bd-name">${label}</div>${exemplosHtml}</td><td>${badgeHtml}</td><td><span class="bd-pts ${pts===0?'zero':''}">−${pts} pts</span></td></tr>`;
     }
-
     const hasFalhas = Object.values(ded).some(v => 'falhas' in v);
-
     const actualScore = feedbackData[`c${comp}_score`] || 0;
     const truePtsLost = 200 - actualScore;
     const mismatch = totalPts > 0 && totalPts !== truePtsLost;
-
     return `<div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
-        ${mismatch ? `<div style="padding:8px 12px;font-size:0.74rem;background:rgba(244,162,97,0.08);border-bottom:1px solid rgba(244,162,97,0.2);color:var(--gold);">⚠️ Detalhamento soma ${totalPts}pts mas nota implica ${truePtsLost}pts (200−${actualScore})</div>` : ''}
+        ${mismatch?`<div style="padding:8px 12px;font-size:0.74rem;background:rgba(244,162,97,0.08);border-bottom:1px solid rgba(244,162,97,0.2);color:var(--gold);">⚠️ Detalhamento soma ${totalPts}pts mas nota implica ${truePtsLost}pts (200−${actualScore})</div>`:''}
         <table class="breakdown-table">
-            <thead>
-                <tr>
-                    <th>Elemento</th>
-                    <th>${hasFalhas ? 'Ocorrências' : 'Status'}</th>
-                    <th>Pts perdidos</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-            <tfoot>
-                <tr class="breakdown-footer">
-                    <td>Total</td>
-                    <td>${hasFalhas ? `<span class="bd-badge ${totalFalhas===0?'green':'red'}">${totalFalhas}</span>` : ''}</td>
-                    <td><span class="bd-total-pts ${truePtsLost===0?'zero':''}">−${truePtsLost} pts</span></td>
-                </tr>
-            </tfoot>
+            <thead><tr><th>Elemento</th><th>${hasFalhas?'Ocorrências':'Status'}</th><th>Pts perdidos</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr><td>Total</td><td>${hasFalhas?`<span class="bd-badge ${totalFalhas===0?'green':'red'}">${totalFalhas}</span>`:''}</td><td><span class="bd-pts ${truePtsLost===0?'zero':''}">−${truePtsLost} pts</span></td></tr></tfoot>
         </table>
     </div>`;
 }
-
-
 
 function setCompInd(n) {
     curCompInd = n;
     document.querySelectorAll('#compPillsInd .comp-pill').forEach((b, i) => b.classList.toggle('active', i+1 === n));
     renderCrits(n);
 }
-
 function renderCrits(n) {
-    const offsets = [0, 0, 20, 27, 41, 46];
-    const list = document.getElementById('critList');
-    list.innerHTML = CRITERIA[n].map((c, i) =>
+    const offsets = [0,0,20,27,41,46];
+    document.getElementById('critList').innerHTML = CRITERIA[n].map((c,i) =>
         `<div class="crit-item"><div class="crit-num">${offsets[n]+i+1}</div>${c}</div>`
     ).join('');
 }
 
+/* ── PDF PRINT ───────────────────────────────────── */
+function printReport() {
+    const total = [1,2,3,4,5].reduce((acc,n) => acc+(feedbackData[`c${n}_score`]||0),0);
+    const tema = document.getElementById('temaInput').value.trim();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) +
+        ' às ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+
+    // Fill PDF header
+    document.getElementById('pdf-tema-line').textContent = tema ? `Tema: ${tema}` : 'Tema: não informado';
+    document.getElementById('pdf-date-line').innerHTML = `Data: ${dateStr}<br>Nota Total: <strong style="color:#e63946;font-size:1.1rem;">${total}/1000</strong>`;
+
+    // Build all-comps block for print
+    const allCompsEl = document.getElementById('pdfAllComps');
+    allCompsEl.innerHTML = [1,2,3,4,5].map(n => {
+        const score = feedbackData[`c${n}_score`] ?? '—';
+        const pos = feedbackData[`c${n}_pos`] || '—';
+        const imp = feedbackData[`c${n}_imp`] || '—';
+        const ded = feedbackData[`c${n}_ded`];
+        const dedHtml = ded ? renderDedTable(n, ded) : '<span style="color:#aaa">Sem dados</span>';
+        const scoreColor = score >= 160 ? '#27ae60' : score >= 80 ? '#e67e22' : '#c0392b';
+        return `<div class="pdf-comp-block">
+            <div class="pdf-comp-title">
+                Competência ${n} — ${COMPS[n]}
+                <span class="pdf-score-chip" style="background:${scoreColor};color:#fff;">${score} / 200</span>
+            </div>
+            <div style="margin-bottom:10px;">
+                <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:4px;">✅ Pontos positivos</div>
+                <div style="font-size:0.85rem;line-height:1.6;color:#333;">${pos}</div>
+            </div>
+            <div style="margin-bottom:10px;">
+                <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:4px;">💡 Como melhorar</div>
+                <div style="font-size:0.85rem;line-height:1.6;color:#333;">${imp}</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px;">📉 Onde perdeu pontos</div>
+                ${dedHtml}
+            </div>
+        </div>`;
+    }).join('');
+
+    window.print();
+}
+
 /* ── OCR HIGHLIGHT ──────────────────────────────────── */
 let highlightActive = false;
-
 function applyOcrHighlights(rawText) {
-    // Extract [[word]] markers from OCR output
     const plainText = rawText.replace(/\[\[([^\]]+)\]\]/g, '$1');
-    const ta = document.getElementById('essayText');
-    ta.value = plainText;
-
-    // Find all suspect positions
+    document.getElementById('essayText').value = plainText;
     const suspects = [];
-    const regex = /\[\[([^\]]+)\]\]/g;
-    let match;
-    let offset = 0;
-    let searchText = rawText;
-    let plainOffset = 0;
-
-    // Rebuild mapping: position in plain text → suspect
-    const tempText = rawText;
-    let plain = '';
-    let i = 0;
-    while (i < tempText.length) {
-        if (tempText[i] === '[' && tempText[i+1] === '[') {
-            const end = tempText.indexOf(']]', i);
+    let plain = ''; let i = 0;
+    while (i < rawText.length) {
+        if (rawText[i]==='[' && rawText[i+1]==='[') {
+            const end = rawText.indexOf(']]', i);
             if (end > i) {
-                const word = tempText.slice(i+2, end);
-                const isIlegivel = word === 'ilegível';
-                suspects.push({ start: plain.length, end: plain.length + word.length, type: isIlegivel ? 'error' : 'suspect' });
-                plain += word;
-                i = end + 2;
-                continue;
+                const word = rawText.slice(i+2, end);
+                suspects.push({ start: plain.length, end: plain.length+word.length, type: word==='ilegível'?'error':'suspect' });
+                plain += word; i = end+2; continue;
             }
         }
-        plain += tempText[i];
-        i++;
+        plain += rawText[i]; i++;
     }
-
     if (suspects.length > 0) {
         highlightActive = true;
         renderHighlightOverlay(plainText, suspects);
         document.getElementById('reviewBanner').classList.add('active');
-        document.getElementById('suspectCount').textContent =
-            suspects.length + ' trecho' + (suspects.length > 1 ? 's' : '') + ' para revisar';
+        document.getElementById('suspectCount').textContent = suspects.length + ' trecho'+(suspects.length>1?'s':'')+' para revisar';
     } else {
         highlightActive = false;
         document.getElementById('highlight-overlay').innerHTML = '';
         document.getElementById('reviewBanner').classList.remove('active');
     }
 }
-
 function renderHighlightOverlay(text, suspects) {
-    let html = '';
-    let pos = 0;
+    let html = ''; let pos = 0;
     for (const s of suspects) {
-        // Escape HTML for text before suspect
         html += escHtml(text.slice(pos, s.start));
         html += `<mark class="hl-${s.type}">${escHtml(text.slice(s.start, s.end))}</mark>`;
         pos = s.end;
@@ -1190,33 +1024,17 @@ function renderHighlightOverlay(text, suspects) {
     document.getElementById('highlight-overlay').innerHTML = html;
     syncScroll();
 }
-
-function escHtml(t) {
-    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function syncHighlight() {
-    if (!highlightActive) return;
-    const ta = document.getElementById('essayText');
-    const overlay = document.getElementById('highlight-overlay');
-    // Re-render overlay with current text (marks removed on edit)
-    // Simple approach: just sync scroll
-    syncScroll();
-}
-
+function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function syncHighlight() { if (!highlightActive) return; syncScroll(); }
 function syncScroll() {
     const ta = document.getElementById('essayText');
-    const overlay = document.getElementById('highlight-overlay');
-    overlay.scrollTop = ta.scrollTop;
-    overlay.scrollLeft = ta.scrollLeft;
+    const ov = document.getElementById('highlight-overlay');
+    ov.scrollTop = ta.scrollTop; ov.scrollLeft = ta.scrollLeft;
 }
-
 function clearHighlights() {
     highlightActive = false;
     document.getElementById('highlight-overlay').innerHTML = '';
     document.getElementById('reviewBanner').classList.remove('active');
-    // Re-sync textarea background
-    document.getElementById('highlight-wrap').style.background = '';
 }
 
 /* ── WORD COUNT ──────────────────────────────────── */
@@ -1228,204 +1046,78 @@ function updateMeta() {
     document.getElementById('lineCount').textContent = `${lines} linhas`;
     document.getElementById('charCount').textContent = `${txt.length} caracteres`;
 }
-
-function clearEssay() {
-    document.getElementById('essayText').value = '';
-    updateMeta();
-}
+function clearEssay() { document.getElementById('essayText').value = ''; updateMeta(); }
 
 /* ── SCANNER / OCR ───────────────────────────────── */
 function previewImg(input) {
-    const file = input.files[0];
-    if (!file) return;
+    const file = input.files[0]; if (!file) return;
     const r = new FileReader();
     r.onload = e => {
         const img = document.getElementById('prevImg');
-        img.src = e.target.result;
-        img.style.display = 'block';
+        img.src = e.target.result; img.style.display = 'block';
         document.getElementById('btnOCR').disabled = false;
     };
     r.readAsDataURL(file);
 }
-
 function updateOcrMethod() {
     const isAI = document.querySelector('input[name="ocrMethod"]:checked').value === 'ai';
     document.getElementById('lbl-ai').style.borderColor = isAI ? 'var(--accent)' : 'var(--border)';
     document.getElementById('lbl-tesseract').style.borderColor = !isAI ? 'var(--accent)' : 'var(--border)';
     document.getElementById('ai-vision-warning').style.display = isAI ? 'block' : 'none';
 }
-
 async function doOCR() {
     const btn = document.getElementById('btnOCR');
     const prog = document.getElementById('ocrProgress');
     const bar = document.getElementById('ocrBar');
     const msg = document.getElementById('ocrMsg');
     const method = document.querySelector('input[name="ocrMethod"]:checked').value;
-
-    btn.disabled = true;
-    prog.style.display = 'block';
-    bar.style.width = '10%';
-
-    if (method === 'ai') {
-        await doOcrAI(btn, prog, bar, msg);
-    } else {
-        await doOcrTesseract(btn, prog, bar, msg);
-    }
+    btn.disabled = true; prog.style.display = 'block'; bar.style.width = '10%';
+    if (method === 'ai') await doOcrAI(btn, prog, bar, msg);
+    else await doOcrTesseract(btn, prog, bar, msg);
 }
-
 async function doOcrAI(btn, prog, bar, msg) {
-    if (!config.apiUrl) {
-        showToast('Configure a URL do servidor nas Configurações!', 'error');
-        prog.style.display = 'none';
-        btn.disabled = false;
-        return;
-    }
-
-    msg.textContent = 'Convertendo imagem...';
-    bar.style.width = '20%';
-
-    // Lê o arquivo original para garantir MIME type correto
+    if (!config.apiUrl) { showToast('Configure a URL do servidor!', 'error'); prog.style.display='none'; btn.disabled=false; return; }
+    msg.textContent = 'Convertendo imagem...'; bar.style.width = '20%';
     const file = document.getElementById('fileIn').files[0];
-    if (!file) {
-        showToast('Nenhuma imagem carregada.', 'error');
-        prog.style.display = 'none';
-        btn.disabled = false;
-        return;
-    }
-
-    // Converte para base64 via FileReader (garante MIME correto)
-    const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-
-    // dataUrl = "data:image/jpeg;base64,/9j/..."  ← formato exato que LM Studio espera
+    if (!file) { showToast('Nenhuma imagem carregada.', 'error'); prog.style.display='none'; btn.disabled=false; return; }
+    const dataUrl = await new Promise((res,rej) => { const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); });
     const mime = file.type || 'image/jpeg';
     const base64 = dataUrl.split(',')[1];
-    const imageUrl = `data:${mime};base64,${base64}`;
-
     try {
-        msg.textContent = 'Qwen lendo manuscrito...';
-        bar.style.width = '50%';
-
+        msg.textContent = 'Qwen lendo manuscrito...'; bar.style.width = '50%';
         const resp = await fetch(config.apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            },
-            body: JSON.stringify({
-                model: config.model,
-                messages: [
-                    {
-                        role: 'user',
-                        content: [
-                            {
-                                type: 'image_url',
-                                image_url: { url: imageUrl }
-                            },
-                            {
-                                type: 'text',
-                                text: 'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- Se uma palavra for difícil de ler, transcreva sua melhor leitura e marque-a entre colchetes duplos: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários'
-                            }
-                        ]
-                    }
-                ],
-                temperature: 0.1,
-                max_tokens: 3500
-            }),
+            method:'POST', headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+            body: JSON.stringify({ model:config.model, messages:[{role:'user',content:[{type:'image_url',image_url:{url:`data:${mime};base64,${base64}`}},{type:'text',text:'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- Se uma palavra for difícil de ler, transcreva sua melhor leitura e marque-a entre colchetes duplos: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários'}]}],temperature:0.1,max_tokens:3500 }),
             signal: AbortSignal.timeout(180000)
         });
-
-        if (!resp.ok) {
-            const err = await resp.text();
-            if (resp.status === 400) {
-                showToast('Modelo rejeitou imagem — usando Tesseract.', 'error');
-                await doOcrTesseract(btn, prog, bar, msg);
-                return;
-            }
-            throw new Error(`HTTP ${resp.status}: ${err.slice(0, 200)}`);
-        }
-
+        if (!resp.ok) { const err=await resp.text(); if(resp.status===400){showToast('Modelo rejeitou imagem — usando Tesseract.','error');await doOcrTesseract(btn,prog,bar,msg);return;} throw new Error(`HTTP ${resp.status}: ${err.slice(0,200)}`); }
         const data = await resp.json();
         const text = data.choices?.[0]?.message?.content;
-
-        if (!text) {
-            showToast('IA não retornou texto — usando Tesseract.', 'error');
-            await doOcrTesseract(btn, prog, bar, msg);
-            return;
-        }
-
-        bar.style.width = '100%';
-        msg.textContent = 'Transcrição concluída!';
-        applyOcrHighlights(text);
-        updateMeta();
-
-        setTimeout(() => {
-            prog.style.display = 'none';
-            btn.disabled = false;
-            showToast('Texto extraído! Palavras suspeitas marcadas em laranja.', 'success');
-            showTab('editor');
-        }, 700);
-
-    } catch(e) {
-        prog.style.display = 'none';
-        btn.disabled = false;
-        showToast('Erro: ' + e.message, 'error');
-    }
+        if (!text) { showToast('IA não retornou texto — usando Tesseract.','error'); await doOcrTesseract(btn,prog,bar,msg); return; }
+        bar.style.width = '100%'; msg.textContent = 'Transcrição concluída!';
+        applyOcrHighlights(text); updateMeta();
+        setTimeout(() => { prog.style.display='none'; btn.disabled=false; showToast('Texto extraído! Palavras suspeitas marcadas em laranja.','success'); showTab('editor'); }, 700);
+    } catch(e) { prog.style.display='none'; btn.disabled=false; showToast('Erro: '+e.message,'error'); }
 }
-
-
 async function doOcrTesseract(btn, prog, bar, msg) {
     msg.textContent = 'Iniciando Tesseract...';
     try {
-        const res = await Tesseract.recognize(
-            document.getElementById('prevImg').src, 'por',
-            { logger: m => {
-                if (m.status === 'recognizing text') {
-                    const pct = Math.round(m.progress * 100);
-                    bar.style.width = pct + '%';
-                    msg.textContent = `Reconhecendo texto... ${pct}%`;
-                }
-            }}
-        );
+        const res = await Tesseract.recognize(document.getElementById('prevImg').src,'por',{logger:m=>{if(m.status==='recognizing text'){const p=Math.round(m.progress*100);bar.style.width=p+'%';msg.textContent=`Reconhecendo texto... ${p}%`;}}});
         document.getElementById('essayText').value = res.data.text;
-        updateMeta();
-        prog.style.display = 'none';
-        btn.disabled = false;
-        showToast('Texto extraído! Revise no editor.', 'success');
-        showTab('editor');
-    } catch(e) {
-        prog.style.display = 'none';
-        btn.disabled = false;
-        showToast('Erro no Tesseract: ' + e.message, 'error');
-    }
+        updateMeta(); prog.style.display='none'; btn.disabled=false;
+        showToast('Texto extraído! Revise no editor.','success'); showTab('editor');
+    } catch(e) { prog.style.display='none'; btn.disabled=false; showToast('Erro no Tesseract: '+e.message,'error'); }
 }
 
 /* ── API CONNECTION TEST ─────────────────────────── */
-// Ngrok bloqueia requisições de teste (tela de aviso causa delay >30s).
-// Validamos apenas o formato da URL — a conexão real é testada na primeira correção.
 function testConnection() {
     const dot = document.getElementById('statusDot');
     const txt = document.getElementById('statusTxt');
     const url = (config.apiUrl || '').trim();
-
-    if (!url) {
-        dot.className = 'status-dot error';
-        txt.textContent = 'URL não configurada';
-        return false;
-    }
-
+    if (!url) { dot.className='status-dot error'; txt.textContent='URL não configurada'; return false; }
     const isValid = /^https?:\/\/.+/.test(url);
-    if (isValid) {
-        dot.className = 'status-dot online';
-        txt.textContent = 'URL configurada ✓';
-    } else {
-        dot.className = 'status-dot error';
-        txt.textContent = 'URL inválida';
-    }
+    if (isValid) { dot.className='status-dot online'; txt.textContent='URL configurada ✓'; }
+    else { dot.className='status-dot error'; txt.textContent='URL inválida'; }
     return isValid;
 }
 
@@ -1433,61 +1125,25 @@ function testConnection() {
 async function startCorrection() {
     const txt = document.getElementById('essayText').value.trim();
     if (!txt) { showToast('Cole sua redação antes de corrigir!', 'error'); return; }
-    if (!config.apiUrl) {
-        showToast('Configure a URL do servidor primeiro!', 'error');
-        showTab('config');
-        return;
-    }
-
+    if (!config.apiUrl) { showToast('Configure a URL do servidor primeiro!', 'error'); showTab('config'); return; }
     const tema = document.getElementById('temaInput').value.trim();
-    if (!tema) {
-        document.getElementById('tema-warning').style.display = 'block';
-    }
+    if (!tema) document.getElementById('tema-warning').style.display = 'block';
     const btn = document.getElementById('btnCorr');
     const errorLog = document.getElementById('errorLog');
-    btn.disabled = true;
-    feedbackData = {};
-    showTab('results');
-
-    // Reset UI
+    btn.disabled = true; feedbackData = {}; showTab('results');
     document.getElementById('scoreBanner').style.display = 'none';
     document.getElementById('progWrap').style.display = 'block';
-    errorLog.style.display = 'none';
-    errorLog.textContent = '';
+    document.getElementById('pdfBtnWrap').style.display = 'none';
+    errorLog.style.display = 'none'; errorLog.textContent = '';
     document.querySelectorAll('.comp-step').forEach(s => s.className = 'comp-step');
     setComp(1);
 
-    const logError = (msg) => {
-        errorLog.style.display = 'block';
-        errorLog.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-        errorLog.scrollTop = errorLog.scrollHeight;
-    };
+    const logError = msg => { errorLog.style.display='block'; errorLog.textContent+=`[${new Date().toLocaleTimeString()}] ${msg}\n`; errorLog.scrollTop=errorLog.scrollHeight; };
+    const setProgress = (pct, label) => { document.getElementById('progFill').style.width=pct+'%'; document.getElementById('progLabel').textContent=label; document.getElementById('progPct').textContent=pct+'%'; };
 
-    const setProgress = (pct, label) => {
-        document.getElementById('progFill').style.width = pct + '%';
-        document.getElementById('progLabel').textContent = label;
-        document.getElementById('progPct').textContent = pct + '%';
-    };
-
-    for (let i = 1; i <= 5; i++) {
-        document.querySelectorAll('.comp-step').forEach((s, idx) => {
-            if (idx + 1 < i) s.className = 'comp-step done';
-            else if (idx + 1 === i) s.className = 'comp-step active';
-            else s.className = 'comp-step';
-        });
-
-        setProgress((i - 1) * 20, `Analisando Competência ${i} de 5...`);
-        await new Promise(r => setTimeout(r, 80));
-
-        const tema = document.getElementById('temaInput').value.trim();
-        const temaInfo = tema ? `\nTema da proposta de redação: "${tema}"` : '';
-
-
-        const CALIBRACAO = `
+    const CALIBRACAO = `
 === RÉGUA DE CALIBRAÇÃO — CRITÉRIOS OFICIAIS ENEM ===
-
 ESCALA DE NOTAS (por competência): 0 | 40 | 80 | 120 | 160 | 200
-
 RIGOR NA ATRIBUIÇÃO:
 - 200 pts → redação SEM falhas identificáveis na competência avaliada
 - 160 pts → redação com 1 falha leve ou 1 critério não totalmente cumprido
@@ -1495,446 +1151,294 @@ RIGOR NA ATRIBUIÇÃO:
 - 80 pts  → redação com várias falhas ou descumprimento de critérios centrais
 - 40 pts  → redação que tangencia ou falha gravemente na competência
 - 0 pts   → ausência total de domínio da competência
-
-EXEMPLOS DE CALIBRAÇÃO (use como régua):
-
-Exemplo de redação que MERECE 200 em TODAS as competências:
----
-Conforme estudos demográficos realizados pelo Instituto Brasileiro de Geografia e Estatística (IBGE), a população de idosos crescerá drasticamente nas próximas décadas. Nesse contexto, o trabalho de cuidado realizado pelas mulheres é fundamental para acolher essa parcela populacional. Todavia, a invisibilidade e a omissão estatal são desafios que perpetuam o descaso sofrido por essas trabalhadoras no Brasil. Logo, faz-se imperiosa a tomada de medidas que resolvam esse contexto de emergência generalizada.
-Sob essa perspectiva, é crucial que a escassez de debates acerca da importância das atividades de assistência seja superada. A esse respeito, a ilustre filósofa Djamila Ribeiro defende que, para atuar em uma situação, deve-se, antes de tudo, tirá-la da invisibilidade. Entretanto, o panorama nacional destoa do pensamento da autora, já que o alto índice de empregadas domésticas em condições ocupacionais precárias não é enxergado pelo círculo social, de modo que discussões sobre essa questão não sejam priorizadas, dificultando intervenções nesse problema. Então, essa nebulosidade precisa ser exposta para conscientizar a sociedade.
-Outrossim, vale ressaltar de que maneira a negligência do Estado fomenta a marginalização das cuidadoras. A partir disso, o sociólogo polonês Zygmunt Bauman utiliza o termo Instituição Zumbi para simbolizar as entidades que não cumprem seu papel previamente estabelecido. Seguindo o raciocínio, é possível compreender o Poder Executivo como um exemplo da ideia do expositor do Sociólogo, uma vez que a sua função de garantir dignidade profissional a todos não está sendo cumprida em sua totalidade, pois muitas trabalhadoras de acolhimento ainda encontram-se em situações indignas. Por isso, a conduta governamental necessita ser reformulada para assegurar os direitos dessas profissionais.
-Portanto, torna-se primordial mitigar a marginalidade do trabalho de cuidado realizado pelo gênero feminino. Dessa forma, o Ministério da Cidadania, enquanto responsável por políticas cidadãs, deve propagar dados e pesquisas que revelem a gravidade do esquecimento sofrido pelas cuidadoras, por meio de plataformas midiáticas de destaque, a fim de atingir o maior contingente possível e conscientizá-lo. Ademais, a coletividade, por intermédio do Ministério Público, precisa cobrar do Governo Federal ações efetivas de proteção ocupacional às empregadas domésticas, com o intuito de promover labor digno a esses indivíduos. Assim, a acolhida da nova geração de pessoas de terceira idade poderá ser efetiva.
----
-POR QUE ESSA REDAÇÃO MERECE 200 EM CADA COMPETÊNCIA:
-C1=200: zero desvios ortográficos, zero erros de concordância/regência, sintaxe complexa e correta, pontuação exemplar.
-C2=200: aborda o tema em todas as partes, repertório (Djamila Ribeiro + Bauman) legitimado, pertinente E produtivo — usado para fundamentar argumentos, não apenas citado.
-C3=200: 4 parágrafos exatos, tese com 2 temas-problema claros (invisibilidade + omissão estatal), cada parágrafo desenvolve um tema na ordem proposta, sem incoerências.
-C4=200: operadores argumentativos variados e adequados em todos os parágrafos (Todavia, Logo, Sob essa perspectiva, Entretanto, Outrossim, A partir disso, Seguindo o raciocínio, Portanto, Dessa forma, Ademais), retomadas lexicais sem repetição.
-C5=200: 2 propostas completas com todos os 5 elementos válidos e articulados (agente + ação + modo/meio + finalidade + detalhamento).
-
-SE A REDAÇÃO AVALIADA TIVER QUALIDADE IGUAL A ESSE EXEMPLO → atribua 200.
-SE TIVER FALHAS EM RELAÇÃO A ESSE PADRÃO → desconte proporcionalmente.
-NÃO penalize características estilísticas válidas como se fossem erros.
 === FIM DA RÉGUA ===`;
 
-        const PROMPTS = {
-            1: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+    const temaInfo = tema ? `\nTema da proposta de redação: "${tema}"` : '';
+
+    const REGRA_SOMA = `
+REGRA MATEMÁTICA OBRIGATÓRIA — LEIA ANTES DE MONTAR O JSON:
+1. Determine a nota final (c_score) pela tabela de critérios.
+2. Calcule: TOTAL_PTS_PERDIDOS = 200 − c_score. Anote esse valor.
+3. Distribua TOTAL_PTS_PERDIDOS entre as categorias com falhas. A soma de todos os "pts_perdidos" no JSON DEVE ser EXATAMENTE igual a TOTAL_PTS_PERDIDOS.
+4. Categorias sem falha recebem pts_perdidos = 0.
+5. Antes de fechar o JSON, some todos os pts_perdidos e confirme: soma == TOTAL_PTS_PERDIDOS. Se não bater, ajuste a maior categoria até acertar.
+NUNCA gere um JSON onde a soma dos pts_perdidos seja diferente de (200 − c_score). Isso é um erro grave.
+
+REGRA DE EXEMPLOS OBRIGATÓRIA:
+- O campo "exemplos" deve ser um ARRAY de strings, uma entrada por falha identificada.
+- Se uma categoria tem 3 falhas, o array deve ter 3 entradas, cada uma com o trecho exato do texto onde a falha ocorre.
+- Se não há falhas na categoria, use array vazio: [].
+- NUNCA coloque múltiplas falhas numa única string. Cada falha = uma string separada no array.
+Exemplo correto: "exemplos": ["trecho com erro 1", "trecho com erro 2", "trecho com erro 3"]
+Exemplo errado:  "exemplos": "trecho1, trecho2, trecho3"`;
+
+    const PROMPTS = {
+        1:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
-Avalie a Competência I — Norma Culta da redação abaixo.
+${REGRA_SOMA}
+Avalie a Competência I — Norma Culta da língua portuguesa.
 
-PASSO 1 — CONTE AS FALHAS (seja rigoroso, não invente erros):
-Falhas sintáticas: truncamento, fragmentação, justaposição excessiva, construção truncada.
-Desvios de escrita: ortografia, acentuação, concordância, regência, vocabulário informal.
-NÃO são erros: vocabulário erudito (labor, imperiosa, nebulosidade), inversão sintática formal, nomes de teorias com maiúscula (ex: Instituição Zumbi), orações subordinadas longas bem construídas.
+PASSO 1 — CONTE cada falha individualmente (não invente erros):
+- falhas_sintaticas: truncamento, fragmentação, justaposição excessiva.
+- desvios_ortografia: erros de grafia e acentuação.
+- desvios_pontuacao: vírgulas ausentes/incorretas, ponto mal usado.
+- desvios_concordancia: verbal e nominal.
+- desvios_regencia: verbal e nominal.
+- desvios_vocabulario: coloquialismo, registro inadequado.
+- outros_desvios: qualquer outro desvio da norma culta.
 
-PASSO 2 — DETERMINE A NOTA PELA TABELA ABAIXO (baseada no total de falhas contadas):
-- Total 0 falhas sintáticas E 0-2 desvios → 200pts
-- Total 1-2 falhas sintáticas OU 3-5 desvios → 160pts
-- Total 3-4 falhas sintáticas OU 6-8 desvios → 120pts
-- Total 5-6 falhas sintáticas OU 9+ desvios → 80pts
-- Total 7+ falhas sintáticas → 40pts
-- Sem estrutura → 0pts
+PASSO 2 — DETERMINE A NOTA:
+0 sintáticas E 0-2 desvios → 200 | 1-2 sintáticas OU 3-5 desvios → 160 | 3-4 sintáticas OU 6-8 desvios → 120 | 5-6 sintáticas OU 9+ desvios → 80 | 7+ sintáticas → 40 | sem estrutura → 0
 
-PASSO 3 — CALCULE: pts_perdidos_total = 200 - nota_atribuída
-Distribua esse total proporcionalmente entre as categorias com falhas.
-Se nota=200, todos os pts_perdidos devem ser 0.
+PASSO 3 — Calcule TOTAL_PTS_PERDIDOS = 200 − nota. Distribua esse valor entre as categorias com falha, proporcional à gravidade. Confirme que a soma bate antes de gerar o JSON.
 
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c1_score": <nota calculada no passo 2>, "c1_ded": {"falhas_sintaticas": {"falhas": <n contado>, "pts_perdidos": <proporcional>, "exemplos": "<trechos exatos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <proporcional>, "exemplos": "<trechos>"}}}`,
+Retorne SOMENTE JSON válido, sem texto adicional:
+{"c1_score":<nota>,"c1_ded":{"falhas_sintaticas":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>","<trecho 2>"]},"desvios_ortografia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>","<trecho 2>"]},"desvios_pontuacao":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]},"desvios_concordancia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]},"desvios_regencia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]},"desvios_vocabulario":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]},"outros_desvios":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]}}}`,
 
-            2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+        2:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
+${REGRA_SOMA}
 Avalie a Competência II — Tema e Repertório.${tema ? `\nTema: "${tema}".` : ''}
 
-PASSO 1 — VERIFIQUE CADA CRITÉRIO:
-- abordagem_tema: a redação aborda o tema em todas as partes? (tangenciamento → máx 40pts)
-- estrutura_dissertativa: tem introdução, desenvolvimento e conclusão claros?
-- partes_embrionarias: quantos parágrafos têm menos de 3 linhas? (cada um reduz a nota)
-- repertorio_legitimado: a fonte citada é real, reconhecida academicamente ou culturalmente?
+PASSO 1 — VERIFIQUE cada critério:
+- abordagem_tema: redação aborda o tema em todas as partes?
+- estrutura_dissertativa: há introdução, desenvolvimento e conclusão?
+- partes_embrionarias: quantos parágrafos têm menos de 3 linhas?
+- repertorio_legitimado: a fonte citada é academicamente/culturalmente reconhecida?
 - repertorio_pertinente: o repertório se relaciona diretamente ao tema?
-- repertorio_produtivo: o repertório é usado para construir o argumento (não só citado)?
+- repertorio_produtivo: o repertório constrói o argumento (não só decorativo)?
 
 PASSO 2 — DETERMINE A NOTA:
-- Todos ok + repertório produtivo → 200pts
-- Todos ok + repertório não produtivo → 160pts
-- 1 parte embrionária OU repertório não legitimado/pertinente → 120pts
-- 2+ partes embrionárias OU trechos copiados → 80pts
-- Tangenciamento do tema → 40pts
-- Fuga ao tema → 0pts
+Todos ok + produtivo → 200 | Todos ok + não produtivo → 160 | 1 embrionário OU não legitimado → 120 | 2+ embrionários OU copiado → 80 | Tangenciamento → 40 | Fuga → 0
 
-PASSO 3 — pts_perdidos total = 200 - nota. Distribua entre os critérios que falharam (ok=false).
-Se nota=200, todos pts_perdidos=0.
+PASSO 3 — Calcule TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre critérios que falharam (ok=false ou falhas>0). Confirme a soma antes de gerar o JSON.
 
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c2_score": <nota>, "c2_ded": {"abordagem_tema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "estrutura_dissertativa": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "partes_embrionarias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_legitimado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_pertinente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_produtivo": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
+Retorne SOMENTE JSON válido, sem texto adicional:
+{"c2_score":<nota>,"c2_ded":{"abordagem_tema":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"estrutura_dissertativa":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"partes_embrionarias":{"falhas":<n>,"pts_perdidos":<n>,"obs":"<trecho>"},"repertorio_legitimado":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"repertorio_pertinente":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"repertorio_produtivo":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"}}}`,
 
-            3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+        3:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
+${REGRA_SOMA}
 Avalie a Competência III — Projeto de Texto.
 
-PASSO 1 — VERIFIQUE CADA CRITÉRIO:
-- tese_antecipacao: a tese é apresentada no 1º parágrafo de forma clara?
-- dois_temas_problema: a tese contém exatamente 2 problemas a serem desenvolvidos?
-- palavras_chave: as palavras centrais do tema aparecem em todas as partes?
-- argumentos_relacionados: cada argumento se relaciona diretamente ao tema-problema do parágrafo?
-- repertorio_demonstrado: os repertórios são explicados e conectados ao argumento?
-- marcadores_opiniao: há marcadores de autoria (defendo que, acredito, é necessário)?
-- incoerencias: há contradições ou afirmações que se anulam?
-- proposta_resolve_temas: a proposta de intervenção resolve os 2 temas-problema da tese?
+PASSO 1 — VERIFIQUE cada critério:
+- tese_antecipacao: tese clara no 1º parágrafo?
+- dois_temas_problema: exatamente 2 problemas na tese?
+- palavras_chave: palavras centrais do tema aparecem em todas as partes?
+- argumentos_relacionados: cada argumento desenvolve o tema-problema do parágrafo?
+- repertorio_demonstrado: repertório explicado e conectado ao argumento?
+- marcadores_opiniao: há marcadores de autoria (defendo que, é necessário...)?
+- incoerencias: há contradições que se anulam?
+- proposta_resolve_temas: a proposta resolve os 2 temas-problema da tese?
 
 PASSO 2 — DETERMINE A NOTA:
-- Todos ok, projeto estratégico impecável → 200pts
-- 1 critério com falha leve → 160pts
-- 2 critérios com falha OU tese confusa → 120pts
-- 3+ critérios com falha OU sem tese clara → 80pts
-- Sem projeto identificável → 40pts
-- Aglomerado caótico → 0pts
+Todos ok → 200 | 1 falha leve → 160 | 2 falhas OU tese confusa → 120 | 3+ falhas OU sem tese → 80 | Sem projeto → 40 | Caótico → 0
 
-PASSO 3 — pts_perdidos total = 200 - nota. Distribua entre critérios que falharam.
-Se nota=200, todos pts_perdidos=0.
+PASSO 3 — Calcule TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre critérios que falharam. Confirme a soma antes de gerar o JSON.
 
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c3_score": <nota>, "c3_ded": {"tese_antecipacao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "dois_temas_problema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "palavras_chave": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "argumentos_relacionados": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_demonstrado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "marcadores_opiniao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "incoerencias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "proposta_resolve_temas": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
+Retorne SOMENTE JSON válido, sem texto adicional:
+{"c3_score":<nota>,"c3_ded":{"tese_antecipacao":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"dois_temas_problema":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"palavras_chave":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"argumentos_relacionados":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"repertorio_demonstrado":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"marcadores_opiniao":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"incoerencias":{"falhas":<n>,"pts_perdidos":<n>,"obs":"<trecho>"},"proposta_resolve_temas":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"}}}`,
 
-            4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+        4:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
+${REGRA_SOMA}
 Avalie a Competência IV — Coesão Textual.
 
 PASSO 1 — CONTE/VERIFIQUE:
-- conectivos_inadequados: conectivos usados com sentido errado (ex: "portanto" sem conclusão)
-- conectivos_repetidos: mesmo conectivo usado 3+ vezes no texto inteiro
-- paragrafos_sem_operador: parágrafos 2, 3 ou 4 que NÃO iniciam com operador argumentativo
-- retomada_inadequada: pronome ou sinônimo que não retoma claramente o referente
-- repeticao_lexical: mesma palavra repetida 3+ vezes em 5 linhas
+- conectivos_inadequados: conectivos usados com sentido errado.
+- conectivos_repetidos: mesmo conectivo usado 3+ vezes no texto.
+- paragrafos_sem_operador: parágrafos 2, 3 ou 4 sem operador argumentativo no início.
+- retomada_inadequada: pronome/sinônimo que não retoma claramente o referente.
+- repeticao_lexical: mesma palavra repetida 3+ vezes em 5 linhas.
 
 PASSO 2 — DETERMINE A NOTA:
-- Nenhum problema → 200pts
-- 1 problema leve → 160pts
-- 2 problemas OU mesmo conectivo 3x → 120pts
-- 3+ problemas OU parágrafo sem operador → 80pts
-- Conectivo constante OU 3+ conectivos inadequados → 40pts
-- Sem articulação → 0pts
+Nenhum problema → 200 | 1 leve → 160 | 2 problemas OU mesmo conectivo 3x → 120 | 3+ problemas OU parágrafo sem operador → 80 | Conectivo constante OU 3+ inadequados → 40 | Sem articulação → 0
 
-PASSO 3 — pts_perdidos total = 200 - nota. Distribua entre categorias com falhas.
-Se nota=200, todos pts_perdidos=0.
+PASSO 3 — Calcule TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre categorias com falha. Confirme a soma antes de gerar o JSON.
 
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c4_score": <nota>, "c4_ded": {"conectivos_inadequados": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "conectivos_repetidos": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "paragrafos_sem_operador": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "retomada_inadequada": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "repeticao_lexical": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
+Retorne SOMENTE JSON válido, sem texto adicional:
+{"c4_score":<nota>,"c4_ded":{"conectivos_inadequados":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>","<trecho 2>"]},"conectivos_repetidos":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>","<trecho 2>"]},"paragrafos_sem_operador":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]},"retomada_inadequada":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]},"repeticao_lexical":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<trecho 1>"]}}}`,
 
-            5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
+        5:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
+${REGRA_SOMA}
 Avalie a Competência V — Proposta de Intervenção.
 
-PASSO 1 — IDENTIFIQUE os 5 elementos em CADA proposta de intervenção:
-- agente: substantivo com artigo definido como sujeito (ex: "o Ministério da Educação")
-- acao: verbo de ação como predicado (ex: "deve implementar")
-- modo_meio: como/por qual meio a ação será realizada (ex: "por meio de campanhas")
-- finalidade: para que serve a ação — conectivo de finalidade (ex: "a fim de conscientizar")
-- detalhamento: termo ou oração que especifica/aprofunda outro elemento
+PASSO 1 — IDENTIFIQUE os 5 elementos em cada proposta:
+- agente: sujeito com artigo definido (ex: "o Ministério da Educação").
+- acao: verbo de ação como predicado (ex: "deve implementar").
+- modo_meio: como/por qual meio (ex: "por meio de campanhas").
+- finalidade: para que serve — conectivo de finalidade (ex: "a fim de conscientizar").
+- detalhamento: termo que especifica/aprofunda outro elemento.
 
-PASSO 2 — DETERMINE A NOTA (cada elemento válido = 40pts, máx 200 com 2 propostas):
-- 2 propostas com todos os 5 elementos válidos → 200pts
-- 2 propostas com 4 elementos válidos → 160pts
-- 2 propostas com 3 elementos válidos → 120pts
-- 2 propostas com 2 elementos válidos → 80pts
-- 1 proposta ou elementos inválidos → 40pts
-- Sem proposta ou fere direitos humanos → 0pts
+PASSO 2 — DETERMINE A NOTA:
+2 propostas com 5 elementos → 200 | 4 elementos → 160 | 3 elementos → 120 | 2 elementos → 80 | 1 proposta ou inválida → 40 | Sem proposta → 0
 
-PASSO 3 — pts_perdidos por elemento: 40 se ausente/inválido, 0 se presente e válido.
-Total pts_perdidos deve ser igual a (200 - c5_score). Se nota=200, todos pts_perdidos=0.
+PASSO 3 — pts_perdidos por elemento ausente/inválido = 40; presente e válido = 0. TOTAL_PTS_PERDIDOS = 200 − nota. Confirme que a soma bate antes de gerar o JSON.
 
-Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c5_score": <nota>, "c5_ded": {"agente": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho da proposta>"}, "acao": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}, "modo_meio": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}, "finalidade": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}, "detalhamento": {"ok": <bool>, "pts_perdidos": <0 ou 40>, "obs": "<trecho>"}}}`
-        };
+Retorne SOMENTE JSON válido, sem texto adicional:
+{"c5_score":<nota>,"c5_ded":{"agente":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"acao":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"modo_meio":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"finalidade":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"},"detalhamento":{"ok":<bool>,"pts_perdidos":<n>,"obs":"<trecho>"}}}`
+    };
 
-        const systemPrompt = PROMPTS[i];
-
-        let success = false;
-        let lastError = '';
+    for (let i = 1; i <= 5; i++) {
+        document.querySelectorAll('.comp-step').forEach((s,idx) => {
+            if (idx+1<i) s.className='comp-step done';
+            else if (idx+1===i) s.className='comp-step active';
+            else s.className='comp-step';
+        });
+        setProgress((i-1)*20, `Analisando Competência ${i} de 5...`);
+        await new Promise(r => setTimeout(r, 80));
+        let success = false, lastError = '';
 
         for (let attempt = 1; attempt <= 2; attempt++) {
             try {
-                logError(`C${i} — tentativa ${attempt}: enviando requisição...`);
-
-                // Requisição 1: nota + breakdown (campos compactos)
+                logError(`C${i} — tentativa ${attempt}: enviando...`);
                 const resp = await fetch(config.apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
-                    },
-                    body: JSON.stringify({
-                        model: config.model,
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user',   content: txt }
-                        ],
-                        temperature: config.temp,
-                        max_tokens: 3500
-                    }),
+                    method:'POST', headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+                    body: JSON.stringify({ model:config.model, messages:[{role:'system',content:PROMPTS[i]},{role:'user',content:txt}], temperature:config.temp, max_tokens:3500 }),
                     signal: AbortSignal.timeout(120000)
                 });
-
-                if (!resp.ok) {
-                    const errBody = await resp.text();
-                    throw new Error(`HTTP ${resp.status}: ${errBody.slice(0, 200)}`);
-                }
-
+                if (!resp.ok) { const e=await resp.text(); throw new Error(`HTTP ${resp.status}: ${e.slice(0,200)}`); }
                 const data = await resp.json();
-                logError(`C${i} — resposta recebida, parseando JSON...`);
-
-                if (!data.choices?.[0]?.message?.content) {
-                    logError(`C${i} — resposta da API: ${JSON.stringify(data).slice(0,300)}`);
-                    throw new Error('Resposta sem conteúdo em choices[0].message.content');
-                }
-
+                if (!data.choices?.[0]?.message?.content) throw new Error('Resposta sem conteúdo');
                 const raw = data.choices[0].message.content;
-                logError(`C${i} — conteúdo bruto: ${raw.slice(0, 200)}`);
-
+                logError(`C${i} — bruto: ${raw.slice(0,200)}`);
                 const match = raw.match(/\{[\s\S]*\}/);
-                if (!match) throw new Error(`JSON não encontrado. Resposta: ${raw.slice(0,200)}`);
-
+                if (!match) throw new Error(`JSON não encontrado. Resp: ${raw.slice(0,200)}`);
                 let parsed;
-                try {
-                    parsed = JSON.parse(match[0]);
-                } catch(jsonErr) {
-                    // JSON truncado — tenta recuperar campos individualmente
-                    logError(`C${i} — JSON truncado, extraindo campos manualmente...`);
+                try { parsed = JSON.parse(match[0]); }
+                catch(jsonErr) {
+                    logError(`C${i} — JSON truncado, extraindo manualmente...`);
                     parsed = {};
-
-                    // Score
-                    const scoreMatch = match[0].match(/"c\d_score"\s*:\s*(\d+)/);
-                    if (scoreMatch) parsed[`c${i}_score`] = parseInt(scoreMatch[1]);
-
-                    // Pos e imp (strings simples)
-                    const posMatch = match[0].match(/"c\d_pos"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
-                    const impMatch = match[0].match(/"c\d_imp"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
-                    if (posMatch) parsed[`c${i}_pos`] = posMatch[1];
-                    if (impMatch) parsed[`c${i}_imp`] = impMatch[1];
-
-                    // Ded — pode ser objeto JSON ou string
-                    const dedObjIdx = match[0].indexOf(`"c${i}_ded"`);
-                    if (dedObjIdx >= 0) {
-                        const afterDed = match[0].slice(dedObjIdx);
+                    const sm = match[0].match(/"c\d_score"\s*:\s*(\d+)/);
+                    if (sm) parsed[`c${i}_score`] = parseInt(sm[1]);
+                    const dedIdx = match[0].indexOf(`"c${i}_ded"`);
+                    if (dedIdx >= 0) {
+                        const afterDed = match[0].slice(dedIdx);
                         const dedValStart = afterDed.indexOf(':') + 1;
                         const dedStr = afterDed.slice(dedValStart).trim();
                         if (dedStr.startsWith('{')) {
-                            // Tenta parsear o objeto ded diretamente
-                            // Conta chaves para encontrar o fim do objeto
-                            let depth = 0, di = 0, dedEnd = -1;
-                            for (di = 0; di < dedStr.length; di++) {
-                                if (dedStr[di] === '{') depth++;
-                                else if (dedStr[di] === '}') { depth--; if (depth === 0) { dedEnd = di; break; } }
-                            }
-                            const dedRaw = dedEnd > 0 ? dedStr.slice(0, dedEnd + 1) : dedStr;
-                            try {
-                                parsed[`c${i}_ded`] = JSON.parse(dedRaw);
-                            } catch(e2) {
-                                parsed[`c${i}_ded`] = '(detalhes truncados — aumente max_tokens)';
-                            }
-                        } else if (dedStr.startsWith('"')) {
-                            const strMatch = dedStr.match(/^"((?:[^"\\]|\\.)*)"/s);
-                            parsed[`c${i}_ded`] = strMatch ? strMatch[1] : '(truncado)';
+                            let depth=0,di=0,dedEnd=-1;
+                            for(di=0;di<dedStr.length;di++){if(dedStr[di]==='{')depth++;else if(dedStr[di]==='}'){depth--;if(depth===0){dedEnd=di;break;}}}
+                            try { parsed[`c${i}_ded`] = JSON.parse(dedStr.slice(0,dedEnd+1)); } catch(e2) { parsed[`c${i}_ded`]='(truncado)'; }
                         }
                     }
-
-                    if (!parsed[`c${i}_score`] && parsed[`c${i}_score`] !== 0)
-                        throw new Error(`Não foi possível extrair nota do JSON truncado.`);
+                    if (!parsed[`c${i}_score`] && parsed[`c${i}_score`]!==0) throw new Error('Não extraiu nota do JSON truncado.');
                 }
                 feedbackData = { ...feedbackData, ...parsed };
-
                 const ps = document.getElementById(`ps${i}`);
-                if (ps) { ps.textContent = parsed[`c${i}_score`] ?? '?'; ps.classList.add('visible'); }
-
+                if (ps) { ps.textContent = parsed[`c${i}_score`]??'?'; ps.classList.add('visible'); }
                 logError(`C${i} — ✓ nota: ${parsed['c'+i+'_score']}`);
-                logError(`C${i} — ded: ${JSON.stringify(parsed['c'+i+'_ded'])?.slice(0,150)}`);
 
-                // Requisição 2: pontos positivos + como melhorar (texto livre, sem limite)
+                // Feedback request
                 try {
-                    setProgress((i-1)*20 + 10, `C${i} — buscando feedback...`);
-                    const sysPrompt2 = 'Você é um corretor oficial de redações do ENEM.' + (temaInfo||'') +
-                        '\nPara a Competência ' + i + ' desta redação, que recebeu nota ' + (parsed['c'+i+'_score']||0) + '/200:' +
-                        '\nEscreva dois textos curtos e diretos (max 2 frases cada).' +
-                        '\nRetorne SOMENTE JSON valido: {c' + i + '_pos: pontos positivos, c' + i + '_imp: como melhorar}';
-                    const resp2 = await fetch(config.apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-                        body: JSON.stringify({
-                            model: config.model,
-                            messages: [
-                                { role: 'system', content: sysPrompt2 },
-                                { role: 'user', content: txt }
-                            ],
-                            temperature: config.temp,
-                            max_tokens: 600
-                        }),
-                        signal: AbortSignal.timeout(60000)
-                    });
-                    if (resp2.ok) {
-                        const data2 = await resp2.json();
-                        const raw2 = data2.choices?.[0]?.message?.content || '';
-                        const match2 = raw2.match(/\{[\s\S]*\}/);
-                        if (match2) {
-                            const parsed2 = JSON.parse(match2[0]);
-                            feedbackData = { ...feedbackData, ...parsed2 };
-                            logError(`C${i} — ✓ feedback recebido`);
-                        }
-                    }
-                } catch(e2) {
-                    logError(`C${i} — feedback ignorado: ${e2.message}`);
-                }
+                    setProgress((i-1)*20+10, `C${i} — buscando feedback...`);
+                    const sp2 = `Você é um corretor oficial de redações do ENEM.${temaInfo}\nPara a Competência ${i} desta redação, nota ${parsed['c'+i+'_score']||0}/200:\nEscreva dois textos curtos (max 2 frases cada).\nRetorne SOMENTE JSON: {"c${i}_pos":"...","c${i}_imp":"..."}`;
+                    const r2 = await fetch(config.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},body:JSON.stringify({model:config.model,messages:[{role:'system',content:sp2},{role:'user',content:txt}],temperature:config.temp,max_tokens:600}),signal:AbortSignal.timeout(60000)});
+                    if (r2.ok) { const d2=await r2.json(); const rw2=d2.choices?.[0]?.message?.content||''; const m2=rw2.match(/\{[\s\S]*\}/); if(m2){feedbackData={...feedbackData,...JSON.parse(m2[0])};logError(`C${i} — ✓ feedback`);} }
+                } catch(e2) { logError(`C${i} — feedback ignorado: ${e2.message}`); }
 
-                success = true;
-                break;
-
-            } catch (e) {
+                success = true; break;
+            } catch(e) {
                 lastError = e.message;
                 logError(`C${i} — ERRO tentativa ${attempt}: ${e.message}`);
-                if (attempt < 2) {
-                    setProgress((i-1)*20, `C${i} — Retentando em 3s...`);
-                    await new Promise(r => setTimeout(r, 3000));
-                }
+                if (attempt < 2) { setProgress((i-1)*20,`C${i} — Retentando em 3s...`); await new Promise(r=>setTimeout(r,3000)); }
             }
         }
 
         if (!success) {
-            document.querySelectorAll('.comp-step').forEach((s, idx) => {
-                if (idx + 1 === i) s.className = 'comp-step error';
-            });
-            setProgress((i-1)*20, `❌ Falha na Competência ${i}`);
+            document.querySelectorAll('.comp-step').forEach((s,idx) => { if(idx+1===i) s.className='comp-step error'; });
+            setProgress((i-1)*20,`❌ Falha na Competência ${i}`);
             btn.disabled = false;
             showToast(`Falha na C${i} — veja o log de erros acima`, 'error');
             return;
         }
     }
 
-    // Finalização com banner grande
-    document.querySelectorAll('.comp-step').forEach(s => s.className = 'comp-step done');
+    document.querySelectorAll('.comp-step').forEach(s => s.className='comp-step done');
     setProgress(100, '✅ Correção finalizada!');
 
-    const total = [1,2,3,4,5].reduce((acc, n) => acc + (feedbackData[`c${n}_score`] || 0), 0);
+    const total = [1,2,3,4,5].reduce((acc,n) => acc+(feedbackData[`c${n}_score`]||0), 0);
     document.getElementById('totalScore').textContent = total;
     document.getElementById('scoreBanner').style.display = 'flex';
     renderScoreBars();
-
-    // Esconde log se tudo OK
     errorLog.style.display = 'none';
 
     await new Promise(r => setTimeout(r, 800));
     document.getElementById('progWrap').style.display = 'none';
+    document.getElementById('pdfBtnWrap').style.display = 'flex';
     btn.disabled = false;
     setComp(1);
 
-    // Toast persistente de conclusão (8s)
     const el = document.getElementById('toast');
-    el.innerHTML = `<span style="color:var(--success); font-weight:700; font-size:1.1rem;">✓</span> <span>Correção concluída! <b>Nota total: ${total}/1000</b></span>`;
+    el.innerHTML = `<span style="color:var(--success);font-weight:700;font-size:1.1rem;">✓</span> <span>Correção concluída! <b>Nota total: ${total}/1000</b></span>`;
     el.className = 'show success';
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.className = '', 8000);
+    toastTimer = setTimeout(() => el.className='', 8000);
 }
 
 function renderScoreBars() {
     const wrap = document.getElementById('scoreBarsViz');
     wrap.innerHTML = [1,2,3,4,5].map(n => {
-        const s = feedbackData[`c${n}_score`] || 0;
-        const h = Math.round((s / 200) * 40);
-        const col = s >= 160 ? 'var(--success)' : s >= 80 ? 'var(--gold)' : 'var(--accent)';
-        return `<div class="score-bar-item">
-            <div class="score-bar-fill" style="height:${h}px; background:${col};"></div>
-            <div class="score-bar-lbl">C${n}</div>
-        </div>`;
+        const s = feedbackData[`c${n}_score`]||0;
+        const h = Math.round((s/200)*40);
+        const col = s>=160?'var(--success)':s>=80?'var(--gold)':'var(--accent)';
+        return `<div class="score-bar-item"><div class="score-bar-fill" style="height:${h}px;background:${col};"></div><div class="score-bar-lbl">C${n}</div></div>`;
     }).join('');
 }
 
 /* ── TOAST ───────────────────────────────────────── */
 let toastTimer;
-function showToast(msg, type = '') {
+function showToast(msg, type='') {
     const el = document.getElementById('toast');
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
-    el.innerHTML = `<span style="color:${type==='success'?'var(--success)':'var(--accent)'}; font-weight:700;">${icon}</span> ${msg}`;
+    const icon = type==='success'?'✓':type==='error'?'✕':'ℹ';
+    el.innerHTML = `<span style="color:${type==='success'?'var(--success)':'var(--accent)'};font-weight:700;">${icon}</span> ${msg}`;
     el.className = `show ${type}`;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.className = '', 3500);
+    toastTimer = setTimeout(()=>el.className='', 3500);
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-});
+document.addEventListener('DOMContentLoaded', () => {});
 renderCrits(1);
 </script>
 
-<!-- ── AVATAR ASSISTENTE ─────────────────────────── -->
-<div id="avatar-btn" onclick="toggleAvatar()" title="Ajuda" style="
-    position:fixed; bottom:24px; left:24px; z-index:9990;
-    width:54px; height:54px; border-radius:50%;
-    background:linear-gradient(135deg,#e63946,#f4a261);
-    display:none; align-items:center; justify-content:center;
-    cursor:pointer;
-    box-shadow:0 4px 20px rgba(230,57,70,0.4);
-    transition:transform 0.2s, box-shadow 0.2s;
-    border:2px solid rgba(255,255,255,0.15);"
-    onmouseover="this.style.transform='scale(1.1)'"
-    onmouseout="this.style.transform='scale(1)'">
-    <svg width="34" height="34" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Cabelo -->
-  <ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/>
-  <rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
-  <rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
-  <!-- Rosto -->
-  <ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/>
-  <!-- Olhos -->
-  <ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
-  <ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
-  <circle cx="27" cy="25" r="0.8" fill="white"/>
-  <circle cx="39" cy="25" r="0.8" fill="white"/>
-  <!-- Sobrancelhas -->
-  <path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-  <path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-  <!-- Nariz -->
-  <ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/>
-  <!-- Boca sorrindo -->
-  <path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <!-- Bochechas -->
-  <ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
-  <ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
-  <!-- Corpo/blusa -->
-  <path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/>
-</svg>
+<!-- AVATAR -->
+<div id="avatar-btn" onclick="toggleAvatar()" title="Ajuda" style="position:fixed;bottom:24px;left:24px;z-index:9990;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#e63946,#f4a261);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(230,57,70,0.4);transition:transform 0.2s,box-shadow 0.2s;border:2px solid rgba(255,255,255,0.15);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <svg width="34" height="34" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/><rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/><ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><circle cx="27" cy="25" r="0.8" fill="white"/><circle cx="39" cy="25" r="0.8" fill="white"/><path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/><path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/><ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/><ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/><path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/></svg>
 </div>
 
-<div id="avatar-bubble" style="
-    position:fixed; bottom:90px; left:24px; z-index:9989;
-    width:300px; background:var(--surface);
-    border:1px solid var(--border); border-radius:16px;
-    padding:18px; display:none;
-    box-shadow:0 8px 30px rgba(0,0,0,0.4);
-    animation: fadeIn 0.25s ease;">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:10px;">
-        <div><svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/>
-  <rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
-  <rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/>
-  <ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/>
-  <ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
-  <ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/>
-  <circle cx="27" cy="25" r="0.8" fill="white"/>
-  <circle cx="39" cy="25" r="0.8" fill="white"/>
-  <path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-  <path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-  <ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/>
-  <path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
-  <ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/>
-  <path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/>
-</svg></div>
-        <div>
-            <div style="font-weight:700; font-size:0.9rem; font-family:'Syne',sans-serif;">ENEM Assistente</div>
-            <div style="font-size:0.72rem; color:var(--success);">● Online</div>
-        </div>
-        <button onclick="toggleAvatar()" style="margin-left:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem;">✕</button>
+<div id="avatar-bubble" style="position:fixed;bottom:90px;left:24px;z-index:9989;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;display:none;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px;">
+        <svg width="42" height="42" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="22" rx="18" ry="17" fill="#3d1f0a"/><rect x="14" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><rect x="43" y="22" width="7" height="20" rx="3" fill="#3d1f0a"/><ellipse cx="32" cy="28" rx="14" ry="15" fill="#c68642"/><ellipse cx="26" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><ellipse cx="38" cy="26" rx="2.5" ry="3" fill="#1a0a00"/><circle cx="27" cy="25" r="0.8" fill="white"/><circle cx="39" cy="25" r="0.8" fill="white"/><path d="M23 22 Q26 20.5 29 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M35 22 Q38 20.5 41 22" stroke="#3d1f0a" stroke-width="1.5" stroke-linecap="round" fill="none"/><ellipse cx="32" cy="31" rx="1.5" ry="1" fill="#a0622a"/><path d="M27 35 Q32 39 37 35" stroke="#7a3d1a" stroke-width="1.8" stroke-linecap="round" fill="none"/><ellipse cx="22" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/><ellipse cx="42" cy="32" rx="3" ry="2" fill="#e07050" opacity="0.35"/><path d="M18 56 Q18 48 32 46 Q46 48 46 56" fill="#e63946"/></svg>
+        <div><div style="font-weight:700;font-size:0.9rem;font-family:'Syne',sans-serif;">ENEM Assistente</div><div style="font-size:0.72rem;color:var(--success);">● Online</div></div>
+        <button onclick="toggleAvatar()" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>
     </div>
-    <div id="avatar-msg" style="font-size:0.85rem; line-height:1.6; color:var(--text); min-height:60px;"></div>
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;" id="avatar-options"></div>
+    <div id="avatar-msg" style="font-size:0.85rem;line-height:1.6;color:var(--text);min-height:60px;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;" id="avatar-options"></div>
 </div>
+
+<script>
+/* ── AVATAR ──────────────────────────────────────── */
+const AVATAR_TIPS = {
+    scanner: { msg:'📷 <b>Aba Digitalizar</b><br><br>Aqui você envia uma <b>foto da redação manuscrita</b>. O sistema extrai o texto automaticamente via OCR.<br><br>➡️ Depois clique em <b>"Extrair Texto"</b>.', opts:['Como tirar a foto?','Ir para Redação'] },
+    editor:  { msg:'✏️ <b>Aba Redação</b><br><br>1. Preencha o <b>tema</b>.<br>2. Cole ou escreva sua redação.<br>3. Clique em <b>⚡ Corrigir Agora</b>.', opts:['O que é C2?','Ir para Resultado'] },
+    results: { msg:'📊 <b>Aba Resultado</b><br><br>Após a correção você verá nota total, C1 a C5 e indicadores.<br><br>Use o botão <b>🖨️ Imprimir Relatório PDF</b> para salvar o resultado.', opts:['O que são C1-C5?','Voltar ao início'] },
+    config:  { msg:'⚙️ <b>Aba Configurações</b><br><br>Configure a <b>URL do Ngrok</b> gerada ao iniciar o servidor local.', opts:['Como obter a URL?','O que é modelo?'] }
+};
+const AVATAR_ANSWERS = {
+    'Como tirar a foto?': 'Tire com boa iluminação, sem sombras e com a folha bem plana. Formatos aceitos: PNG, JPG, WEBP.',
+    'Ir para Redação': () => { showTab('editor'); toggleAvatar(); },
+    'O que é C2?': 'C2 avalia se você compreendeu e desenvolveu o tema proposto, usando repertório de forma pertinente.',
+    'Ir para Resultado': () => { showTab('results'); toggleAvatar(); },
+    'O que são C1-C5?': 'C1: Língua formal | C2: Tema e repertório | C3: Argumentação | C4: Coesão | C5: Proposta de intervenção',
+    'Voltar ao início': () => { showTab('scanner'); toggleAvatar(); },
+    'Como obter a URL?': 'Rode <code style="background:#111;padding:2px 6px;border-radius:4px;">ngrok http 1234</code> e copie o link <b>https://xxxx.ngrok-free.app</b>. Acrescente <b>/v1/chat/completions</b>.',
+    'O que é modelo?': 'É o nome do modelo carregado no seu servidor local (ex: <code style="background:#111;padding:2px 6px;border-radius:4px;">local-model</code>).'
+};
+let avatarOpen = false;
+function toggleAvatar() { avatarOpen=!avatarOpen; document.getElementById('avatar-bubble').style.display=avatarOpen?'block':'none'; if(avatarOpen) showAvatarForTab(); }
+function showAvatarForTab() { const active=document.querySelector('.tab-pane.active'); const tabId=active?active.id:'scanner'; const tip=AVATAR_TIPS[tabId]||AVATAR_TIPS.scanner; document.getElementById('avatar-msg').innerHTML=tip.msg; const opts=document.getElementById('avatar-options'); opts.innerHTML=tip.opts.map(o=>`<button onclick="avatarAnswer('${o}')" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;color:var(--text);font-size:0.75rem;cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">${o}</button>`).join(''); }
+function avatarAnswer(q) { const ans=AVATAR_ANSWERS[q]; if(typeof ans==='function'){ans();return;} document.getElementById('avatar-msg').innerHTML=`<b>${q}</b><br><br>${ans}`; document.getElementById('avatar-options').innerHTML=`<button onclick="showAvatarForTab()" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;color:var(--muted);font-size:0.75rem;cursor:pointer;">← Voltar</button>`; }
+</script>
 </body>
 </html>
