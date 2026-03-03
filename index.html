@@ -913,12 +913,13 @@ function setComp(n) {
         if (ded) {
             const items = ded.split('|').map(s => s.trim()).filter(Boolean);
             dedBox.innerHTML = items.length > 1
-                ? items.map(i => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;"><span style="color:var(--accent);flex-shrink:0;">▸</span><span>${i}</span></div>`).join('')
+                ? items.map(it => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;"><span style="color:var(--accent);flex-shrink:0;">▸</span><span>${it}</span></div>`).join('')
                 : ded;
+            dedBox.classList.remove('empty');
         } else {
             dedBox.innerText = 'Aguardando correção...';
+            dedBox.classList.add('empty');
         }
-        dedBox.classList.toggle('empty', !ded);
     }
 }
 
@@ -1268,34 +1269,36 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
                 const data = await resp.json();
                 logError(`C${i} — resposta recebida, parseando JSON...`);
 
-                if (!data.choices?.[0]?.message?.content) {
-                    logError(`C${i} — resposta da API: ${JSON.stringify(data).slice(0,300)}`);
-                    throw new Error('Resposta sem conteúdo em choices[0].message.content');
+                // Suporta Anthropic (data.content[0].text) e OpenAI-compat (data.choices[0].message.content)
+                const raw = data?.content?.[0]?.text
+                         ?? data?.choices?.[0]?.message?.content
+                         ?? '';
+                if (!raw) {
+                    logError(`C${i} — resposta inesperada: ${JSON.stringify(data).slice(0,300)}`);
+                    throw new Error('Resposta sem conteúdo reconhecível da API.');
                 }
-
-                const raw = data.choices[0].message.content;
                 logError(`C${i} — conteúdo bruto: ${raw.slice(0, 200)}`);
 
-                const match = raw.match(/\{[\s\S]*\}/);
-                if (!match) throw new Error(`JSON não encontrado. Resposta: ${raw.slice(0,200)}`);
-
-                let parsed;
-                try {
-                    parsed = JSON.parse(match[0]);
-                } catch(jsonErr) {
-                    // JSON truncado — extrai campos individualmente com regex
-                    logError(`C${i} — JSON truncado, extraindo campos manualmente...`);
+                // Parser robusto: JSON completo ou extração campo a campo
+                let parsed = null;
+                const jsonMatch = raw.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    try { parsed = JSON.parse(jsonMatch[0]); } catch(_) { parsed = null; }
+                }
+                if (!parsed) {
+                    logError(`C${i} — JSON incompleto/truncado, extraindo campos...`);
                     parsed = {};
-                    const scoreMatch = match[0].match(/"c\d_score"\s*:\s*(\d+)/);
-                    const posMatch   = match[0].match(/"c\d_pos"\s*:\s*"([^"]*?)(?:"|$)/s);
-                    const impMatch   = match[0].match(/"c\d_imp"\s*:\s*"([^"]*?)(?:"|$)/s);
-                    const dedMatch   = match[0].match(/"c\d_ded"\s*:\s*"([^"]*?)(?:"|$)/s);
-                    if (scoreMatch) parsed[`c${i}_score`] = parseInt(scoreMatch[1]);
-                    if (posMatch)   parsed[`c${i}_pos`]   = posMatch[1];
-                    if (impMatch)   parsed[`c${i}_imp`]   = impMatch[1];
-                    if (dedMatch)   parsed[`c${i}_ded`]   = dedMatch[1] + (dedMatch[0].endsWith('"') ? '' : '... [truncado]');
+                    const src = jsonMatch ? jsonMatch[0] : raw;
+                    const sm = src.match(/"c\d_score"\s*:\s*(\d+)/);
+                    const pm = src.match(/"c\d_pos"\s*:\s*"([\s\S]*?)(?:"|(?=\s*,\s*"c\d_))/);
+                    const im = src.match(/"c\d_imp"\s*:\s*"([\s\S]*?)(?:"|(?=\s*,\s*"c\d_))/);
+                    const dm = src.match(/"c\d_ded"\s*:\s*"([\s\S]*?)(?:"|(?=\s*,\s*"c\d_|\s*\}))/);
+                    if (sm) parsed[`c${i}_score`] = parseInt(sm[1]);
+                    if (pm) parsed[`c${i}_pos`] = pm[1].trim();
+                    if (im) parsed[`c${i}_imp`] = im[1].trim();
+                    if (dm) parsed[`c${i}_ded`] = dm[1].trim();
                     if (!parsed[`c${i}_score`] && parsed[`c${i}_score`] !== 0)
-                        throw new Error(`Não foi possível extrair nota do JSON truncado.`);
+                        throw new Error(`Não foi possível extrair nota. Resposta: ${raw.slice(0,200)}`);
                 }
                 feedbackData = { ...feedbackData, ...parsed };
 
@@ -1337,7 +1340,7 @@ Retorne SOMENTE JSON em uma única linha sem quebras de linha nos valores:
     document.getElementById('scoreBanner').style.display = 'flex';
     renderScoreBars();
 
-    // Mantém log visível — usuário pode fechar manualmente
+    // Mantém log visível — adiciona botão para fechar
     if (errorLog.textContent.trim() && !document.getElementById('logCloseBtn')) {
         const closeBtn = document.createElement('button');
         closeBtn.id = 'logCloseBtn';
