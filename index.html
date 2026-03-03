@@ -1182,15 +1182,7 @@ async function doOcrAI(btn, prog, bar, msg) {
                             },
                             {
                                 type: 'text',
-                                text: 'Transcreva o texto manuscrito desta folha de redação do ENEM com máxima fidelidade.
-
-REGRAS OBRIGATÓRIAS:
-- Transcreva palavra por palavra, exatamente como escrito, preservando erros ortográficos e gramaticais do autor
-- Quando uma palavra for difícil de ler, tente sua melhor leitura baseada no contexto — nunca substitua por outra palavra
-- NÃO corrija, NÃO parafraseie, NÃO resuma, NÃO omita trechos
-- Preserve a estrutura de parágrafos com quebras de linha
-- Se uma palavra for absolutamente ilegível, escreva [ilegível]
-- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'
+                                text: 'Transcreva o texto manuscrito desta folha de redação do ENEM com máxima fidelidade.\n\nREGRAS OBRIGATÓRIAS:\n- Transcreva palavra por palavra, exatamente como escrito, preservando erros ortográficos e gramaticais do autor\n- Quando uma palavra for difícil de ler, tente sua melhor leitura baseada no contexto — nunca substitua por outra palavra\n- NÃO corrija, NÃO parafraseie, NÃO resuma, NÃO omita trechos\n- Preserve a estrutura de parágrafos com quebras de linha\n- Se uma palavra for absolutamente ilegível, escreva [ilegível]\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'
                             }
                         ]
                     }
@@ -1291,8 +1283,8 @@ function testConnection() {
     return isValid;
 }
 
-/* ── CORREÇÃO ────────────────────────────────────── */max_tokens: 3500
-        ection() {
+/* ── CORREÇÃO ────────────────────────────────────── */
+async function startCorrection() {
     const txt = document.getElementById('essayText').value.trim();
     if (!txt) { showToast('Cole sua redação antes de corrigir!', 'error'); return; }
     if (!config.apiUrl) {
@@ -1566,8 +1558,8 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                     setProgress((i-1)*20 + 10, `C${i} — buscando feedback...`);
                     const sysPrompt2 = 'Você é um corretor oficial de redações do ENEM.' + (temaInfo||'') +
                         '\nPara a Competência ' + i + ' desta redação, que recebeu nota ' + (parsed['c'+i+'_score']||0) + '/200:' +
-                        '\nEscreva dois textos curtos e diretos (máx 2 frases cada).' +
-                        '\nRetorne SOMENTE JSON válido: {"c' + i + '_pos": "<pontos positivos>", "c' + i + '_imp": "<como melhorar>"}'
+                        '\nEscreva dois textos curtos e diretos (max 2 frases cada).' +
+                        '\nRetorne SOMENTE JSON valido: {c' + i + '_pos: pontos positivos, c' + i + '_imp: como melhorar}';
                     const resp2 = await fetch(config.apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
