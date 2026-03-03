@@ -817,8 +817,13 @@ PASSO 2 — NOTA:
 
 PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua proporcionalmente. Confirme a soma.
 
+REGRAS DE COMPACTAÇÃO DO JSON (obrigatório para caber no limite de tokens):
+- Cada string em "exemplos" deve ter no máximo 60 caracteres — corte com "…" se necessário.
+- Liste no máximo 3 exemplos por categoria, mesmo que haja mais falhas. O campo "falhas" continua com o total real contado.
+- Categorias com 0 falhas: use "exemplos":[] e omita texto desnecessário.
+
 Retorne SOMENTE JSON válido:
-{"c1_score":<nota>,"c1_ded":{"falhas_sintaticas":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>","<t2>"]},"desvios_ortografia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"desvios_pontuacao":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"desvios_concordancia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"desvios_regencia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"desvios_vocabulario":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"outros_desvios":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]}}}`,
+{"c1_score":<nota>,"c1_ded":{"falhas_sintaticas":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>","<≤60 chars>"]},"desvios_ortografia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_pontuacao":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_concordancia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_regencia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_vocabulario":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"outros_desvios":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]}}}`,
 
         2:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
@@ -881,8 +886,13 @@ Nenhum→200 | 1 leve→160 | 2 problemas→120 | 3+→80 | constante→40 | sem
 
 PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre categorias com falha. Confirme a soma.
 
+REGRAS DE COMPACTAÇÃO DO JSON (obrigatório para caber no limite de tokens):
+- Cada string em "exemplos" deve ter no máximo 60 caracteres — corte com "…" se necessário.
+- Liste no máximo 3 exemplos por categoria, mesmo que haja mais falhas. O campo "falhas" continua com o total real.
+- Categorias com 0 falhas: use "exemplos":[].
+
 Retorne SOMENTE JSON válido:
-{"c4_score":<nota>,"c4_ded":{"conectivos_inadequados":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>","<t2>"]},"conectivos_repetidos":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"paragrafos_sem_operador":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"retomada_inadequada":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]},"repeticao_lexical":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<t1>"]}}}`,
+{"c4_score":<nota>,"c4_ded":{"conectivos_inadequados":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>","<≤60 chars>"]},"conectivos_repetidos":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"paragrafos_sem_operador":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"retomada_inadequada":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"repeticao_lexical":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]}}}`,
 
         5:`Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
