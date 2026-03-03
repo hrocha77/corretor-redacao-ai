@@ -691,7 +691,8 @@ async function doOCR() {
             method:'POST', headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
             body: JSON.stringify({ model:config.model, messages:[{role:'user',content:[
                 {type:'image_url',image_url:{url:`data:${mime};base64,${base64}`}},
-                {type:'text',text:'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- NÃO numere as linhas — a saída não deve ter números no início das linhas\n- Se uma palavra for difícil de ler, transcreva sua melhor leitura marcada entre colchetes duplos [[palavra]] ou, se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}O numere as linhas — a saída não deve ter números no início das linhas\n- Se uma palavra for difícil de ler, marque-a: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}
+                {type:'text',text:'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- NÃO numere as linhas\n- Para cada palavra que você NÃO tem certeza da leitura (letra ambígua, rasura, sobreposição, caligrafia difícil), marque-a entre colchetes duplos: [[palavra]] — mesmo que você tenha feito uma leitura provável\n- Se uma palavra for absolutamente ilegível, escreva [[ilegível]]\n- Palavras claras e seguras NÃO devem ser marcadas\n- NÃO corrija erros do autor, NÃO omita trechos\n- Preserve a divisão em parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}
+O numere as linhas — a saída não deve ter números no início das linhas\n- Se uma palavra for difícil de ler, marque-a: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}
             ]}], temperature:0.1, max_tokens:4000 }),
             signal: AbortSignal.timeout(180000)
         });
@@ -813,24 +814,40 @@ ${CALIBRACAO}
 ${REGRA_SOMA}
 Avalie a Competência I — Norma Culta da língua portuguesa.
 
-PASSO 1 — CONTE cada falha individualmente:
-- falhas_sintaticas: truncamento, fragmentação, justaposição excessiva.
-- desvios_ortografia: erros de grafia e acentuação.
-- desvios_pontuacao: vírgulas ausentes/incorretas, ponto mal usado.
-- desvios_concordancia: verbal e nominal.
-- desvios_regencia: verbal e nominal.
-- desvios_vocabulario: coloquialismo, registro inadequado.
-- outros_desvios: qualquer outro desvio da norma culta.
+PASSO 1 — CONTE cada falha individualmente. Seja rigoroso: só marque o que for inequivocamente errado.
+
+CATEGORIAS E CRITÉRIOS EXATOS:
+
+- falhas_sintaticas: frase truncada, fragmento sem verbo principal, justaposição de orações sem conectivo.
+  ✓ NÃO é erro: inversão sintática formal, oração subordinada longa bem construída, voz passiva sintética.
+
+- desvios_ortografia: palavra grafada errada, acento obrigatório ausente ou incorreto.
+  ✓ NÃO é erro: vocabulário erudito correto (nebulosidade, imperioso, primordial, outrossim).
+
+- desvios_pontuacao: vírgula ausente em adjunto adverbial deslocado, ponto final ausente, uso incorreto de ponto e vírgula.
+  ✓ NÃO é erro: vírgula antes de "que" em orações relativas explicativas.
+
+- desvios_concordancia: discordância entre sujeito/verbo ou substantivo/adjetivo/artigo.
+  EXEMPLOS REAIS DE ERRO: "o escassez" (art. masc. + sust. fem.), "faz-se imperioso a tomada" (pred. masc. + suj. fem.), "as marginalidade" (art. pl. + sust. sing.).
+  ✓ NÃO é erro: sujeito posposto ao verbo em concordância correta, concordância ideológica válida.
+
+- desvios_regencia: preposição errada ou ausente exigida pelo verbo/nome.
+  ✓ NÃO é erro: regência formal correta mesmo que diferente da coloquial (ex: "a que" em vez de "que").
+
+- desvios_vocabulario: palavra usada com sentido errado, registro coloquial inadequado.
+  ✓ NÃO é erro: vocabulário erudito usado corretamente (nebulosidade, fomenta, perpetuam, mitigar).
+
+- outros_desvios: qualquer outro desvio claro da norma culta não encaixado acima.
 
 PASSO 2 — NOTA:
 0 sint. E 0-2 desv.→200 | 1-2 sint. OU 3-5 desv.→160 | 3-4 sint. OU 6-8 desv.→120 | 5-6 sint. OU 9+ desv.→80 | 7+ sint.→40 | sem estrutura→0
 
 PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua proporcionalmente. Confirme a soma.
 
-REGRAS DE COMPACTAÇÃO DO JSON (obrigatório para caber no limite de tokens):
-- Cada string em "exemplos" deve ter no máximo 60 caracteres — corte com "…" se necessário.
-- Liste no máximo 3 exemplos por categoria, mesmo que haja mais falhas. O campo "falhas" continua com o total real contado.
-- Categorias com 0 falhas: use "exemplos":[] e omita texto desnecessário.
+REGRAS DE COMPACTAÇÃO DO JSON:
+- Cada string em "exemplos" deve ter no máximo 60 caracteres.
+- Liste no máximo 3 exemplos por categoria. O campo "falhas" continua com o total real.
+- Categorias com 0 falhas: use "exemplos":[].
 
 Retorne SOMENTE JSON válido:
 {"c1_score":<nota>,"c1_ded":{"falhas_sintaticas":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>","<≤60 chars>"]},"desvios_ortografia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_pontuacao":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_concordancia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_regencia":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"desvios_vocabulario":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]},"outros_desvios":{"falhas":<n>,"pts_perdidos":<n>,"exemplos":["<≤60 chars>"]}}}`,
@@ -840,16 +857,37 @@ ${CALIBRACAO}
 ${REGRA_SOMA}
 Avalie a Competência II — Tema e Repertório.${tema?`\nTema: "${tema}".`:''}
 
-PASSO 1 — VERIFIQUE:
-- abordagem_tema: aborda o tema em todas as partes?
-- estrutura_dissertativa: há introdução, desenvolvimento e conclusão?
-- partes_embrionarias: quantos parágrafos têm menos de 3 linhas?
-- repertorio_legitimado: fonte real e reconhecida?
-- repertorio_pertinente: relaciona-se diretamente ao tema?
-- repertorio_produtivo: constrói o argumento (não só decorativo)?
+PASSO 1 — VERIFIQUE cada critério com rigor:
+
+- abordagem_tema: o tema aparece explicitamente em TODAS as partes (introdução, desenvolvimento, conclusão)?
+  ✓ OK se: o tema é desenvolvido em todos os parágrafos, mesmo com abordagens distintas.
+  ✗ Falhou se: alguma parte ignora o tema ou desvia para assunto não relacionado.
+
+- estrutura_dissertativa: há introdução com tese, desenvolvimento com argumentos e conclusão com proposta?
+  ✓ OK se: 4 parágrafos bem delimitados com funções claras.
+  ✗ Falhou se: falta uma das partes ou estão fundidas sem distinção.
+
+- partes_embrionarias: conte parágrafos com menos de 3 linhas (aproximadamente menos de 50 palavras).
+  ✓ 0 falhas se todos os parágrafos têm desenvolvimento suficiente.
+
+- repertorio_legitimado: a fonte citada é real e reconhecida (acadêmica, cultural, científica, histórica)?
+  ✓ OK: IBGE, Djamila Ribeiro, Zygmunt Bauman, ONU, filósofos, sociólogos, dados oficiais.
+  ✗ Falhou: fonte inventada, desconhecida ou popular sem reconhecimento acadêmico/cultural.
+
+- repertorio_pertinente: o repertório se relaciona diretamente com o tema e os argumentos do parágrafo?
+  ✓ OK: usar Bauman para falar de omissão estatal, usar IBGE para contextualizar o problema.
+  ✗ Falhou: citar uma teoria sem conexão com o argumento do parágrafo.
+
+- repertorio_produtivo: o repertório é USADO para construir e sustentar o argumento — não apenas mencionado?
+  ✓ OK (produtivo): autor citado + teoria explicada + conectada ao argumento central do parágrafo.
+    Exemplo produtivo: "Bauman define Instituição Zumbi → aplica ao Estado → conclui que o Estado falha com as cuidadoras."
+    Exemplo produtivo: "Djamila Ribeiro defende tirar da invisibilidade → conecta ao panorama nacional de descaso."
+  ✗ Falhou (não produtivo): autor apenas mencionado ou citado sem que a ideia seja desenvolvida e aplicada ao argumento.
+    Exemplo não produtivo: "Como disse Bauman, as instituições falham." (sem explicar nem conectar ao tema)
+  ATENÇÃO: Se o candidato explica a teoria E a conecta ao argumento do parágrafo, marque ok=true OBRIGATORIAMENTE.
 
 PASSO 2 — NOTA:
-Todos ok+produtivo→200 | ok+não produtivo→160 | 1 embrionário OU não legitimado→120 | 2+ embrionários→80 | tangenciamento→40 | fuga→0
+Todos ok + produtivo→200 | Todos ok + não produtivo→160 | 1 embrionário OU não legitimado→120 | 2+ embrionários→80 | tangenciamento→40 | fuga→0
 
 PASSO 3 — TOTAL_PTS_PERDIDOS = 200 − nota. Distribua entre critérios que falharam. Confirme a soma.
 
@@ -998,6 +1036,14 @@ Retorne SOMENTE JSON válido:
                 // ── AUTO-CORRECT pts_perdidos sum ──
                 const scoreKey=`c${i}_score`, dedKey=`c${i}_ded`;
                 if(parsed[dedKey]&&typeof parsed[dedKey]==='object'){
+                    // Fix ok=true with pts_perdidos > 0 (contradição)
+                    Object.keys(parsed[dedKey]).forEach(k => {
+                        const v = parsed[dedKey][k];
+                        if (v.ok === true && v.pts_perdidos > 0) {
+                            log(`C${i} — corrigindo contradição: ${k} ok=true mas pts_perdidos=${v.pts_perdidos} → zerando`);
+                            parsed[dedKey][k] = { ...v, pts_perdidos: 0 };
+                        }
+                    });
                     parsed[dedKey]=autoCorrectPts(i, parsed[dedKey], parsed[scoreKey]);
                     const newSum=Object.values(parsed[dedKey]).reduce((a,v)=>a+(v.pts_perdidos||0),0);
                     const expected=200-(parsed[scoreKey]||0);
