@@ -1528,6 +1528,15 @@ CRITÉRIOS C1:
 FALHAS SINTÁTICAS: truncamento/fragmentação de período, pontuação inadequada, justaposição excessiva, termo faltando/sobrando, construção confusa.
 DESVIOS DE ESCRITA: ortografia, acentuação, concordância, regência, pronomes, crase, vocabulário informal, translineação, maiúsculas/minúsculas.
 
+ATENÇÃO — NÃO são erros (não penalize):
+- Vocabulário erudito ou técnico correto: "labor", "imperiosa", "nebulosidade", "contingente", "acerca" são português culto válido
+- Maiúsculas em nomes de teorias, termos consagrados ou citações: "Instituição Zumbi" é nome de teoria sociológica — correto com maiúscula
+- Inversão sintática estilística: "faz-se imperiosa a tomada" é construção formal correta
+- Orações subordinadas longas bem construídas não são falha sintática
+- Vírgula antes de oração adverbial não é erro
+- Ponto final após período longo e completo não é falha
+- Apenas contabilize o que é INEQUIVOCAMENTE errado segundo a norma-padrão
+
 No campo "c1_ded" retorne objeto JSON com falhas por categoria.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
 {"c1_score": <0,40,80,120,160,200>, "c1_ded": {"falhas_sintaticas": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
