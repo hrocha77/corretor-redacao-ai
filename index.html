@@ -656,7 +656,7 @@
                             <span style="color:var(--accent);">●</span> Onde perdeu pontos
                         </div>
                         <div id="perdeBox">
-                            <div class="feedback-box empty">Aguardando correção...</div>
+                            <div class="feedback-box empty" id="dedBox">Aguardando correção...</div>
                         </div>
                     </div>
                 </div>
@@ -910,7 +910,14 @@ function setComp(n) {
     const ded = feedbackData[`c${n}_ded`];
     const dedBox = document.getElementById('dedBox');
     if (dedBox) {
-        dedBox.innerText = ded || 'Aguardando correção...';
+        if (ded) {
+            const items = ded.split('|').map(s => s.trim()).filter(Boolean);
+            dedBox.innerHTML = items.length > 1
+                ? items.map(i => `<div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.07); display:flex; gap:8px;"><span style="color:var(--accent);flex-shrink:0;">▸</span><span>${i}</span></div>`).join('')
+                : ded;
+        } else {
+            dedBox.innerText = 'Aguardando correção...';
+        }
         dedBox.classList.toggle('empty', !ded);
     }
 }
