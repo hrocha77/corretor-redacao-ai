@@ -1382,7 +1382,7 @@ DESVIOS DE ESCRITA: ortografia, acentuação, concordância, regência, pronomes
 
 No campo "c1_ded" retorne objeto JSON com falhas por categoria.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c1_score": <0,40,80,120,160,200>, "c1_pos": "<pontos positivos>", "c1_imp": "<como melhorar>", "c1_ded": {"falhas_sintaticas": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
+{"c1_score": <0,40,80,120,160,200>, "c1_ded": {"falhas_sintaticas": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_ortografia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_pontuacao": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_concordancia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_regencia": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "desvios_vocabulario": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "outros_desvios": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
 
             2: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
@@ -1396,9 +1396,10 @@ CRITÉRIOS C2:
 - 40pts: tangenciamento, aglomerado caótico, tipos textuais não argumentativos
 - 0pts: fuga ao tema
 
+IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
 No campo "c2_ded" retorne objeto JSON (ok=bool, pts_perdidos=int, obs=trecho).
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c2_score": <0,40,80,120,160,200>, "c2_pos": "<pontos positivos>", "c2_imp": "<como melhorar>", "c2_ded": {"abordagem_tema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "estrutura_dissertativa": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "partes_embrionarias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_legitimado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_pertinente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_produtivo": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
+{"c2_score": <0,40,80,120,160,200>, "c2_ded": {"abordagem_tema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "estrutura_dissertativa": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "partes_embrionarias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_legitimado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_pertinente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_produtivo": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
 
             3: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
@@ -1412,9 +1413,10 @@ CRITÉRIOS C3:
 - 40pts: tangencia o tema, sem estrutura definida, argumentos não relacionados
 - 0pts: aglomerado caótico
 
+IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
 No campo "c3_ded" retorne objeto JSON (ok=bool, pts_perdidos=int, obs=trecho).
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c3_score": <0,40,80,120,160,200>, "c3_pos": "<pontos positivos>", "c3_imp": "<como melhorar>", "c3_ded": {"tese_antecipacao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "dois_temas_problema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "palavras_chave": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "argumentos_relacionados": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_demonstrado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "marcadores_opiniao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "incoerencias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "proposta_resolve_temas": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
+{"c3_score": <0,40,80,120,160,200>, "c3_ded": {"tese_antecipacao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "dois_temas_problema": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "palavras_chave": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "argumentos_relacionados": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "repertorio_demonstrado": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "marcadores_opiniao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "incoerencias": {"falhas": <n>, "pts_perdidos": <n>, "obs": "<trecho>"}, "proposta_resolve_temas": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`,
 
             4: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
@@ -1428,9 +1430,10 @@ CRITÉRIOS C4:
 - 40pts: conectivo usado constantemente, ou 3+ conectivos inadequados
 - 0pts: ausência total de articulação coesiva
 
+IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
 No campo "c4_ded" retorne objeto JSON (falhas=int, pts_perdidos=int, exemplos=trechos).
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c4_score": <0,40,80,120,160,200>, "c4_pos": "<pontos positivos>", "c4_imp": "<como melhorar>", "c4_ded": {"conectivos_inadequados": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "conectivos_repetidos": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "paragrafos_sem_operador": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "retomada_inadequada": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "repeticao_lexical": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
+{"c4_score": <0,40,80,120,160,200>, "c4_ded": {"conectivos_inadequados": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "conectivos_repetidos": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "paragrafos_sem_operador": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "retomada_inadequada": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}, "repeticao_lexical": {"falhas": <n>, "pts_perdidos": <n>, "exemplos": "<trechos>"}}}`,
 
             5: `Você é um corretor oficial de redações do ENEM.${temaInfo}
 ${CALIBRACAO}
@@ -1450,9 +1453,10 @@ MODO/MEIO: objeto + adjuntos adverbiais.
 FINALIDADE: oração com conectivo de finalidade.
 DETALHAMENTO: termo/oração que elabora outro elemento.
 
+IMPORTANTE: campos _pos e _imp devem ter NO MÁXIMO 80 caracteres cada.
 No campo "c5_ded" avalie cada um dos 5 elementos.
 Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
-{"c5_score": <0,40,80,120,160,200>, "c5_pos": "<pontos positivos>", "c5_imp": "<como melhorar>", "c5_ded": {"agente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "acao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "modo_meio": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "finalidade": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "detalhamento": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`
+{"c5_score": <0,40,80,120,160,200>, "c5_ded": {"agente": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "acao": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "modo_meio": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "finalidade": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}, "detalhamento": {"ok": <bool>, "pts_perdidos": <n>, "obs": "<trecho>"}}}`
         };
 
         const systemPrompt = PROMPTS[i];
@@ -1464,6 +1468,7 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
             try {
                 logError(`C${i} — tentativa ${attempt}: enviando requisição...`);
 
+                // Requisição 1: nota + breakdown (campos compactos)
                 const resp = await fetch(config.apiUrl, {
                     method: 'POST',
                     headers: {
@@ -1555,6 +1560,43 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
 
                 logError(`C${i} — ✓ nota: ${parsed['c'+i+'_score']}`);
                 logError(`C${i} — ded: ${JSON.stringify(parsed['c'+i+'_ded'])?.slice(0,150)}`);
+
+                // Requisição 2: pontos positivos + como melhorar (texto livre, sem limite)
+                try {
+                    setProgress((i-1)*20 + 10, `C${i} — buscando feedback...`);
+                    const sysPrompt2 = `Você é um corretor oficial de redações do ENEM.${temaInfo}
+Para a Competência ${i} desta redação, que recebeu nota ${parsed['c'+i+'_score']}/200:
+Escreva dois textos curtos e diretos (máx 2 frases cada):
+Retorne SOMENTE JSON válido:
+{"c${i}_pos": "<pontos positivos da redação nesta competência>", "c${i}_imp": "<o que deve melhorar especificamente>"}`;
+                    const resp2 = await fetch(config.apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+                        body: JSON.stringify({
+                            model: config.model,
+                            messages: [
+                                { role: 'system', content: sysPrompt2 },
+                                { role: 'user', content: txt }
+                            ],
+                            temperature: config.temp,
+                            max_tokens: 600
+                        }),
+                        signal: AbortSignal.timeout(60000)
+                    });
+                    if (resp2.ok) {
+                        const data2 = await resp2.json();
+                        const raw2 = data2.choices?.[0]?.message?.content || '';
+                        const match2 = raw2.match(/\{[\s\S]*\}/);
+                        if (match2) {
+                            const parsed2 = JSON.parse(match2[0]);
+                            feedbackData = { ...feedbackData, ...parsed2 };
+                            logError(`C${i} — ✓ feedback recebido`);
+                        }
+                    }
+                } catch(e2) {
+                    logError(`C${i} — feedback ignorado: ${e2.message}`);
+                }
+
                 success = true;
                 break;
 
