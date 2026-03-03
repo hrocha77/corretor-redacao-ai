@@ -1564,11 +1564,10 @@ Retorne SOMENTE JSON válido, sem texto adicional, sem markdown:
                 // Requisição 2: pontos positivos + como melhorar (texto livre, sem limite)
                 try {
                     setProgress((i-1)*20 + 10, `C${i} — buscando feedback...`);
-                    const sysPrompt2 = `Você é um corretor oficial de redações do ENEM.${temaInfo}
-Para a Competência ${i} desta redação, que recebeu nota ${parsed['c'+i+'_score']}/200:
-Escreva dois textos curtos e diretos (máx 2 frases cada):
-Retorne SOMENTE JSON válido:
-{"c${i}_pos": "<pontos positivos da redação nesta competência>", "c${i}_imp": "<o que deve melhorar especificamente>"}`;
+                    const sysPrompt2 = 'Você é um corretor oficial de redações do ENEM.' + (temaInfo||'') +
+                        '\nPara a Competência ' + i + ' desta redação, que recebeu nota ' + (parsed['c'+i+'_score']||0) + '/200:' +
+                        '\nEscreva dois textos curtos e diretos (máx 2 frases cada).' +
+                        '\nRetorne SOMENTE JSON válido: {"c' + i + '_pos": "<pontos positivos>", "c' + i + '_imp": "<como melhorar>"}'
                     const resp2 = await fetch(config.apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
