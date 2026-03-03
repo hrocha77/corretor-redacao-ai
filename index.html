@@ -890,7 +890,7 @@ function renderDedTable(comp, ded) {
     for (const [key, val] of Object.entries(ded)) {
         const label = labels[key] || key.replace(/_/g,' ');
         const pts = val.pts_perdidos || 0;
-        const obs = val.exemplos || val.obs || '';
+        const obs = val.exemplos ?? val.obs ?? '';
         totalPts += pts;
         let badgeHtml = '';
         if ('falhas' in val) {
