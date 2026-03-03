@@ -691,7 +691,7 @@ async function doOCR() {
             method:'POST', headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
             body: JSON.stringify({ model:config.model, messages:[{role:'user',content:[
                 {type:'image_url',image_url:{url:`data:${mime};base64,${base64}`}},
-                {type:'text',text:'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- Se uma palavra for difícil de ler, marque-a: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários'}
+                {type:'text',text:'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- NÃO numere as linhas — a saída não deve ter números no início das linhas\n- Se uma palavra for difícil de ler, marque-a: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegível]]\n- NÃO corrija, NÃO omita trechos\n- Preserve parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas'}
             ]}], temperature:0.1, max_tokens:4000 }),
             signal: AbortSignal.timeout(180000)
         });
@@ -700,7 +700,7 @@ async function doOCR() {
         const text=data.choices?.[0]?.message?.content;
         if (!text) throw new Error('IA não retornou texto');
         bar.style.width='100%'; msg.textContent='Transcrição concluída!';
-        applyOcrHighlights(text); updateMeta();
+        applyOcrHighlights(removeLineNumbers(text)); updateMeta();
         setTimeout(() => { prog.style.display='none'; btn.disabled=false; showToast('Texto extraído! Palavras suspeitas marcadas em laranja.','success'); showTab('editor'); }, 700);
     } catch(e) { prog.style.display='none'; btn.disabled=false; showToast('Erro: '+e.message,'error'); }
 }
@@ -726,6 +726,16 @@ function applyOcrHighlights(raw) {
     } else { highlightActive=false; }
     syncScroll();
 }
+function removeLineNumbers(text) {
+    // Remove números de linha no início de cada linha: "1 texto", "23 texto", "1\ttexto"
+    return text
+        .split('\n')
+        .map(line => line.replace(/^\s*\d{1,3}[\s\t]+/, ''))
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n') // colapsa linhas em branco extras
+        .trim();
+}
+
 function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function syncScroll(){const ta=document.getElementById('essayText'),ov=document.getElementById('highlight-overlay');ov.scrollTop=ta.scrollTop;ov.scrollLeft=ta.scrollLeft;}
 function clearHighlights(){highlightActive=false;document.getElementById('highlight-overlay').innerHTML='';document.getElementById('reviewBanner').classList.remove('active');}
