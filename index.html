@@ -1,1451 +1,1887 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIA.AI — Correção Inteligente de Redação ENEM</title>
-    <!-- Modern Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #05060a;
-            --bg-card: rgba(14, 16, 27, 0.75);
-            --bg-card-hover: rgba(22, 25, 42, 0.85);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-glow: rgba(255, 51, 102, 0.3);
-            
-            --primary: #ff3366;
-            --primary-glow: rgba(255, 51, 102, 0.4);
-            --secondary: #ffc700;
-            --secondary-glow: rgba(255, 199, 0, 0.35);
-            --cyber-cyan: #00f5d4;
-            --cyber-cyan-glow: rgba(0, 245, 212, 0.35);
-            --accent-purple: #7b2cbf;
-            
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-dim: #64748b;
-            --success: #10b981;
-            
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --radius-sm: 10px;
-            --glass-blur: blur(20px);
-        }
-
-        /* ── THEME PALETTES ── */
-        [data-theme="purple"] {
-            --primary: #a855f7;
-            --primary-glow: rgba(168, 85, 247, 0.4);
-            --secondary: #ec4899;
-            --secondary-glow: rgba(236, 72, 153, 0.35);
-            --cyber-cyan: #38bdf8;
-            --bg-dark: #0a0518;
-            --bg-card: rgba(23, 15, 45, 0.8);
-            --text-main: #f8fafc;
-        }
-
-        [data-theme="emerald"] {
-            --primary: #10b981;
-            --primary-glow: rgba(16, 185, 129, 0.4);
-            --secondary: #f59e0b;
-            --secondary-glow: rgba(245, 158, 11, 0.35);
-            --cyber-cyan: #06b6d4;
-            --bg-dark: #021412;
-            --bg-card: rgba(6, 30, 28, 0.8);
-            --text-main: #f8fafc;
-        }
-
-        [data-theme="light"] {
-            --primary: #e63946;
-            --primary-glow: rgba(230, 57, 70, 0.25);
-            --secondary: #f4a261;
-            --secondary-glow: rgba(244, 162, 97, 0.25);
-            --cyber-cyan: #0d9488;
-            --bg-dark: #f1f5f9;
-            --bg-card: rgba(255, 255, 255, 0.9);
-            --border: rgba(0, 0, 0, 0.1);
-            --text-main: #0f172a;
-            --text-muted: #475569;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* Ambient Canvas Particles Background */
-        #bgCanvas {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* ── HEADER NAVBAR ── */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(5, 6, 10, 0.8);
-            backdrop-filter: var(--glass-blur);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-logo-badge {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 900;
-            font-size: 1.3rem;
-            color: #fff;
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .brand-text {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 1.4rem;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--text-main) 30%, var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .brand-tag {
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: rgba(0, 245, 212, 0.12);
-            border: 1px solid rgba(0, 245, 212, 0.3);
-            color: var(--cyber-cyan);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .icon-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1.1rem;
-        }
-
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .status-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--success);
-        }
-
-        .status-dot-pulse {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 10px var(--success);
-            animation: pulseGlow 2s infinite;
-        }
-
-        /* ── MAIN WORKSPACE ── */
-        .workspace {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 1.5rem;
-            padding: 1.5rem 2rem;
-            flex: 1;
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        @media (max-width: 1024px) {
-            .workspace { grid-template-columns: 1fr; padding: 1rem; }
-        }
-
-        /* ── LEFT PANEL: BIA CHATBOT & AVATAR ── */
-        .bia-panel {
-            background: var(--bg-card);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .bia-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--cyber-cyan));
-        }
-
-        /* Holographic Avatar Display */
-        .avatar-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            padding: 1rem 0;
-        }
-
-        .avatar-hologram {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Outer Orbital Ring */
-        .avatar-orbit-ring {
-            position: absolute;
-            inset: -10px;
-            border-radius: 50%;
-            border: 2px dashed var(--primary-glow);
-            animation: spinClockwise 12s linear infinite;
-        }
-
-        .avatar-aura-glow {
-            position: absolute;
-            inset: -6px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, var(--primary), var(--secondary), var(--cyber-cyan), var(--primary));
-            opacity: 0.85;
-            filter: blur(12px);
-            animation: spinClockwise 6s linear infinite;
-            transition: all 0.3s ease;
-        }
-
-        .avatar-frame {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            overflow: hidden;
-            background: var(--bg-dark);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .avatar-frame:hover {
-            transform: scale(1.05);
-        }
-
-        .avatar-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 15%;
-            animation: avatarBreath 4s ease-in-out infinite;
-        }
-
-        /* Dynamic Talking Animation */
-        .bia-speaking .avatar-frame img {
-            animation: avatarSpeakPulse 0.35s ease-in-out infinite alternate !important;
-        }
-
-        .bia-speaking .avatar-aura-glow {
-            opacity: 1;
-            filter: blur(18px);
-            animation: spinClockwise 2.5s linear infinite !important;
-        }
-
-        /* Sound Waves Visualizer */
-        .equalizer-bar-group {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 18px;
-            margin-top: 10px;
-        }
-
-        .eq-bar {
-            width: 4px;
-            background: var(--cyber-cyan);
-            border-radius: 4px;
-            animation: eqAnim 1s ease-in-out infinite;
-            box-shadow: 0 0 8px var(--cyber-cyan-glow);
-        }
-        .eq-bar:nth-child(1) { animation-delay: 0.1s; }
-        .eq-bar:nth-child(2) { animation-delay: 0.3s; }
-        .eq-bar:nth-child(3) { animation-delay: 0.5s; }
-        .eq-bar:nth-child(4) { animation-delay: 0.2s; }
-        .eq-bar:nth-child(5) { animation-delay: 0.4s; }
-
-        /* Chat Stream */
-        .chat-messages {
-            flex: 1;
-            min-height: 240px;
-            max-height: 380px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding-right: 4px;
-        }
-
-        .chat-msg {
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-size: 0.88rem;
-            line-height: 1.6;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .msg-bia {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-top-left-radius: 4px;
-            color: var(--text-main);
-        }
-
-        .msg-user {
-            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
-            border: 1px solid var(--primary-glow);
-            border-top-right-radius: 4px;
-            align-self: flex-end;
-            color: #fff;
-        }
-
-        /* Quick Action Chips */
-        .quick-chips {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .chip-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .chip-btn:hover {
-            border-color: var(--primary);
-            color: var(--text-main);
-            background: var(--primary-glow);
-        }
-
-        /* Chat Input Controls */
-        .chat-input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 6px 8px 6px 14px;
-            transition: border-color 0.2s ease;
-        }
-
-        .chat-input-wrapper:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        .chat-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--text-main);
-            font-size: 0.88rem;
-            font-family: inherit;
-        }
-
-        .mic-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: none;
-            color: var(--text-muted);
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .mic-btn.active {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: 0 0 12px var(--primary-glow);
-            animation: pulseMic 1.2s infinite;
-        }
-
-        .send-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            transition: transform 0.2s ease;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-        }
-
-        /* ── RIGHT PANEL: DASHBOARD & WORKSPACE TABS ── */
-        .main-panel {
-            background: var(--bg-card);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-            overflow-x: auto;
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.88rem;
-            font-family: 'Outfit', sans-serif;
-            padding: 10px 18px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.25 ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .tab-btn.active {
-            color: var(--text-main);
-            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
-            border: 1px solid var(--primary-glow);
-            box-shadow: 0 4px 20px var(--primary-glow);
-        }
-
-        /* Tab Content Panes */
-        .tab-pane {
-            display: none;
-            animation: fadeIn 0.35s ease;
-        }
-
-        .tab-pane.active {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-        }
-
-        /* ── SCANNER HUD SECTION ── */
-        .scanner-card {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius-md);
-            padding: 2.5rem 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: border-color 0.3s ease, background 0.3s ease;
-        }
-
-        .scanner-card:hover {
-            border-color: var(--primary);
-            background: rgba(255, 51, 102, 0.03);
-        }
-
-        .scanner-card input {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .scan-laser-line {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--cyber-cyan), transparent);
-            box-shadow: 0 0 15px var(--cyber-cyan);
-            animation: scanLaser 2s linear infinite;
-        }
-
-        /* ── ESSAY EDITOR SECTION ── */
-        .editor-meta-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .meta-tag {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .meta-tag strong {
-            color: var(--secondary);
-        }
-
-        .input-tema {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            color: var(--text-main);
-            font-size: 0.95rem;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
-
-        .input-tema:focus {
-            border-color: var(--primary);
-        }
-
-        .essay-textarea {
-            width: 100%;
-            height: 360px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            color: var(--text-main);
-            font-size: 1rem;
-            line-height: 1.8;
-            font-family: 'Georgia', serif;
-            resize: vertical;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
-
-        .essay-textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 25px var(--primary-glow);
-        }
-
-        /* Action Buttons */
-        .btn-action-primary {
-            padding: 16px 28px;
-            border-radius: var(--radius-md);
-            border: none;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 8px 30px var(--primary-glow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-action-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px var(--primary-glow);
-        }
-
-        /* ── RESULT / DASHBOARD SECTION ── */
-        .score-hero-card {
-            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
-            border: 1px solid var(--primary-glow);
-            border-radius: var(--radius-md);
-            padding: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .score-big-number {
-            font-family: 'Outfit', sans-serif;
-            font-size: 4rem;
-            font-weight: 900;
-            line-height: 1;
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .score-label-text {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 6px;
-        }
-
-        /* Competency Cards Grid */
-        .competency-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1rem;
-        }
-
-        .comp-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .comp-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .comp-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .comp-badge {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: var(--secondary);
-        }
-
-        .comp-score-chip {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 1rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .comp-desc {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        /* Progress Bar */
-        .progress-bar-wrap {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 12px;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 10px;
-            transition: width 0.8s ease;
-        }
-
-        /* CONFIG MODAL & THEME MODAL */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: rgba(5, 6, 10, 0.85);
-            backdrop-filter: blur(12px);
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .modal-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-        }
-
-        .theme-opt-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 14px;
-            color: var(--text-main);
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s ease;
-        }
-        .theme-opt-btn:hover {
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-2px);
-        }
-        .theme-opt-btn.active {
-            border-color: var(--primary);
-            background: var(--primary-glow);
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        /* KEYFRAMES */
-        @keyframes avatarBreath {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-
-        @keyframes avatarSpeakPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.06) rotate(-2deg); }
-            50% { transform: scale(1.02) rotate(1deg); }
-            75% { transform: scale(1.07) rotate(-1deg); }
-        }
-
-        @keyframes spinClockwise {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes eqAnim {
-            0%, 100% { height: 4px; }
-            50% { height: 18px; }
-        }
-
-        @keyframes scanLaser {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-
-        @keyframes pulseMic {
-            0%, 100% { box-shadow: 0 0 10px var(--primary-glow); }
-            50% { box-shadow: 0 0 25px var(--primary); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https:;">
+<title>ENEM PRO — Plataforma de Correção Inteligente & Segura</title>
+<!-- Modern Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07080e;
+  --surface: rgba(18, 20, 34, 0.82);
+  --surface2: rgba(28, 31, 52, 0.9);
+  --border: rgba(255, 255, 255, 0.09);
+  --accent: #e63946;
+  --accent2: #ff6b6b;
+  --gold: #f4a261;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --success: #2ec4b6;
+  --radius: 16px;
+  --glass-blur: blur(16px);
+  --primary-glow: rgba(230, 57, 70, 0.4);
+}
+
+[data-theme="purple"] {
+  --bg: #0a0518; --surface: rgba(23, 15, 45, 0.85); --surface2: rgba(35, 22, 68, 0.9); --border: rgba(168, 85, 247, 0.2);
+  --accent: #a855f7; --accent2: #c084fc; --gold: #f472b6; --text: #f3e8ff; --muted: #a892c6; --success: #38bdf8; --primary-glow: rgba(168, 85, 247, 0.4);
+}
+
+[data-theme="emerald"] {
+  --bg: #021412; --surface: rgba(6, 30, 28, 0.85); --surface2: rgba(11, 48, 44, 0.9); --border: rgba(16, 185, 129, 0.2);
+  --accent: #10b981; --accent2: #34d399; --gold: #fbbf24; --text: #ecfdf5; --muted: #75bba7; --success: #06b6d4; --primary-glow: rgba(16, 185, 129, 0.4);
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc; --surface: rgba(255, 255, 255, 0.92); --surface2: #f1f5f9; --border: rgba(0, 0, 0, 0.1);
+  --accent: #e63946; --accent2: #ef4444; --gold: #d97706; --text: #0f172a; --muted: #64748b; --success: #0d9488; --primary-glow: rgba(230, 57, 70, 0.25);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Background Particle Canvas */
+#bgCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── LOGIN OVERLAY ── */
+#login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 8, 14, 0.92);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  position: relative;
+  overflow: hidden;
+}
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--gold), var(--success));
+}
+.login-logo {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: .25rem;
+}
+.login-sub { color: var(--muted); font-size: .88rem; margin-bottom: 2rem; }
+.login-card input {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  margin-bottom: 1rem;
+  text-align: center;
+  transition: border-color .2s;
+}
+.login-card input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--primary-glow); }
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 8px 25px var(--primary-glow);
+  transition: transform .2s, opacity .2s;
+}
+.btn-login:hover { opacity: .92; transform: translateY(-2px); }
+.login-err { color: var(--accent2); font-size: .8rem; margin-top: .5rem; min-height: 1rem; font-weight: 600; }
+
+/* ── HEADER NAVBAR ── */
+#main-system { display: none; flex-direction: column; height: 100vh; }
+header {
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.header-brand {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.35rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-status { display: flex; align-items: center; gap: 10px; font-size: .78rem; color: var(--muted); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; transition: background .3s; }
+.status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.status-dot.error  { background: var(--accent);  box-shadow: 0 0 8px var(--accent); }
+
+/* ── NAV TABS ── */
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+.nav-link {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 10px 20px;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: .85rem;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  transition: all .2s ease;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-link.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 4px 20px var(--primary-glow);
+}
+
+/* ── MAIN CONTENT ── */
+main { flex: 1; overflow-y: auto; padding: 24px; }
+.tab-pane { display: none; max-width: 900px; margin: 0 auto; animation: fadeIn .35s ease; }
+.tab-pane.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+.card-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* UPLOAD ZONE */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 42px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .25s, background .25s;
+  position: relative;
+}
+.upload-zone:hover { border-color: var(--accent); background: rgba(230,57,70,.04); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-text { color: var(--muted); font-size: .92rem; }
+.upload-text span { color: var(--accent); font-weight: 700; }
+#prevImg { max-width: 100%; border-radius: var(--radius); margin: 16px 0; border: 1px solid var(--border); display: none; }
+.ocr-progress { display: none; margin-top: 14px; }
+
+/* EDITOR */
+.editor-meta { display: flex; gap: 12px; margin-bottom: 12px; font-size: .82rem; color: var(--muted); }
+.meta-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-weight: 600; }
+textarea {
+  width: 100%;
+  height: 380px;
+  padding: 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.8;
+  resize: vertical;
+  outline: none;
+  transition: border-color .2s;
+  font-family: 'Georgia', serif;
+}
+textarea:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--primary-glow); }
+textarea::placeholder { color: var(--muted); }
+
+/* BUTTONS */
+.btn-group { display: flex; gap: 12px; margin-top: 16px; }
+.btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+}
+.btn:hover:not(:disabled) { opacity: .92; transform: translateY(-2px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-primary   { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; box-shadow: 0 6px 20px var(--primary-glow); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); flex: 0 0 auto; padding: 14px 20px; }
+.btn-pdf       { background: linear-gradient(135deg, #2ec4b6, #1a9e92); color: white; border: none; }
+
+/* CONFIG */
+.api-config { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.api-config input { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: .88rem; outline: none; transition: border-color .2s; }
+.api-config input:focus { border-color: var(--accent); }
+.btn-test { padding: 8px 16px; background: transparent; border: 1px solid var(--success); color: var(--success); border-radius: 8px; cursor: pointer; font-size: .82rem; font-weight: 600; transition: background .2s; }
+.btn-test:hover { background: rgba(46,196,182,.12); }
+
+/* PROGRESS */
+.progress-wrap { margin-bottom: 24px; display: none; }
+.progress-header { display: flex; justify-content: space-between; font-size: .82rem; margin-bottom: 8px; }
+.progress-label { color: var(--muted); }
+.progress-pct { color: var(--accent); font-weight: 700; }
+.progress-track { background: var(--surface2); border-radius: 100px; height: 8px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 100px; transition: width .5s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden; }
+.progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent); animation: shimmer 1.5s infinite; }
+@keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.comp-steps { display: flex; gap: 6px; margin-top: 12px; }
+.comp-step { flex: 1; height: 4px; border-radius: 100px; background: var(--surface2); transition: background .4s; }
+.comp-step.done   { background: var(--success); }
+.comp-step.active { background: var(--accent); animation: pulse 1s infinite; }
+.comp-step.error  { background: var(--accent); }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+/* SCORE BANNER */
+.score-banner { background: linear-gradient(135deg, var(--surface2), var(--surface)); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; display: none; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.score-total { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--gold), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.score-label { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+.score-bars { display: flex; gap: 8px; align-items: flex-end; height: 42px; }
+.score-bar-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.score-bar-fill { width: 18px; background: var(--border); border-radius: 4px; transition: height .5s, background .3s; }
+.score-bar-lbl { font-size: .65rem; color: var(--muted); font-weight: 700; }
+
+/* SUB TABS */
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface2); border-radius: 12px; padding: 4px; }
+.sub-tab { flex: 1; padding: 10px; border: none; background: none; color: var(--muted); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: .82rem; letter-spacing: .5px; cursor: pointer; border-radius: 8px; transition: background .2s, color .2s; }
+.sub-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+
+/* COMP PILLS */
+.comp-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.comp-pill { padding: 9px 20px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-weight: 700; font-size: .88rem; cursor: pointer; transition: all .2s; position: relative; }
+.comp-pill:hover { border-color: var(--accent); color: var(--text); }
+.comp-pill.active { background: var(--accent); border-color: var(--accent); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
+.comp-pill .pill-score { font-size: .65rem; position: absolute; top: -6px; right: -6px; background: var(--gold); color: #111; border-radius: 100px; padding: 1px 6px; font-weight: 800; display: none; }
+.comp-pill .pill-score.visible { display: block; }
+
+.comp-desc { background: rgba(230,57,70,.08); border: 1px solid rgba(230,57,70,.2); border-radius: var(--radius); padding: 14px 18px; font-size: .9rem; line-height: 1.65; color: var(--text); margin-bottom: 20px; }
+.score-row { display: flex; align-items: center; gap: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; }
+.score-row label { font-size: .8rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+.score-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.score-badge { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: .85rem; font-weight: 700; cursor: default; }
+.score-badge.selected { background: var(--gold); border-color: var(--gold); color: #111; }
+
+.feedback-section { margin-bottom: 20px; }
+.field-label { font-size: .78rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.field-label::before { content: ''; display: block; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; }
+.feedback-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; font-size: .92rem; line-height: 1.75; color: var(--text); min-height: 80px; white-space: pre-wrap; }
+.feedback-box.empty { color: var(--muted); font-style: italic; }
+.field-pos .field-label::before { background: var(--success); }
+.field-ded .field-label::before { background: var(--accent); }
+.field-ded .feedback-box { border-color: rgba(230,57,70,.2); background: rgba(230,57,70,.04); }
+
+/* CRIT GRID */
+.crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.crit-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: .85rem; display: flex; align-items: center; gap: 12px; color: var(--text); }
+.crit-num { min-width: 26px; height: 26px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; color: var(--muted); }
+
+/* TOAST */
+#toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 22px; font-size: .9rem; z-index: 9998; transform: translateY(80px); opacity: 0; transition: all .3s ease; max-width: 340px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.success { border-color: var(--success); }
+#toast.error   { border-color: var(--accent); }
+
+/* BREAKDOWN TABLE */
+.breakdown-table { width: 100%; border-collapse: collapse; }
+.breakdown-table th { font-size: .72rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.breakdown-table th:nth-child(2), .breakdown-table td:nth-child(2) { text-align: center; }
+.breakdown-table th:last-child,   .breakdown-table td:last-child   { text-align: right; }
+.breakdown-table td { padding: 11px 14px; font-size: .85rem; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--text); }
+.breakdown-table tr:last-child td { border-bottom: none; }
+.bd-name { font-weight: 600; }
+.bd-obs  { font-size: .76rem; color: var(--muted); margin-top: 4px; font-style: italic; }
+.bd-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 24px; padding: 0 10px; border-radius: 100px; font-size: .76rem; font-weight: 800; }
+.bd-badge.red   { background: rgba(230,57,70,.15); color: var(--accent2); border: 1px solid rgba(230,57,70,.3); }
+.bd-badge.green { background: rgba(46,196,182,.12); color: var(--success); border: 1px solid rgba(46,196,182,.3); }
+.bd-pts      { font-weight: 800; font-size: .88rem; color: var(--accent2); }
+.bd-pts.zero { color: var(--success); }
+
+/* OCR HIGHLIGHT */
+#highlight-wrap { position: relative; display: block; }
+#highlight-overlay { position: absolute; inset: 0; padding: 18px; font-size: 1rem; line-height: 1.8; font-family: 'Georgia', serif; color: transparent; pointer-events: none; white-space: pre-wrap; word-wrap: break-word; border: 1px solid transparent; border-radius: var(--radius); overflow: hidden; background: var(--surface2); }
+#essayText.with-highlight { background: transparent !important; position: relative; z-index: 1; caret-color: var(--text); }
+.hl-suspect { background: rgba(244,162,97,.4); border-bottom: 2px solid var(--gold); border-radius: 2px; color: transparent; }
+.hl-error   { background: rgba(230,57,70,.35); border-bottom: 2px solid var(--accent); border-radius: 2px; color: transparent; }
+.review-banner { display: none; background: rgba(244,162,97,.08); border: 1px solid rgba(244,162,97,.35); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 12px; font-size: .84rem; color: var(--gold); }
+.review-banner.active { display: flex; align-items: flex-start; gap: 10px; }
+.btn-clear-hl { margin-left: auto; background: none; border: 1px solid rgba(244,162,97,.4); color: var(--gold); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: .78rem; white-space: nowrap; flex-shrink: 0; }
+
+/* ── BIA AVATAR STYLES (INDEX HOLOGRAPHIC MODEL) ── */
+@keyframes spinClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes avatarBreath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes avatarSpeakPulse { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.09) rotate(-1.5deg); filter: brightness(1.15); } }
+@keyframes popInBubble { from { opacity: 0; transform: translateY(18px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes badgeBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes eqBounce { 0% { height: 3px; } 100% { height: 10px; } }
+@keyframes eqSpeaking { 0% { height: 3px; } 100% { height: 16px; } }
+
+#avatar-btn-wrapper { position: fixed; bottom: 24px; left: 24px; z-index: 9990; display: none; align-items: center; gap: 14px; cursor: pointer; }
+#avatar-btn { position: relative; width: 66px; height: 66px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+/* Orbital Ring */
+.avatar-orbit-ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 2px dashed var(--primary-glow);
+  animation: spinClockwise 12s linear infinite;
+  pointer-events: none;
+}
+
+/* Aura Glow */
+.avatar-aura-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--accent), var(--gold), var(--success), var(--accent));
+  opacity: 0.85;
+  filter: blur(12px);
+  animation: spinClockwise 6s linear infinite;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+/* Avatar Frame */
+.avatar-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface2);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.avatar-frame:hover { transform: scale(1.08); }
+
+.avatar-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  animation: avatarBreath 4s ease-in-out infinite;
+}
+
+/* Speaking State */
+.bia-speaking .avatar-frame img {
+  animation: avatarSpeakPulse 0.35s ease-in-out infinite alternate !important;
+}
+.bia-speaking .avatar-aura-glow {
+  opacity: 1;
+  filter: blur(18px);
+  animation: spinClockwise 2.5s linear infinite !important;
+}
+
+.avatar-dot-status { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: var(--success); border: 2.5px solid var(--surface); border-radius: 50%; box-shadow: 0 0 8px var(--success); z-index: 5; }
+.avatar-pill-badge { background: var(--surface); border: 1px solid var(--border); backdrop-filter: blur(10px); color: var(--text); padding: 7px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.35); animation: badgeBounce 2.8s ease-in-out infinite; display: flex; align-items: center; gap: 6px; pointer-events: none; white-space: nowrap; }
+
+/* Equalizer Bars */
+.equalizer-bar-group { display: inline-flex; align-items: flex-end; gap: 3px; height: 14px; margin-left: 6px; }
+.eq-bar { width: 3px; background: var(--accent); border-radius: 2px; height: 4px; animation: eqBounce 1s ease-in-out infinite alternate; }
+.eq-bar:nth-child(1) { animation-delay: 0.1s; }
+.eq-bar:nth-child(2) { animation-delay: 0.3s; }
+.eq-bar:nth-child(3) { animation-delay: 0.2s; }
+.eq-bar:nth-child(4) { animation-delay: 0.4s; }
+.eq-bar:nth-child(5) { animation-delay: 0.15s; }
+
+.bia-speaking .eq-bar {
+  animation: eqSpeaking 0.3s ease-in-out infinite alternate !important;
+  background: var(--gold) !important;
+}
+
+/* PDF PRINT */
+@media print {
+  @page { margin: 20mm 15mm; size: A4; }
+  body { background: #fff !important; color: #111 !important; overflow: visible !important; height: auto !important; }
+  #login-overlay, #main-system > header, nav, #avatar-btn, #avatar-btn-wrapper, #avatar-bubble, #themeModal, #toast,
+  .btn-group, .sub-tabs, .comp-pills, #compPillsInd, .progress-wrap, #errorLog,
+  #progWrap, #pdfBtnWrap, .review-banner, #highlight-overlay { display: none !important; }
+  #main-system { display: block !important; height: auto !important; }
+  main { overflow: visible !important; padding: 0 !important; }
+  .tab-pane { display: none !important; max-width: 100% !important; }
+  #results { display: block !important; }
+  .card { background: #fff !important; border: 1px solid #ddd !important; padding: 16px !important; margin-bottom: 16px !important; break-inside: avoid; }
+  .score-banner { display: flex !important; background: #f8f8f8 !important; border: 1px solid #ddd !important; }
+  .score-total { font-size: 2rem !important; color: #e63946 !important; -webkit-text-fill-color: #e63946 !important; }
+  .pdf-report-header { display: block !important; }
+  .pdf-all-comps    { display: block !important; }
+  .pdf-comp-block { break-inside: avoid; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #fff; }
+  .pdf-comp-title { font-size: 1rem; font-weight: 700; color: #e63946; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+  .pdf-score-chip { display: inline-block; font-weight: 800; padding: 3px 12px; border-radius: 100px; font-size: .85rem; margin-left: 10px; color: #fff; }
+}
+.pdf-report-header { display: none; }
+.pdf-all-comps    { display: none; }
+</style>
 </head>
 <body>
 
-    <!-- Ambient Particle Canvas -->
-    <canvas id="bgCanvas"></canvas>
+<!-- Ambient Particle Canvas -->
+<canvas id="bgCanvas"></canvas>
 
-    <!-- ── LOGIN OVERLAY SCREEN ── -->
-    <div id="loginOverlay" style="position:fixed; inset:0; z-index:99999; background:rgba(5,6,10,0.95); backdrop-filter:blur(24px); display:flex; align-items:center; justify-content:center; padding:1.5rem;">
-        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:24px; padding:2.5rem; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.8); position:relative; overflow:hidden;">
-            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, var(--primary), var(--secondary), var(--cyber-cyan));"></div>
-            
-            <div style="width:64px; height:64px; border-radius:18px; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-size:2rem; font-weight:900; color:#fff; margin:0 auto 1.25rem; box-shadow:0 0 30px var(--primary-glow);">
-                B
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">ENEM PRO</div>
+    <div class="login-sub">Plataforma de Correção Inteligente</div>
+    <input type="password" id="passInput" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">Acessar Plataforma</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- MAIN SYSTEM -->
+<div id="main-system">
+  <header>
+    <div class="header-brand">ENEM PRO</div>
+    <div class="header-status">
+      <button onclick="openThemeModal()" title="Trocar Cores da Tela" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:6px 14px;cursor:pointer;font-size:0.82rem;font-weight:700;margin-right:8px;display:inline-flex;align-items:center;gap:6px">🎨 Temas</button>
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusTxt">Servidor desconectado</span>
+    </div>
+  </header>
+
+  <!-- PRESERVED NAV TABS (DIGITALIZAR, REDAÇÃO, RESULTADO, CONFIGURAÇÕES) -->
+  <nav>
+    <button class="nav-link active" onclick="showTab('scanner')">Digitalizar</button>
+    <button class="nav-link" onclick="showTab('editor')">Redação</button>
+    <button class="nav-link" onclick="showTab('results')">Resultado</button>
+    <button class="nav-link" onclick="showTab('config')">Configurações</button>
+  </nav>
+
+  <main>
+
+    <!-- TAB 1: DIGITALIZAR -->
+    <div id="scanner" class="tab-pane active">
+      <div class="card">
+        <div class="card-title">📷 Digitalizar Redação</div>
+        <div class="upload-zone">
+          <input type="file" id="fileIn" accept="image/*" onchange="previewImg(this)">
+          <div style="font-size:3rem;margin-bottom:12px">📁</div>
+          <div class="upload-text">Arraste uma imagem ou <span>clique para selecionar</span></div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:6px">PNG, JPG, WEBP — até 10MB</div>
+        </div>
+        <img id="prevImg">
+        <div style="margin-top:16px;padding:10px 14px;background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.3);border-radius:10px;font-size:.82rem;color:var(--gold)">
+          ⚠️ O modelo de IA lerá a imagem manuscrita. Certifique-se de que a <b>URL do servidor</b> está configurada e que o modelo suporta visão.
+        </div>
+        <div class="ocr-progress" id="ocrProgress">
+          <div class="progress-track" style="height:6px"><div class="progress-fill" id="ocrBar" style="width:0%"></div></div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:6px;text-align:center" id="ocrMsg">Processando...</div>
+        </div>
+        <button class="btn btn-primary" id="btnOCR" onclick="doOCR()" style="margin-top:16px" disabled>
+          🤖 Extrair Texto com IA
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: REDAÇÃO -->
+    <div id="editor" class="tab-pane">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:12px">📋 Tema da Redação</div>
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">Informe o tema para que a correção avalie se a redação está de acordo com a proposta.</div>
+        <input type="text" id="temaInput" placeholder="Ex: A invisibilidade do trabalho de cuidado realizado pela mulher no Brasil"
+          style="width:100%;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s;font-family:inherit"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="saveTema()">
+        <div id="tema-warning" style="display:none;margin-top:8px;font-size:.8rem;color:var(--gold)">⚠️ Sem tema definido — a C2 será avaliada sem referência à proposta.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✏️ Editor de Redação</div>
+        <div class="editor-meta">
+          <div class="meta-badge" id="wordCount">0 palavras</div>
+          <div class="meta-badge" id="lineCount">0 linhas</div>
+          <div class="meta-badge" id="charCount">0 caracteres</div>
+        </div>
+
+        <div class="review-banner" id="reviewBanner">
+          <div style="flex:1">
+            <b>⚠️ Revisão necessária</b> — o OCR pode ter erros. Verifique os trechos marcados antes de corrigir.
+            <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)"><span style="width:14px;height:4px;border-radius:2px;background:var(--gold);display:inline-block"></span>Palavra suspeita</span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)"><span style="width:14px;height:4px;border-radius:2px;background:var(--accent);display:inline-block"></span>Possível erro grave</span>
+              <span id="suspectCount" style="color:var(--muted);font-size:.78rem"></span>
             </div>
+          </div>
+          <button class="btn-clear-hl" onclick="clearHighlights()">✕ Limpar</button>
+        </div>
 
-            <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.6rem; color:var(--text-main); margin-bottom:4px;">BIA.AI — ENEM PRO</div>
-            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.75rem;">Digite a senha para acessar a plataforma inteligente</div>
+        <div id="highlight-wrap">
+          <div id="highlight-overlay"></div>
+          <textarea id="essayText" placeholder="Cole ou escreva sua redação aqui..." oninput="updateMeta();syncScroll()" onscroll="syncScroll()" class="with-highlight"></textarea>
+        </div>
 
-            <input type="password" id="loginPassInput" placeholder="Senha de Acesso (beatriz)" style="width:100%; padding:14px 18px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:14px; color:var(--text-main); font-size:1rem; outline:none; margin-bottom:1rem; text-align:center; transition:border-color 0.2s;" onkeydown="if(event.key==='Enter') attemptLogin()">
-            
-            <button class="btn-action-primary" style="width:100%; font-size:0.95rem; padding:14px;" onclick="attemptLogin()">
-                🔓 Acessar Plataforma
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnCorr" onclick="startCorrection()">⚡ Corrigir Agora</button>
+          <button class="btn btn-secondary" onclick="clearEssay()" title="Limpar">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: RESULTADO -->
+    <div id="results" class="tab-pane">
+      
+      <div class="pdf-report-header" id="pdfReportHeader">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:2px solid #e63946;padding-bottom:14px">
+          <div>
+            <div style="font-size:1.5rem;font-weight:800;color:#e63946;font-family:'Outfit',sans-serif">ENEM PRO — Relatório de Correção</div>
+            <div id="pdf-tema-line" style="font-size:.85rem;color:#555;margin-top:4px"></div>
+          </div>
+          <div id="pdf-date-line" style="text-align:right;font-size:.78rem;color:#777"></div>
+        </div>
+      </div>
+
+      <div class="score-banner" id="scoreBanner">
+        <div>
+          <div class="score-total" id="totalScore">—</div>
+          <div class="score-label">Nota Total / 1000</div>
+        </div>
+        <div class="score-bars" id="scoreBarsViz"></div>
+      </div>
+
+      <!-- PODCAST AUDIO PLAYER CARD BY PROFESSORA BIA -->
+      <div id="podcastCard" style="display:none;background:linear-gradient(135deg, rgba(18,20,34,0.95), rgba(28,31,52,0.95));border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 12px 35px rgba(0,0,0,0.4);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--gold),var(--success));"></div>
+        
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="position:relative;width:52px;height:52px;flex-shrink:0;">
+              <div class="avatar-orbit-ring" style="inset:-6px;"></div>
+              <div class="avatar-aura-glow" style="inset:-4px;"></div>
+              <div class="avatar-frame">
+                <img src="bia.jpeg" alt="Professora Bia Podcast">
+              </div>
+            </div>
+            <div>
+              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);display:flex;align-items:center;gap:8px;">
+                🎙️ Podcast de Correção Guiada <span style="font-size:0.68rem;background:rgba(244,162,97,0.2);color:var(--gold);padding:2px 8px;border-radius:6px;border:1px solid rgba(244,162,97,0.3);font-weight:700;">EPISÓDIO EXCLUSIVO</span>
+              </div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">
+                Professora Bia analisa sua redação ponto a ponto em áudio
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="nav-link" id="podcastPlayBtn" onclick="togglePodcastPlay()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;padding:10px 18px;border-radius:14px;font-size:0.9rem;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 4px 15px var(--primary-glow);">
+              <span id="podcastPlayIcon">▶️</span> <span id="podcastPlayText">Ouvir Podcast</span>
             </button>
-            
-            <div id="loginErr" style="color:var(--primary); font-size:0.8rem; margin-top:10px; min-height:1.2rem; font-weight:600;"></div>
+            <select id="podcastSpeedSelect" onchange="changePodcastSpeed(this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:10px;font-size:0.82rem;font-family:inherit;outline:none;cursor:pointer;">
+              <option value="1.0">1.0x</option>
+              <option value="1.15" selected>1.15x</option>
+              <option value="1.3">1.3x</option>
+              <option value="1.5">1.5x</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Podcast Transcript Display Box -->
+        <div id="podcastTranscriptBox" style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:0.88rem;line-height:1.6;color:var(--text);max-height:110px;overflow-y:auto;white-space:pre-wrap;margin-top:10px;scroll-behavior:smooth;">
+          <i>Pressione "Ouvir Podcast" para a Professora Bia narrar a análise completa da sua redação.</i>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="errorLog" style="display:none;background:#1a0a0a;border:1px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;font-size:.82rem;font-family:monospace;color:#ff9999;max-height:160px;overflow-y:auto;white-space:pre-wrap"></div>
+
+        <div class="progress-wrap" id="progWrap">
+          <div class="progress-header">
+            <span class="progress-label" id="progLabel">Iniciando análise...</span>
+            <span class="progress-pct" id="progPct">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+          <div class="comp-steps">
+            <div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div><div class="comp-step"></div>
+          </div>
+        </div>
+
+        <div id="pdfBtnWrap" style="display:none;margin-bottom:16px">
+          <button class="btn btn-pdf" onclick="printReport()" style="max-width:240px">🖨️ Imprimir Relatório PDF</button>
+        </div>
+
+        <div class="sub-tabs">
+          <button class="sub-tab active" onclick="toggleSub('par')">Competências</button>
+          <button class="sub-tab" onclick="toggleSub('ind')">Indicadores</button>
+        </div>
+
+        <div id="view-par">
+          <div class="comp-pills" id="compPills">
+            <div class="comp-pill active" onclick="setComp(1)">C1<span class="pill-score" id="ps1"></span></div>
+            <div class="comp-pill" onclick="setComp(2)">C2<span class="pill-score" id="ps2"></span></div>
+            <div class="comp-pill" onclick="setComp(3)">C3<span class="pill-score" id="ps3"></span></div>
+            <div class="comp-pill" onclick="setComp(4)">C4<span class="pill-score" id="ps4"></span></div>
+            <div class="comp-pill" onclick="setComp(5)">C5<span class="pill-score" id="ps5"></span></div>
+          </div>
+          <div class="comp-desc" id="compDesc">Selecione uma competência após a correção.</div>
+          <div class="score-row">
+            <label>NOTA</label>
+            <div class="score-badges" id="scoreBadges"><div class="score-badge">—</div></div>
+          </div>
+          <div class="feedback-section field-pos">
+            <div class="field-label">Pontos positivos</div>
+            <div class="feedback-box empty" id="posBox">Aguardando correção...</div>
+          </div>
+          <div class="feedback-section field-ded">
+            <div class="field-label">Como melhorar</div>
+            <div class="feedback-box empty" id="impBox">Aguardando correção...</div>
+          </div>
+          <div class="feedback-section field-ded">
+            <div class="field-label">Onde perdeu pontos</div>
+            <div id="dedBox" class="feedback-box empty">Aguardando correção...</div>
+          </div>
+        </div>
+
+        <div id="view-ind" style="display:none">
+          <div class="comp-pills" id="compPillsInd">
+            <div class="comp-pill active" onclick="setCompInd(1)">C1</div>
+            <div class="comp-pill" onclick="setCompInd(2)">C2</div>
+            <div class="comp-pill" onclick="setCompInd(3)">C3</div>
+            <div class="comp-pill" onclick="setCompInd(4)">C4</div>
+            <div class="comp-pill" onclick="setCompInd(5)">C5</div>
+          </div>
+          <div class="crit-grid" id="critList"></div>
+        </div>
+      </div>
+
+      <div class="pdf-all-comps" id="pdfAllComps"></div>
+    </div>
+
+    <!-- TAB 4: CONFIGURAÇÕES -->
+    <div id="config" class="tab-pane">
+      <div class="card">
+        <div class="card-title">⚙️ Configurações</div>
+        <div style="margin-bottom:20px">
+          <div class="field-label">URL do Servidor LM Studio / Ngrok</div>
+          <div class="api-config">
+            <input type="text" id="apiUrlInput" placeholder="http://localhost:1234/v1/chat/completions">
+            <button class="btn-test" onclick="testConnection()">Testar</button>
+          </div>
+          <div style="font-size:.78rem;color:var(--muted)">Servidor LM Studio Local (http://localhost:1234/v1/chat/completions) ou Ngrok.</div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div class="field-label">Modelo</div>
+          <div class="api-config">
+            <input type="text" id="modelInput" placeholder="local-model" value="local-model">
+          </div>
+        </div>
+        <div>
+          <div class="field-label">Temperatura</div>
+          <div class="api-config">
+            <input type="number" id="tempInput" min="0" max="1" step="0.05" value="0.1" style="max-width:120px">
+            <span style="font-size:.8rem;color:var(--muted)">Recomendado: 0.1</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;max-width:200px" onclick="saveConfig()">💾 Salvar</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- AVATAR BIA (ANIMATED HOLOGRAPHIC STAGE MODEL) -->
+<div id="avatar-btn-wrapper" onclick="toggleAvatar()">
+    <div id="avatar-btn" title="Falar com a Professora Bia">
+        <div class="avatar-orbit-ring"></div>
+        <div class="avatar-aura-glow"></div>
+        <div class="avatar-frame">
+            <img src="bia.jpeg" alt="Professora Bia Avatar">
+        </div>
+        <div class="avatar-dot-status"></div>
+    </div>
+    <div class="avatar-pill-badge">
+        <span style="color:var(--gold);font-weight:800;">Bia</span> Professora IA • 💬 Dúvidas?
+    </div>
+</div>
+
+<div id="avatar-bubble" style="position:fixed;bottom:106px;left:24px;z-index:9989;width:390px;max-width:calc(100vw - 32px);background:var(--surface);backdrop-filter:var(--glass-blur);border:1px solid var(--border);border-radius:24px;padding:20px;display:none;box-shadow:0 16px 50px rgba(0,0,0,0.6);animation:popInBubble 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:14px;">
+        <div style="position:relative;width:56px;height:56px;flex-shrink:0;">
+            <div class="avatar-orbit-ring" style="inset:-6px;"></div>
+            <div class="avatar-aura-glow" style="inset:-4px;"></div>
+            <div class="avatar-frame">
+                <img src="bia.jpeg" alt="Professora Bia">
+            </div>
+            <div class="avatar-dot-status"></div>
+        </div>
+        <div>
+            <div style="font-weight:800;font-size:1.05rem;font-family:'Outfit',sans-serif;color:var(--text);display:flex;align-items:center;gap:6px;">
+                Professora Bia <span style="font-size:0.68rem;background:rgba(230,57,70,0.25);color:var(--accent2);padding:2px 8px;border-radius:6px;font-weight:700;border:1px solid rgba(230,57,70,0.3);">TUTORA IA ENEM</span>
+            </div>
+            <div style="font-size:0.78rem;color:var(--success);display:flex;align-items:center;gap:4px;margin-top:4px;">
+                <span>Holograma RAG Ativo</span>
+                <div class="equalizer-bar-group" id="eqGroupBubble">
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+            <button id="biaVoiceBtn" onclick="toggleBiaVoice()" title="Ativar/Desativar Voz da Bia" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:0.9rem;transition:all 0.2s;">🔊</button>
+            <button onclick="toggleAvatar()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✕</button>
         </div>
     </div>
 
-    <!-- HEADER NAVIGATION -->
-    <header>
-        <div class="brand-container">
-            <div class="brand-logo-badge">B</div>
-            <div class="brand-text">BIA.AI</div>
-            <div class="brand-tag">ENEM PRO v2.0</div>
-        </div>
-
-        <div class="header-actions">
-            <div class="status-pill">
-                <div class="status-dot-pulse"></div>
-                <span id="headerStatusTxt">IA Pronta</span>
-            </div>
-            <button class="icon-btn" onclick="openThemeModal()" title="Trocar Cor da Tela (Temas)">🎨</button>
-            <button class="icon-btn" onclick="toggleAudioMute()" id="audioMuteBtn" title="Ativar/Desativar Voz da Bia">🔊</button>
-            <button class="icon-btn" onclick="openConfigModal()" title="Configurações IA">⚙️</button>
-        </div>
-    </header>
-
-    <!-- MAIN WORKSPACE LAYOUT -->
-    <div class="workspace">
-
-        <!-- LEFT PANEL: BIA CHATBOT & AVATAR -->
-        <div class="bia-panel" id="biaPanel">
-            
-            <!-- Holographic Avatar Stage -->
-            <div class="avatar-container">
-                <div class="avatar-hologram" id="avatarHologram">
-                    <div class="avatar-orbit-ring"></div>
-                    <div class="avatar-aura-glow"></div>
-                    <div class="avatar-frame" onclick="triggerBiaGreeting()" title="Clique para conversar com a Professora Bia!">
-                        <img src="bia.jpeg" alt="Professora Bia Avatar">
-                    </div>
-                </div>
-
-                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; margin-top:12px; display:flex; align-items:center; gap:6px;">
-                    Professora Bia <span style="font-size:0.65rem; background:rgba(255,51,102,0.2); border:1px solid rgba(255,51,102,0.4); color:var(--primary); padding:2px 8px; border-radius:12px; font-weight:700;">TUTORA IA</span>
-                </div>
-
-                <div class="equalizer-bar-group" id="eqGroup">
-                    <div class="eq-bar"></div>
-                    <div class="eq-bar"></div>
-                    <div class="eq-bar"></div>
-                    <div class="eq-bar"></div>
-                    <div class="eq-bar"></div>
-                </div>
-            </div>
-
-            <!-- Chat Stream -->
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-msg msg-bia">
-                    👋 Olá! Eu sou a <b>Professora Bia</b>. Estou aqui para te guiar na redação nota 1000 do ENEM. Cole seu texto ou converse comigo abaixo!
-                </div>
-            </div>
-
-            <!-- Quick Action Chips -->
-            <div class="quick-chips">
-                <button class="chip-btn" onclick="sendQuickPrompt('Como estruturar a introdução?')">💡 Introdução</button>
-                <button class="chip-btn" onclick="sendQuickPrompt('Dicas de repertórios socioculturais')">📚 Repertório</button>
-                <button class="chip-btn" onclick="sendQuickPrompt('Como não zerar a C5?')">🎯 Dica C5</button>
-            </div>
-
-            <!-- Chat Input Controls -->
-            <div class="chat-input-wrapper">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Pergunte algo para a Bia..." onkeydown="if(event.key==='Enter') sendChatMessage()">
-                <button class="mic-btn" id="micBtn" onclick="toggleMicSpeech()" title="Falar pelo microfone">🎙️</button>
-                <button class="send-btn" onclick="sendChatMessage()">➔</button>
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL: WORKSPACE & TAB PANES -->
-        <div class="main-panel">
-            
-            <!-- Navigation Tabs -->
-            <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('editor')">✏️ Editor de Redação</button>
-                <button class="tab-btn" onclick="switchTab('scanner')">📷 Digitalizar (OCR)</button>
-                <button class="tab-btn" onclick="switchTab('results')">📊 Resultado & Raio-X</button>
-            </div>
-
-            <!-- TAB 1: EDITOR -->
-            <div class="tab-pane active" id="pane-editor">
-                
-                <div class="editor-meta-bar">
-                    <div style="flex:1; min-width:240px;">
-                        <input type="text" class="input-tema" id="temaInput" placeholder="Informe o Tema da Redação (Ex: O impacto da inteligência artificial na sociedade brasileira)" oninput="updateWordStats()">
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <div class="meta-tag" id="statWords">0 <strong>Palavras</strong></div>
-                        <div class="meta-tag" id="statLines">0 <strong>Linhas</strong></div>
-                    </div>
-                </div>
-
-                <textarea class="essay-textarea" id="essayText" placeholder="Cole ou digite a sua redação aqui..." oninput="updateWordStats()"></textarea>
-
-                <div style="display:flex; gap:12px; justify-content:flex-end;">
-                    <button class="btn-action-primary" onclick="startCorrectionProcess()">
-                        ⚡ Corrigir Redação Agora com IA
-                    </button>
-                </div>
-            </div>
-
-            <!-- TAB 2: SCANNER (OCR) -->
-            <div class="tab-pane" id="pane-scanner">
-                <div class="scanner-card" id="scannerZone">
-                    <input type="file" id="fileIn" accept="image/*" onchange="handleImageUpload(this)">
-                    <div class="scan-laser-line" id="scanLaser"></div>
-                    <div style="font-size:3rem; margin-bottom:12px;">📄</div>
-                    <div style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:6px;">Digitalizar Redação Manuscrita</div>
-                    <div style="font-size:0.88rem; color:var(--text-muted);">Arraste uma foto da folha ou clique para selecionar (PNG, JPG, WEBP)</div>
-                </div>
-                
-                <div id="ocrPreviewWrap" style="display:none; text-align:center;">
-                    <img id="ocrPreviewImg" style="max-width:100%; border-radius:12px; border:1px solid var(--border); margin-bottom:1rem;">
-                    <button class="btn-action-primary" style="margin:0 auto;" onclick="runOCRExtraction()">🤖 Extrair Texto da Imagem</button>
-                </div>
-            </div>
-
-            <!-- TAB 3: RESULTS & RAIO-X -->
-            <div class="tab-pane" id="pane-results">
-                
-                <!-- Score Hero Banner -->
-                <div class="score-hero-card">
-                    <div>
-                        <div class="score-big-number" id="totalScoreNum">960</div>
-                        <div class="score-label-text">Pontuação Total no ENEM / 1000</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:1.1rem; color:var(--cyber-cyan);" id="scoreRatingTxt">Excelente Desempenho!</div>
-                        <div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">Parabéns! Texto bem estruturado.</div>
-                    </div>
-                </div>
-
-                <!-- Competencies Grid -->
-                <div class="competency-grid">
-                    <div class="comp-card" onclick="selectCompDetail(1)">
-                        <div class="comp-card-header">
-                            <span class="comp-badge">C1 — Domínio Escrito</span>
-                            <span class="comp-score-chip" id="c1ScoreChip">200 pts</span>
-                        </div>
-                        <div class="comp-desc">Avaliação da norma culta, acentuação e gramática.</div>
-                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c1Bar" style="width:100%"></div></div>
-                    </div>
-
-                    <div class="comp-card" onclick="selectCompDetail(2)">
-                        <div class="comp-card-header">
-                            <span class="comp-badge">C2 — Tema & Repertório</span>
-                            <span class="comp-score-chip" id="c2ScoreChip">200 pts</span>
-                        </div>
-                        <div class="comp-desc">Compreensão da proposta e aplicação de repertório.</div>
-                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c2Bar" style="width:100%"></div></div>
-                    </div>
-
-                    <div class="comp-card" onclick="selectCompDetail(3)">
-                        <div class="comp-card-header">
-                            <span class="comp-badge">C3 — Projeto de Texto</span>
-                            <span class="comp-score-chip" id="c3ScoreChip">160 pts</span>
-                        </div>
-                        <div class="comp-desc">Organização de argumentos e defesa do ponto de vista.</div>
-                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c3Bar" style="width:80%"></div></div>
-                    </div>
-
-                    <div class="comp-card" onclick="selectCompDetail(4)">
-                        <div class="comp-card-header">
-                            <span class="comp-badge">C4 — Coesão Textual</span>
-                            <span class="comp-score-chip" id="c4ScoreChip">200 pts</span>
-                        </div>
-                        <div class="comp-desc">Uso de conectivos inter e intraparágrafos.</div>
-                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c4Bar" style="width:100%"></div></div>
-                    </div>
-
-                    <div class="comp-card" onclick="selectCompDetail(5)">
-                        <div class="comp-card-header">
-                            <span class="comp-badge">C5 — Intervenção</span>
-                            <span class="comp-score-chip" id="c5ScoreChip">200 pts</span>
-                        </div>
-                        <div class="comp-desc">Proposta com Agente, Ação, Meio, Efeito e Detalhamento.</div>
-                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c5Bar" style="width:100%"></div></div>
-                    </div>
-                </div>
-
-                <!-- Detail Feedback Card -->
-                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.5rem;" id="compDetailBox">
-                    <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:1.1rem; color:var(--secondary); margin-bottom:10px;" id="detailTitle">Detalhes da Competência 1</div>
-                    <div style="font-size:0.9rem; line-height:1.7; color:var(--text-main);" id="detailContent">Selecione um card de competência acima para analisar as observações da Professora Bia.</div>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- THEME SELECTION MODAL -->
-    <div class="modal-overlay" id="themeModal">
-        <div class="modal-card" style="max-width:440px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.25rem;">🎨 Trocar Cores da Tela</div>
-                <button class="icon-btn" onclick="closeThemeModal()">✕</button>
-            </div>
-            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">Selecione uma paleta de cores para personalizar a interface do site:</div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1rem;">
-                <button class="theme-opt-btn active" onclick="setTheme('default')" id="themeBtn-default">
-                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#ff3366;"></span><span style="width:12px;height:12px;border-radius:50%;background:#ffc700;"></span><span style="width:12px;height:12px;border-radius:50%;background:#05060a;"></span></div>
-                    💖 Cyber Coral
-                </button>
-                <button class="theme-opt-btn" onclick="setTheme('purple')" id="themeBtn-purple">
-                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#a855f7;"></span><span style="width:12px;height:12px;border-radius:50%;background:#ec4899;"></span><span style="width:12px;height:12px;border-radius:50%;background:#0a0518;"></span></div>
-                    💜 Nebulosa Roxa
-                </button>
-                <button class="theme-opt-btn" onclick="setTheme('emerald')" id="themeBtn-emerald">
-                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;"></span><span style="width:12px;height:12px;border-radius:50%;background:#06b6d4;"></span><span style="width:12px;height:12px;border-radius:50%;background:#021412;"></span></div>
-                    💚 Esmeralda Neon
-                </button>
-                <button class="theme-opt-btn" onclick="setTheme('light')" id="themeBtn-light">
-                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#e63946;"></span><span style="width:12px;height:12px;border-radius:50%;background:#f4a261;"></span><span style="width:12px;height:12px;border-radius:50%;background:#f1f5f9;"></span></div>
-                    ☀️ Claro Elegante
-                </button>
-            </div>
+    <!-- Chat History -->
+    <div id="biaChatHistory" style="max-height:220px;min-height:100px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;margin-bottom:12px;scroll-behavior:smooth;">
+        <div id="avatar-msg" style="font-size:0.88rem;line-height:1.6;color:var(--text);background:var(--surface2);padding:10px 14px;border-radius:14px;border:1px solid var(--border);">
+            Olá! Sou a Professora Bia. Como posso ajudar você a entender sua correção ou tirar 1000 pontos no ENEM?
         </div>
     </div>
 
-    <!-- CONFIG CONFIGURATION MODAL -->
-    <div class="modal-overlay" id="configModal">
-        <div class="modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.3rem;">⚙️ Configurações da IA</div>
-                <button class="icon-btn" onclick="closeConfigModal()">✕</button>
-            </div>
-
-            <div style="margin-bottom:1rem;">
-                <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block;">URL do Servidor (Ngrok / API Local)</label>
-                <input type="text" class="input-tema" id="cfgApiUrl" placeholder="https://xxxx.ngrok-free.app/v1/chat/completions">
-            </div>
-
-            <div style="margin-bottom:1.5rem;">
-                <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block;">Modelo de IA</label>
-                <input type="text" class="input-tema" id="cfgModel" value="local-model">
-            </div>
-
-            <button class="btn-action-primary" style="width:100%;" onclick="saveConfigModal()">💾 Salvar Configurações</button>
-        </div>
+    <!-- Quick Chips -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;" id="avatar-options">
+        <button class="nav-link" onclick="sendBiaChatMessage('Bia, como posso reescrever minha redação para tirar 1000?')" style="font-size:0.75rem;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">💡 Dicas para Nota 1000</button>
+        <button class="nav-link" onclick="sendBiaChatMessage('Bia, por que perdi pontos na Competência 2?')" style="font-size:0.75rem;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">❓ Por que perdi C2?</button>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        /* ── LOGIN OVERLAY ── */
-        function attemptLogin() {
-            const input = document.getElementById('loginPassInput').value.trim();
-            if (input === 'beatriz') {
-                document.getElementById('loginOverlay').style.display = 'none';
-                sessionStorage.setItem('biaLoggedIn', 'true');
-                triggerBiaGreeting();
-            } else {
-                document.getElementById('loginErr').textContent = 'Senha incorreta. Tente novamente.';
-                document.getElementById('loginPassInput').value = '';
-            }
+    <!-- Input Bar with Voice Mic and Send -->
+    <div style="display:flex;gap:8px;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:4px 8px;">
+        <input type="text" id="biaChatInput" placeholder="Pergunte à Bia ou peça ajuda..." style="flex:1;background:none;border:none;color:var(--text);font-size:0.88rem;outline:none;padding:8px 4px;" onkeydown="if(event.key==='Enter') sendBiaChatMessage()">
+        <button id="biaMicBtn" onclick="toggleBiaVoiceMic()" title="Falar por microfone" style="background:none;border:none;color:var(--gold);font-size:1.1rem;cursor:pointer;padding:6px;border-radius:50%;transition:all 0.2s;">🎤</button>
+        <button onclick="sendBiaChatMessage()" title="Enviar para LM Studio" style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:white;font-size:0.88rem;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:12px;box-shadow:0 4px 12px var(--primary-glow);">🚀</button>
+    </div>
+</div>
+
+<!-- THEME SELECTION MODAL -->
+<div id="themeModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:1rem;">
+  <div class="card" style="max-width:420px;width:100%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <b style="font-family:'Outfit',sans-serif;font-size:1.15rem;color:var(--text);">🎨 Trocar Cores da Tela</b>
+      <button onclick="closeThemeModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;">✕</button>
+    </div>
+    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Escolha uma paleta de cores para personalizar a tela:</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button class="theme-btn active" onclick="setTheme('default')" id="tbtn-default" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-weight:700;cursor:pointer;text-align:left;">
+        <div style="display:flex;gap:4px;margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#e63946;"></span><span style="width:12px;height:12px;border-radius:50%;background:#f4a261;"></span></div>
+        Padrão Dark
+      </button>
+      <button class="theme-btn" onclick="setTheme('purple')" id="tbtn-purple" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-weight:700;cursor:pointer;text-align:left;">
+        <div style="display:flex;gap:4px;margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#a855f7;"></span><span style="width:12px;height:12px;border-radius:50%;background:#f472b6;"></span></div>
+        Roxo Nebulosa
+      </button>
+      <button class="theme-btn" onclick="setTheme('emerald')" id="tbtn-emerald" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-weight:700;cursor:pointer;text-align:left;">
+        <div style="display:flex;gap:4px;margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;"></span><span style="width:12px;height:12px;border-radius:50%;background:#06b6d4;"></span></div>
+        Verde Esmeralda
+      </button>
+      <button class="theme-btn" onclick="setTheme('light')" id="tbtn-light" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-weight:700;cursor:pointer;text-align:left;">
+        <div style="display:flex;gap:4px;margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#e63946;"></span><span style="width:12px;height:12px;border-radius:50%;background:#d97706;"></span></div>
+        Claro Elegante
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC WITH SECURITY & HIGH PERFORMANCE PARALLEL ENGINE -->
+<script>
+/* ── CANVAS PARTICLES ── */
+var canvas = document.getElementById('bgCanvas');
+var ctx = canvas.getContext('2d');
+var particles = [];
+var particleRGB = '230, 57, 70';
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function Particle() {
+  this.x = Math.random() * canvas.width;
+  this.y = Math.random() * canvas.height;
+  this.radius = Math.random() * 2 + 0.5;
+  this.vx = (Math.random() - 0.5) * 0.3;
+  this.vy = (Math.random() - 0.5) * 0.3;
+  this.alpha = Math.random() * 0.4 + 0.1;
+}
+Particle.prototype.draw = function() {
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(' + particleRGB + ', ' + this.alpha + ')';
+  ctx.fill();
+};
+Particle.prototype.update = function() {
+  this.x += this.vx; this.y += this.vy;
+  if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+  if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+};
+
+for (var i = 0; i < 40; i++) particles.push(new Particle());
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(function(p){ p.update(); p.draw(); });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ── SECURITY: BRUTE FORCE PROTECTION & SANITIZATION ── */
+var loginAttempts = 0;
+var lockoutUntil = 0;
+
+function doLogin() {
+  var now = Date.now();
+  if (now < lockoutUntil) {
+    var secs = Math.ceil((lockoutUntil - now) / 1000);
+    document.getElementById('loginErr').textContent = 'Muitas tentativas. Aguarde ' + secs + 's.';
+    return;
+  }
+  var p = document.getElementById('passInput').value;
+  if (p === 'beatriz') {
+    loginAttempts = 0;
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-system').style.display = 'flex';
+    loadConfig(); loadTema();
+    if (cfg.apiUrl) testConnection();
+    document.getElementById('avatar-btn-wrapper').style.display = 'flex';
+  } else {
+    loginAttempts++;
+    if (loginAttempts >= 5) {
+      lockoutUntil = Date.now() + 30000;
+      document.getElementById('loginErr').textContent = 'Bloqueado por 30s (muitas tentativas).';
+    } else {
+      document.getElementById('loginErr').textContent = 'Senha incorreta. (' + (5 - loginAttempts) + ' tentativas restantes)';
+    }
+    document.getElementById('passInput').value = '';
+  }
+}
+
+function sanitizeText(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ── SYSTEM CONFIG ── */
+var cfg = {
+  apiUrl: localStorage.getItem('apiUrl') || 'http://localhost:1234/v1/chat/completions',
+  model:  localStorage.getItem('model')  || 'local-model',
+  temp:   parseFloat(localStorage.getItem('temp') || '0.1')
+};
+
+function loadConfig() {
+  document.getElementById('apiUrlInput').value = cfg.apiUrl;
+  document.getElementById('modelInput').value  = cfg.model;
+  document.getElementById('tempInput').value   = cfg.temp;
+}
+
+function saveConfig() {
+  var rawUrl = document.getElementById('apiUrlInput').value.trim();
+  if (rawUrl && !/^https?:\/\//i.test(rawUrl)) {
+    showToast('A URL deve começar com http:// ou https://', 'error');
+    return;
+  }
+  cfg.apiUrl = rawUrl;
+  cfg.model  = document.getElementById('modelInput').value.trim() || 'local-model';
+  cfg.temp   = parseFloat(document.getElementById('tempInput').value) || 0.1;
+  localStorage.setItem('apiUrl', cfg.apiUrl);
+  localStorage.setItem('model',  cfg.model);
+  localStorage.setItem('temp',   cfg.temp);
+  showToast('Configurações salvas e validadas!', 'success');
+  testConnection();
+}
+
+function saveTema() {
+  var t = document.getElementById('temaInput').value.trim();
+  localStorage.setItem('tema', t);
+  document.getElementById('tema-warning').style.display = t ? 'none' : 'block';
+}
+
+function loadTema() {
+  var t = localStorage.getItem('tema') || '';
+  document.getElementById('temaInput').value = t;
+  document.getElementById('tema-warning').style.display = t ? 'none' : 'block';
+}
+
+function testConnection() {
+  var dot = document.getElementById('statusDot');
+  var txt = document.getElementById('statusTxt');
+  var url = cfg.apiUrl.trim();
+  if (!url) { dot.className='status-dot error'; txt.textContent='URL não configurada'; return; }
+  var ok = /^https?:\/\/.+/.test(url);
+  dot.className = 'status-dot ' + (ok ? 'online' : 'error');
+  txt.textContent = ok ? 'URL configurada' : 'URL inválida';
+}
+
+/* PRESERVED TAB SYSTEM */
+function showTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-link').forEach(function(l){l.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  var map = {scanner:0,editor:1,results:2,config:3};
+  document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
+}
+
+function toggleSub(t) {
+  var isPar = t === 'par';
+  document.getElementById('view-par').style.display = isPar ? 'block' : 'none';
+  document.getElementById('view-ind').style.display = isPar ? 'none'  : 'block';
+  document.querySelectorAll('.sub-tab').forEach(function(b,i){b.classList.toggle('active', i===(isPar?0:1))});
+  if (!isPar) renderCrits(curCompInd);
+}
+
+/* THEME MODAL */
+function openThemeModal(){ document.getElementById('themeModal').style.display='flex'; }
+function closeThemeModal(){ document.getElementById('themeModal').style.display='none'; }
+
+function setTheme(t){
+  if(t==='default') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('biaTheme', t);
+  document.querySelectorAll('.theme-btn').forEach(function(b){ b.style.borderColor = 'var(--border)'; });
+  var active = document.getElementById('tbtn-' + t);
+  if(active) active.style.borderColor = 'var(--accent)';
+
+  if (t==='purple') particleRGB = '168, 85, 247';
+  else if (t==='emerald') particleRGB = '16, 185, 129';
+  else if (t==='light') particleRGB = '230, 57, 70';
+  else particleRGB = '230, 57, 70';
+
+  closeThemeModal();
+}
+(function loadSavedTheme(){ setTheme(localStorage.getItem('biaTheme') || 'default'); })();
+
+/* COMPETENCIES & CRITERIA */
+var COMPS = {
+  1:'Demonstrar domínio da modalidade escrita formal da língua portuguesa.',
+  2:'Compreender a proposta de redação e aplicar conceitos das várias áreas do conhecimento para desenvolver o tema.',
+  3:'Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos em defesa de um ponto de vista.',
+  4:'Demonstrar conhecimento dos mecanismos linguísticos necessários para a construção da argumentação.',
+  5:'Elaborar proposta de intervenção para o problema abordado, respeitando os direitos humanos.'
+};
+
+var CRITERIA = {
+  1:['Ilegibilidade/Rasuras','Maiúsculas/Minúsculas','Ortografia','Acentuação','Translineação','Hífen','Pontuação/Truncamento','Pontuação/Justposição','Outros de pontuação','Sintaxe/Falta','Sintaxe/Excesso','Crase','Regência','Concordância','Modo/Tempo Verbal','Pronomes','Paralelismo','Vocabulário','Coloquialismo','Linguagem Figurada'],
+  2:['Tangenciamento','Tipo textual inadequado','Repertório restrito','Repertório não legitimado','Repertório não pertinente','Repertório improdutivo','Repertório legitimado/produtivo'],
+  3:['Tangenciamento temático','Relacionamento de ideias','Texto expositivo','Desenvolvimento inadequado','Argumentação confusa','Contradição','Repetição de ideias','Prolixo','Modalização','Progressão textual','Tese clara','Proposta de intervenção','Bem argumentado','Estratégico'],
+  4:['Coesivo interparágrafo','Uso de operadores','Ambiguidade','Mau uso de conectivos','Repetição lexical'],
+  5:['Sem proposta','Proposta sem relação com assunto','Respeito aos direitos humanos','Tangenciamento da proposta','Proposta condicional','Agente especificado','Ação detalhada','Meio/Modo especificado','Efeito esperado','Detalhamento completo','Proposta completa']
+};
+var SCORES = [0,40,80,120,160,200];
+var feedbackData = {}, curComp = 1, curCompInd = 1;
+
+function autoCorrectPts(i, ded, score) {
+  if (!ded || typeof ded !== 'object') return ded;
+  var expected = 200 - (score || 0);
+  var keys = Object.keys(ded);
+  keys.forEach(function(k) {
+    if (ded[k].ok === true && (ded[k].pts_perdidos || 0) > 0) {
+      ded[k] = Object.assign({}, ded[k], {pts_perdidos: 0});
+    }
+  });
+  var sum = keys.reduce(function(a,k){return a+(ded[k].pts_perdidos||0)},0);
+  if (sum === expected) return ded;
+  if (sum === 0) {
+    var first = keys[0];
+    var fixed = Object.assign({}, ded);
+    fixed[first] = Object.assign({}, ded[first], {pts_perdidos: expected});
+    return fixed;
+  }
+  var fixed = Object.assign({}, ded);
+  keys.forEach(function(k) {
+    fixed[k] = Object.assign({}, ded[k], {pts_perdidos: Math.round((ded[k].pts_perdidos||0)*expected/sum)});
+  });
+  var newSum = keys.reduce(function(a,k){return a+fixed[k].pts_perdidos},0);
+  var res = expected - newSum;
+  if (res !== 0) {
+    var adj = keys.find(function(k){return fixed[k].pts_perdidos>0}) || keys[0];
+    fixed[adj] = Object.assign({}, fixed[adj], {pts_perdidos: fixed[adj].pts_perdidos + res});
+  }
+  return fixed;
+}
+
+function setComp(n) {
+  curComp = n;
+  document.querySelectorAll('#compPills .comp-pill').forEach(function(b,i){b.classList.toggle('active',i+1===n)});
+  document.getElementById('compDesc').innerText = COMPS[n];
+  var score = feedbackData['c'+n+'_score'];
+  document.getElementById('scoreBadges').innerHTML = SCORES.map(function(s){
+    return '<div class="score-badge'+(s===score?' selected':'')+'">'+s+'</div>';
+  }).join('');
+  var pos = feedbackData['c'+n+'_pos'], imp = feedbackData['c'+n+'_imp'];
+  var posBox = document.getElementById('posBox'), impBox = document.getElementById('impBox');
+  posBox.innerText = pos || 'Aguardando correção...'; posBox.classList.toggle('empty',!pos);
+  impBox.innerText = imp || 'Aguardando correção...'; impBox.classList.toggle('empty',!imp);
+  var ded = feedbackData['c'+n+'_ded'];
+  var dedBox = document.getElementById('dedBox');
+  if (!ded) { dedBox.innerHTML='Aguardando correção...'; dedBox.classList.add('empty'); }
+  else {
+    dedBox.classList.remove('empty');
+    dedBox.style.cssText='padding:0;background:transparent;border:none';
+    var biaHelpBtn = '<div style="margin-top:16px;background:rgba(230,57,70,0.08);border:1px solid rgba(230,57,70,0.3);padding:14px;border-radius:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
+      '<div style="font-size:0.85rem;color:var(--text);font-weight:600">💬 Precisa de ajuda para reescrever e subir a nota da Competência '+n+'?</div>' +
+      '<button class="btn btn-primary" onclick="askBiaAboutComp('+n+')" style="padding:8px 14px;font-size:0.82rem;gap:6px">🤖 Falar com Professora Bia no LM Studio</button>' +
+      '</div>';
+    dedBox.innerHTML = renderDedTable(n,ded) + biaHelpBtn;
+  }
+}
+
+function renderDedTable(comp, ded) {
+  var LABELS = {
+    1:{falhas_sintaticas:'Falhas sintáticas',desvios_ortografia:'Ortografia',desvios_pontuacao:'Pontuação',desvios_concordancia:'Concordância',desvios_regencia:'Regência',desvios_vocabulario:'Vocabulário',outros_desvios:'Outros desvios'},
+    2:{abordagem_tema:'Abordagem do tema',estrutura_dissertativa:'Estrutura dissertativa',partes_embrionarias:'Partes embrionárias',repertorio_legitimado:'Repertório legitimado',repertorio_pertinente:'Repertório pertinente',repertorio_produtivo:'Repertório produtivo'},
+    3:{tese_antecipacao:'Tese por antecipação',dois_temas_problema:'Dois temas-problema',palavras_chave:'Palavras-chave do tema',argumentos_relacionados:'Argumentos relacionados',repertorio_demonstrado:'Repertório demonstrado',marcadores_opiniao:'Marcadores de opinião',incoerencias:'Incoerências',proposta_resolve_temas:'Proposta resolve os temas'},
+    4:{conectivos_inadequados:'Conectivos inadequados',conectivos_repetidos:'Conectivos repetidos',paragrafos_sem_operador:'Parágrafos sem operador',retomada_inadequada:'Retomada inadequada',repeticao_lexical:'Repetição lexical'},
+    5:{agente:'Agente',acao:'Ação',modo_meio:'Modo / Meio',finalidade:'Finalidade',detalhamento:'Detalhamento'}
+  };
+  if (typeof ded === 'string') return '<div class="feedback-box" style="white-space:pre-wrap">'+sanitizeText(ded)+'</div>';
+  var labels = LABELS[comp] || {};
+  var rows = '', totalFalhas = 0;
+  var actualScore = feedbackData['c'+comp+'_score'] || 0;
+  var truePtsLost = 200 - actualScore;
+  Object.keys(ded).forEach(function(key) {
+    var val = ded[key];
+    var label = labels[key] || key.replace(/_/g,' ');
+    var pts = val.pts_perdidos || 0;
+    var obs = val.exemplos !== undefined ? val.exemplos : (val.obs || '');
+    var badgeHtml = '';
+    if ('falhas' in val) {
+      var f = val.falhas || 0; totalFalhas += f;
+      badgeHtml = '<span class="bd-badge '+(f===0?'green':'red')+'">'+f+' '+(f===1?'falha':'falhas')+'</span>';
+    } else if ('ok' in val) {
+      badgeHtml = '<span class="bd-badge '+(val.ok?'green':'red')+'">'+(val.ok?'✓ OK':'✗ Falhou')+'</span>';
+    }
+    var exemplosHtml = '';
+    if (Array.isArray(obs) && obs.length > 0) {
+      exemplosHtml = obs.map(function(ex,idx){
+        return '<div class="bd-obs" style="margin-top:'+(idx===0?3:2)+'px"><span style="color:var(--accent);font-size:.68rem;font-weight:700;margin-right:4px">'+(idx+1)+'.</span>"'+sanitizeText(ex.slice(0,140))+(ex.length>140?'…':'')+'"</div>';
+      }).join('');
+    } else if (typeof obs === 'string' && obs) {
+      exemplosHtml = '<div class="bd-obs">"'+sanitizeText(obs.slice(0,140))+(obs.length>140?'…':'')+'"</div>';
+    }
+    rows += '<tr><td><div class="bd-name">'+sanitizeText(label)+'</div>'+exemplosHtml+'</td><td>'+badgeHtml+'</td><td><span class="bd-pts '+(pts===0?'zero':'')+'">−'+pts+' pts</span></td></tr>';
+  });
+  var hasFalhas = Object.values(ded).some(function(v){return 'falhas' in v});
+  return '<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden"><table class="breakdown-table"><thead><tr><th>Elemento</th><th>'+(hasFalhas?'Ocorrências':'Status')+'</th><th>Pts perdidos</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr style="border-top:1px solid var(--border)"><td style="font-weight:700">Total</td><td>'+(hasFalhas?'<span class="bd-badge '+(totalFalhas===0?'green':'red')+'">'+totalFalhas+'</span>':'')+'</td><td><span class="bd-pts '+(truePtsLost===0?'zero':'')+'" style="font-size:.9rem">−'+truePtsLost+' pts</span></td></tr></tfoot></table></div>';
+}
+
+function setCompInd(n) {
+  curCompInd = n;
+  document.querySelectorAll('#compPillsInd .comp-pill').forEach(function(b,i){b.classList.toggle('active',i+1===n)});
+  renderCrits(n);
+}
+function renderCrits(n) {
+  var off=[0,0,20,27,41,46];
+  document.getElementById('critList').innerHTML = CRITERIA[n].map(function(c,i){
+    return '<div class="crit-item"><div class="crit-num">'+(off[n]+i+1)+'</div>'+sanitizeText(c)+'</div>';
+  }).join('');
+}
+
+function printReport() {
+  var total = [1,2,3,4,5].reduce(function(a,n){return a+(feedbackData['c'+n+'_score']||0)},0);
+  var tema = document.getElementById('temaInput').value.trim();
+  var now = new Date();
+  document.getElementById('pdf-tema-line').textContent = 'Tema: '+(tema||'não informado');
+  document.getElementById('pdf-date-line').innerHTML = 'Data: '+now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'<br>Nota Total: <strong style="color:#e63946;font-size:1.1rem">'+total+'/1000</strong>';
+  document.getElementById('pdfAllComps').innerHTML = [1,2,3,4,5].map(function(n){
+    var score = feedbackData['c'+n+'_score'] !== undefined ? feedbackData['c'+n+'_score'] : '-';
+    var pos = sanitizeText(feedbackData['c'+n+'_pos'] || '-');
+    var imp = sanitizeText(feedbackData['c'+n+'_imp'] || '-');
+    var ded = feedbackData['c'+n+'_ded'];
+    var col = score>=160?'#27ae60':score>=80?'#e67e22':'#c0392b';
+    return '<div class="pdf-comp-block"><div class="pdf-comp-title">Competência '+n+' - '+COMPS[n]+'<span class="pdf-score-chip" style="background:'+col+'">'+score+'/200</span></div><div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px">Pontos positivos</div><div style="font-size:.85rem;line-height:1.6;color:#333">'+pos+'</div></div><div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px">Como melhorar</div><div style="font-size:.85rem;line-height:1.6;color:#333">'+imp+'</div></div><div><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:6px">Onde perdeu pontos</div>'+(ded?renderDedTable(n,ded):'<span style="color:#aaa">Sem dados</span>')+'</div></div>';
+  }).join('');
+  window.print();
+}
+
+/* HIGH-SPEED OCR WITH CANVAS COMPRESSION */
+function previewImg(input) {
+  var file = input.files[0]; if (!file) return;
+  var r = new FileReader();
+  r.onload = function(e) {
+    var img = document.getElementById('prevImg');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('btnOCR').disabled = false;
+  };
+  r.readAsDataURL(file);
+}
+
+function removeLineNumbers(text) {
+  return text.split('\n').map(function(line){return line.replace(/^\s*\d{1,3}[\s\t]+/,'')}).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+
+function updateMeta() {
+  var txt = document.getElementById('essayText').value;
+  var words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+  var lines = txt.trim() ? txt.split('\n').length : 0;
+  var chars = txt.length;
+  document.getElementById('wordCount').textContent = words + ' palavras';
+  document.getElementById('lineCount').textContent = lines + ' linhas';
+  document.getElementById('charCount').textContent = chars + ' caracteres';
+}
+
+function syncScroll() {
+  var ta = document.getElementById('essayText');
+  var ov = document.getElementById('highlight-overlay');
+  if (ov) { ov.scrollTop = ta.scrollTop; ov.scrollLeft = ta.scrollLeft; }
+}
+
+function clearHighlights() {
+  document.getElementById('highlight-overlay').innerHTML = '';
+  document.getElementById('reviewBanner').classList.remove('active');
+}
+
+function clearEssay() {
+  document.getElementById('essayText').value = '';
+  clearHighlights();
+  updateMeta();
+}
+
+function compressImage(file, maxDim, quality, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+      }
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      var ctx2d = c.getContext('2d');
+      ctx2d.drawImage(img, 0, 0, w, h);
+      callback(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function doOCR() {
+  if (!cfg.apiUrl) { showToast('Configure a URL do servidor!','error'); return; }
+  var btn=document.getElementById('btnOCR'), prog=document.getElementById('ocrProgress'), bar=document.getElementById('ocrBar'), msg=document.getElementById('ocrMsg');
+  btn.disabled=true; prog.style.display='block'; bar.style.width='10%';
+  var file=document.getElementById('fileIn').files[0];
+  if (!file) { showToast('Nenhuma imagem carregada.','error'); prog.style.display='none'; btn.disabled=false; return; }
+
+  msg.textContent='Otimizando imagem para alta velocidade...'; bar.style.width='25%';
+  
+  compressImage(file, 1600, 0.85, function(compressedDataUrl) {
+    var base64 = compressedDataUrl.split(',')[1];
+    msg.textContent='IA lendo manuscrito...'; bar.style.width='60%';
+    var ocrPrompt = 'Transcreva o texto manuscrito desta folha de redação do ENEM.\n\nREGRAS:\n- Transcreva palavra por palavra, preservando erros do autor\n- NÃO numere as linhas\n- Para cada palavra que você NÃO tem certeza da leitura, marque-a entre colchetes duplos: [[palavra]]\n- Se absolutamente ilegível, escreva [[ilegivel]]\n- Palavras claras NÃO devem ser marcadas\n- NÃO corrija erros do autor, NÃO omita trechos\n- Preserve a divisão em parágrafos com quebras de linha\n- Retorne APENAS o texto transcrito, sem comentários, sem numeração de linhas';
+
+    fetch(cfg.apiUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true','Connection':'keep-alive'},
+      body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:[{type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64}},{type:'text',text:ocrPrompt}]}],temperature:0.1,max_tokens:4000}),
+      signal:AbortSignal.timeout(90000)
+    }).then(function(resp){
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      return resp.json();
+    }).then(function(data){
+      var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if (!text) throw new Error('IA não retornou texto');
+      bar.style.width='100%'; msg.textContent='Transcrição concluída!';
+      applyOcrHighlights(removeLineNumbers(text)); updateMeta();
+      setTimeout(function(){ prog.style.display='none'; btn.disabled=false; showToast('Texto extraído com sucesso!','success'); showTab('editor'); }, 600);
+    }).catch(function(e){
+      prog.style.display='none'; btn.disabled=false; showToast('Erro: '+e.message,'error');
+    });
+  });
+}
+
+function applyOcrHighlights(raw) {
+  var plain = raw.replace(/\[\[([^\]]+)\]\]/g,'$1');
+  document.getElementById('essayText').value = plain;
+  var suspects=[], p='', i=0;
+  while(i<raw.length){
+    if(raw[i]==='['&&raw[i+1]==='['){var end=raw.indexOf(']]',i);if(end>i){var w=raw.slice(i+2,end);suspects.push({start:p.length,end:p.length+w.length,type:w==='ilegivel'?'error':'suspect'});p+=w;i=end+2;continue;}}
+    p+=raw[i];i++;
+  }
+  if(suspects.length>0){
+    var html='',pos=0;
+    suspects.forEach(function(s){html+=escHtml(p.slice(pos,s.start));html+='<mark class="hl-'+s.type+'">'+escHtml(p.slice(s.start,s.end))+'</mark>';pos=s.end;});
+    html+=escHtml(p.slice(pos));
+    document.getElementById('highlight-overlay').innerHTML=html;
+    document.getElementById('reviewBanner').classList.add('active');
+    document.getElementById('suspectCount').textContent=suspects.length+' trecho'+(suspects.length>1?'s':'')+' para revisar';
+  }
+  syncScroll();
+}
+
+/* ── HIGH SPEED PARALLEL CORRECTION ENGINE & CACHING ── */
+var RAG_DATABASE = {"ESCALA_GERAL": "Título: Escala de Notas ENEM por Competência\nTags: escala, notas, pontuação, regras, todas competências\n================================================================================\nCada competência vale de 0 a 200 pontos. Total máximo: 1000 pontos.\n- 200 pontos: sem falhas / desempenho pleno\n- 160 pontos: 1 falha leve\n- 120 pontos: 2 a 3 falhas moderadas\n- 80 pontos: várias falhas\n- 40 pontos: falha grave / tangenciamento\n- 0 pontos: ausência total / fuga ao tema\nREGRA MATEMÁTICA: soma(pts_perdidos) = EXATAMENTE (200 - score).\nREGRA OK: se ok=true então pts_perdidos=0 obrigatoriamente.\n================================================================================", "C1_CRITERIOS": "Título: C1 — Norma Culta: Critérios de Pontuação\nTags: C1, norma culta, falha sintática, desvio, ortografia, concordância, regência\n================================================================================\nCompetência I: Demonstrar domínio da modalidade escrita formal da língua portuguesa.\nPONTUAÇÃO:\n- 200: máx. 1 falha sintática E máx. 2 desvios de escrita distintos\n- 160: até 2 falhas sintáticas E/OU até 5 desvios\n- 120: até 4 falhas sintáticas E/OU até 6 desvios distintos\n- 80: até 5 falhas sintáticas E/OU mais de 6 desvios com mais de 3 ocorrências em algum tipo\n- 40: mais de 6 falhas sintáticas OU mais de 6 desvios com mais de 3 ocorrências\n- 0: sem estrutura sintática de acordo com a norma-padrão\nNÃO SÃO FALHAS (não penalizar):\n- Inversão sintática formal bem construída (ex: 'faz-se imperiosa a tomada')\n- Vocabulário erudito correto (ex: 'imperiosa', 'perpetuam', 'nebulosidade')\n- Rasura corrigida pelo próprio candidato com risco simples\n- Oração subordinada longa bem construída\n================================================================================", "C1_CALIBRACAO": "Título: C1 — Calibração: Exemplo Nota 200 (Redação Nota 1000 ENEM 2023)\nTags: C1, calibração, exemplo, nota 200, rasura, inversão sintática, ENEM 2023, nota 1000\n================================================================================\nEXEMPLO OFICIAL DE REFERÊNCIA — C1 = 200 pontos\nCandidato: Arthur Sanches Sales | ENEM 2023 | Nota total oficial: 1000/1000\nPOR QUE C1 = 200 E NÃO 120 OU MENOS:\n1. RASURA na linha 19 ('trabalha' riscado → 'trabalhadoras') NÃO é desvio avaliável — risco simples é\ncorreção permitida pelas regras do ENEM\n2. Inversões sintáticas como 'faz-se imperiosa a tomada' são construções FORMAIS CORRETAS, NÃO são\nfalhas sintáticas\n3. Vocabulário erudito ('imperiosa', 'perpetuam', 'nebulosidade', 'expositor') é PONTO POSITIVO, não\ndesvio de vocabulário\n4. Zero falhas sintáticas reais, zero desvios de escrita relevantes → nota 200, não 120\nSE A AVALIAÇÃO DER C1 < 200 PARA REDAÇÃO COM ESSAS CARACTERÍSTICAS, ESTÁ INCORRETA.\nRecalibrar: redações com construções formais sofisticadas e vocabulário erudito merecem C1 = 200.\nERROS REAIS DO MODELO (registrados em avaliação da redação nota 1000 ENEM 2023):\n- Penalizou oração subordinada substantiva subjetiva como \"falha sintática\" → INCORRETO\n- Penalizou período com conectivo causal como \"falha sintática\" → INCORRETO\n- Penalizou rasura corrigida como \"desvio de concordância\" → INCORRETO\n- Penalizou adjunto adverbial intercalado como \"desvio de concordância\" → INCORRETO\nResultado incorreto: C1=120. Resultado correto: C1=200.\n================================================================================", "C1_CONTRAEXEMPLOS": "Título: C1 — Contra-Exemplos: O Que NÃO É Falha Sintática ou Desvio\nTags: competencia_1, calibracao, contra_exemplo, falha_sintatica, concordancia\n================================================================================\nCOMPETÊNCIA 1 — CONTRA-EXEMPLOS CRÍTICOS DE CALIBRAÇÃO\n(Baseado em erros reais do modelo ao avaliar redação nota 1000 oficial ENEM 2023)\n■■ ATENÇÃO: O modelo cometeu os seguintes erros graves que resultaram em C1=120 ao invés de C1=200:\nERRO 1 — FALSA FALHA SINTÁTICA:\nTrecho: \"Sob essa perspectiva, é crucial que a escassez de debates acerca da importância das atividades\nde assistência seja superada.\"\nErro do modelo: classificou como falha sintática.\nCORRETO: É oração subordinada substantiva subjetiva bem construída. Estrutura formal sofisticada e\nválida. NÃO É FALHA SINTÁTICA.\nERRO 2 — FALSA FALHA SINTÁTICA:\nTrecho: \"Por isso, a conduta governamental necessita ser reformulada para assegurar os direitos dessas\nprofissionais.\"\nErro do modelo: classificou como falha sintática.\nCORRETO: Período completo com sujeito, verbo e complemento bem articulados. Conectivo causal adequado.\nNÃO É FALHA SINTÁTICA.\nERRO 3 — FALSO DESVIO DE CONCORDÂNCIA (RASURA):\nTrecho: \"muitas trabalha[RISCADO] trabalhadoras de acolhimento ainda encontram-se em situações\nindignas\"\nErro do modelo: penalizou 'trabalha' como desvio de concordância.\nCORRETO: 'Trabalha' é uma rasura corrigida pelo próprio candidato. RASURA CORRIGIDA PELO CANDIDATO NÃO É\nDESVIO AVALIÁVEL NA C1.\nERRO 4 — FALSO DESVIO DE CONCORDÂNCIA:\nTrecho: \"a coletividade, por intermédio do Ministério Público, precisa cobrar do Governo Federal ações\nefetivas\"\nErro do modelo: classificou como desvio de concordância.\nCORRETO: Concordância perfeita — 'a coletividade [...] precisa cobrar' (sujeito singular + verbo\nsingular). Adjunto adverbial intercalado não altera concordância. NÃO É DESVIO.\nREGRAS DEFINITIVAS PARA C1:\n- Oração subordinada longa e bem construída NÃO é falha sintática\n- Período com conectivo causal/conclusivo bem empregado NÃO é falha sintática\n- Rasura corrigida pelo candidato NÃO é desvio avaliável\n- Adjunto adverbial intercalado entre sujeito e verbo NÃO altera a concordância\n- Vocabulário erudito e formal correto NÃO é desvio de vocabulário\n- Inversão sintática formal bem construída NÃO é falha\nRESULTADO CORRETO PARA ESTA REDAÇÃO:\nC1 = 200 (zero falhas sintáticas, zero desvios de escrita relevantes)\n================================================================================", "C2_CRITERIOS": "Título: C2 — Tema e Repertório: Critérios de Pontuação\nTags: C2, tema, repertório, legítimo, pertinente, produtivo, embrionário\n================================================================================\nCompetência II: Compreender a proposta e aplicar conceitos das várias áreas do conhecimento.\nPONTUAÇÃO:\n- 200: abordagem completa, 3 partes bem desenvolvidas, repertório legítimo + pertinente + PRODUTIVO\n- 160: repertório legítimo + pertinente mas NÃO produtivo\n- 120: 1 parte embrionária, ou repertório não legitimado/não pertinente\n- 80: 2+ partes embrionárias\n- 40: tangenciamento do tema\n- 0: fuga total\nREPERTÓRIO PRODUTIVO (= 200 em C2):\nautor citado + teoria explicada + conectada ao argumento = PRODUTIVO\nNÃO CONFUNDIR: repertório explicado E conectado ao argumento = PRODUTIVO = 200, não 160\nREPERTÓRIO LEGÍTIMO (exemplos): IBGE, Djamila Ribeiro, Zygmunt Bauman, ONU, Foucault, Marx\nREPERTÓRIO NÃO LEGÍTIMO: fonte inventada, sem reconhecimento acadêmico\n================================================================================", "C2_CALIBRACAO": "Título: C2 — Calibração: Exemplo Nota 200 (Redação Nota 1000 ENEM 2023)\nTags: C2, calibração, exemplo, nota 200, Djamila Ribeiro, Bauman, IBGE, produtivo, ENEM 2023\n================================================================================\nEXEMPLO OFICIAL DE REFERÊNCIA — C2 = 200 pontos\nCandidato: Arthur Sanches Sales | ENEM 2023 | Nota total oficial: 1000/1000\nREPERTÓRIOS E POR QUE SÃO PRODUTIVOS:\n1. IBGE: dado demográfico oficial → contextualiza o problema → LEGÍTIMO + PERTINENTE + PRODUTIVO\n2. Djamila Ribeiro: 'para atuar em uma situação, deve-se tirá-la da invisibilidade'\n   → teoria EXPLICADA → CONECTADA ao argumento de invisibilidade das cuidadoras → PRODUTIVO\n3. Zygmunt Bauman: 'Instituição Zumbi' → conceito EXPLICADO → CONECTADO ao Poder Executivo como\nexemplo → PRODUTIVO\nNENHUMA parte embrionária: introdução, 2 desenvolvimentos e conclusão todos bem desenvolvidos.\n→ C2 = 200\nERRO A EVITAR: não classificar como 'não produtivo' quando o candidato explica a teoria E conecta ao\nargumento.\n================================================================================", "C2_CONTRAEXEMPLOS": "Título: C2 — Contra-Exemplo: Repertório Produtivo NÃO é Citação Superficial\nTags: competencia_2, calibracao, contra_exemplo, repertorio_produtivo\n================================================================================\nCOMPETÊNCIA 2 — CONTRA-EXEMPLO CRÍTICO: REPERTÓRIO PRODUTIVO\n(Erro real do modelo ao avaliar redação nota 1000 ENEM 2023)\n■■ ERRO DO MODELO: C2 = 160 ao invés de 200\nERRO — FALSO REPERTÓRIO IMPRODUTIVO:\nTrecho avaliado: \"o sociólogo polonês Zygmunt Bauman utiliza o termo 'Instituição Zumbi' para simbolizar\nas entidades que não cumprem seu papel previamente estabelecido. Seguindo o raciocínio, é possível\ncompreender o Poder Executivo como um exemplo da ideia do expositor do Sociólogo, uma vez que a sua\nfunção de garantir dignidade profissional a todos não está sendo cumprida em sua totalidade\"\nErro do modelo: \"Bauman é citado, mas a teoria não é explicada nem conectada ao argumento de forma\nclara; citação superficial.\"\nINCORRETO. Analise o trecho com atenção:\n- EXPLICAÇÃO da teoria: \"simbolizar as entidades que não cumprem seu papel previamente estabelecido\" →\nteoria explicada.\n- CONEXÃO ao argumento: \"é possível compreender o Poder Executivo como um exemplo\" → conectado\ndiretamente ao tema-problema da omissão estatal.\n- DEMONSTRAÇÃO: comparação entre o conceito de Bauman e a realidade do Poder Executivo brasileiro.\nResultado: repertório LEGITIMADO + PERTINENTE + PRODUTIVO. C2 = 200.\nREGRA DEFINITIVA — REPERTÓRIO PRODUTIVO:\n- Se o candidato NOMEIA o autor/teoria + EXPLICA o conceito + CONECTA ao argumento → ok=true,\npts_perdidos=0\n- Citação superficial seria: mencionar o nome do autor sem explicar o conceito e sem conectar ao\nargumento\n- NÃO exija citação direta entre aspas para considerar repertório produtivo\n- NÃO exija explicação extensa; uma frase de explicação + uma frase de conexão É SUFICIENTE para\nprodutividade\n================================================================================", "C3_CRITERIOS": "Título: C3 — Projeto de Texto e Argumentação: Critérios de Pontuação\nTags: C3, projeto de texto, tese, temas-problema, argumentação, marcadores de opinião\n================================================================================\nCompetência III: Selecionar, relacionar, organizar e interpretar informações em defesa de um ponto de\nvista.\nPONTUAÇÃO:\n- 200: 4 parágrafos, tese por antecipação com 2 temas-problema, palavras-chave em todas as partes,\n       argumentos fundamentados, repertório com demonstrações, marcadores de opinião, sem incoerências,\n       propostas resolvem os 2 temas-problema\n- 160: projeto com poucas falhas, tese pouco clara mas 2 temas-problema\n- 120: projeto com algumas falhas, tese confusa, argumentos pouco relacionados\n- 80: não tem 4 parágrafos, só 1 tema-problema, muita incoerência\n- 40: tangencia o tema, sem tese clara\n- 0: aglomerado caótico\nESTRUTURA IDEAL:\nP1: contextualização + tese com 2 temas-problema\nP2: trata do tema-problema 1 (tópico frasal + fundamentação + fechamento)\nP3: trata do tema-problema 2 (mesma estrutura)\nP4: retoma os 2 temas-problema + 2 propostas de intervenção\n================================================================================", "C3_CALIBRACAO": "Título: C3 — Calibração: Exemplo Nota 200 (Redação Nota 1000 ENEM 2023)\nTags: C3, calibração, exemplo, nota 200, tese, temas-problema, ENEM 2023\n================================================================================\nEXEMPLO OFICIAL DE REFERÊNCIA — C3 = 200 pontos\nCandidato: Arthur Sanches Sales | ENEM 2023 | Nota total oficial: 1000/1000\nTESE POR ANTECIPAÇÃO (§1) com 2 temas-problema:\n→ Tema-problema 1: invisibilidade / escassez de debates sobre o trabalho de cuidado\n→ Tema-problema 2: negligência do Estado / omissão estatal\nDESENVOLVIMENTO na ordem correta:\n→ §2 trata do tema-problema 1 (invisibilidade) + Djamila Ribeiro como repertório demonstrado\n→ §3 trata do tema-problema 2 (negligência do Estado) + Bauman como repertório demonstrado\nMARCADORES DE OPINIÃO presentes:\n→ 'é crucial' (§2), 'vale ressaltar' (§3), 'torna-se primordial' (§4)\nPROPOSTAS resolvem os 2 temas:\n→ Ministério da Cidadania combate invisibilidade (tema 1)\n→ Ministério Público combate omissão estatal (tema 2)\n→ C3 = 200\nNOTA: 'de que maneira' no início do §3 é construção formal correta, NÃO é desvio.\n================================================================================", "C3_CONTRAEXEMPLOS": "Título: C3 — Contra-Exemplo: Proposta Resolve os Dois Temas-Problema\nTags: competencia_3, calibracao, contra_exemplo, proposta_intervencao, temas_problema\n================================================================================\nCOMPETÊNCIA 3 — CONTRA-EXEMPLO CRÍTICO: PROPOSTA RESOLVE OS TEMAS\n(Erro real do modelo ao avaliar redação nota 1000 ENEM 2023)\n■■ ERRO DO MODELO: C3 = 160 ao invés de 200\nTESE POR ANTECIPAÇÃO (parágrafo 1) — dois temas-problema:\n1. Invisibilidade social do trabalho de cuidado (escassez de debates, falta de conscientização)\n2. Omissão/negligência estatal (Poder Executivo não garantindo dignidade profissional)\nPROPOSTA DE INTERVENÇÃO (parágrafo 4) — duas propostas distintas:\nPROPOSTA 1: \"o Ministério da Cidadania, enquanto responsável por políticas cidadãs, deve propagar dados\ne pesquisas que revelem a gravidade do esquecimento sofrido pelas cuidadoras, por meio de plataformas\nmidiáticas de destaque, a fim de atingir o maior contingente possível e conscientizá-lo.\"\n→ Resolve o TEMA 1 (invisibilidade/falta de conscientização) ✓\nPROPOSTA 2: \"a coletividade, por intermédio do Ministério Público, precisa cobrar do Governo Federal\nações efetivas de proteção ocupacional às empregadas domésticas, com o intuito de promover a labor digno\na esses indivíduos.\"\n→ Resolve o TEMA 2 (omissão estatal / falta de proteção do Estado) ✓\nErro do modelo: \"a proposta não resolve os dois temas de forma equilibrada: aborda a invisibilidade, mas\nnegligencia a omissão estatal.\"\nINCORRETO. A Proposta 2 trata EXPLICITAMENTE da omissão estatal: cobrar do Governo Federal ações de\nproteção ocupacional = resolver a negligência do Estado. C3 = 200.\nREGRA DEFINITIVA — PROPOSTA RESOLVE OS TEMAS:\n- Verifique se cada proposta corresponde a um dos temas-problema da tese\n- A proposta NÃO precisa usar as mesmas palavras do tema-problema; verifique a correspondência temática\n- Cobrar do Estado ações de proteção = resolver omissão estatal\n- Propagar dados para conscientizar = resolver invisibilidade social\n================================================================================", "C4_CRITERIOS": "Título: C4 — Coesão Textual: Critérios de Pontuação\nTags: C4, coesão, conectivos, operadores argumentativos, retomada\n================================================================================\nCompetência IV: Demonstrar conhecimento dos mecanismos linguísticos para a construção da argumentação.\nPONTUAÇÃO:\n- 200: operadores argumentativos variados nos §2/3/4, coesivos adequados em todas as relações,\n       recursos de retomada variados (pronomes, sinônimos, hiperonímia, elipse), raras repetições\n- 160: teto se algum coesivo inadequado, §2 sem operador, ou retomada inadequada\n- 120: teto se mesmo conectivo 3+ vezes, 2 coesivos inadequados, só 1 parágrafo com operador\n- 80: teto se mesmo conectivo 5+ vezes, texto em 1 parágrafo, 3 coesivos inadequados\n- 40: uso raro de coesivos\n- 0: ausência de articulação coesiva\nVARIEDADE de conectivos e retomadas é sinal de C4 = 200, não de penalização.\n================================================================================", "C4_CALIBRACAO": "Título: C4 — Calibração: Exemplo Nota 200 (Redação Nota 1000 ENEM 2023)\nTags: C4, calibração, exemplo, nota 200, operadores, conectivos, retomada, ENEM 2023\n================================================================================\nEXEMPLO OFICIAL DE REFERÊNCIA — C4 = 200 pontos\nCandidato: Arthur Sanches Sales | ENEM 2023 | Nota total oficial: 1000/1000\nOPERADORES ARGUMENTATIVOS variados no início de cada parágrafo:\n→ §2: 'Sob essa perspectiva' (conformidade) ✓\n→ §3: 'Outrossim' (adição) ✓\n→ §4: 'Portanto' (conclusão) ✓\nCONECTIVOS VARIADOS ao longo do texto (nenhum repetido excessivamente):\n'Todavia', 'Logo', 'Entretanto', 'Então', 'Outrossim', 'A partir disso',\n'Seguindo o raciocínio', 'uma vez que', 'pois', 'Por isso', 'Portanto', 'Dessa forma', 'Ademais'\nRETOMADAS VARIADAS:\n→ Pronomes: 'sua', 'elas', 'seu'\n→ Sinônimos: 'cuidadoras' / 'trabalhadoras' / 'empregadas domésticas'\n→ Hiperonímia: 'essas profissionais' retomando 'cuidadoras'\n→ C4 = 200\nERRO A EVITAR: variedade de conectivos é PONTO POSITIVO, não penalização.\n================================================================================", "C4_CONTRAEXEMPLOS": "Título: C4 — Contra-Exemplo: Conectivo 'Então' NÃO é Repetido\nTags: competencia_4, calibracao, contra_exemplo, conectivos_repetidos\n================================================================================\nCOMPETÊNCIA 4 — CONTRA-EXEMPLO CRÍTICO: CONECTIVOS REPETIDOS\n(Erro real do modelo ao avaliar redação nota 1000 ENEM 2023)\n■■ ERRO DO MODELO: C4 = 160 ao invés de 200\nERRO — CONECTIVO INVENTADO:\nErro do modelo: apontou repetição de 'então, então, então' como falha.\nINCORRETO. O conectivo 'Então' aparece APENAS UMA VEZ no texto:\n\"Então, essa nebulosidade precisa ser exposta para conscientizar a sociedade.\" (fim do 2º parágrafo)\nO modelo INVENTOU repetições que NÃO EXISTEM no texto. C4 = 200.\nCONECTIVOS REAIS USADOS NA REDAÇÃO (todos diferentes):\n- \"Todavia\" → concessão (parágrafo 1)\n- \"Logo\" → conclusão (parágrafo 1)\n- \"Sob essa perspectiva\" → operador argumentativo (início parágrafo 2)\n- \"A esse respeito\" → exemplificação\n- \"Entretanto\" → contraposição\n- \"de modo que\" → consequência\n- \"Então\" → conclusão (1 única vez)\n- \"Outrossim\" → adição (início parágrafo 3)\n- \"A partir disso\" → consequência\n- \"uma vez que\" → justificativa\n- \"Por isso\" → conclusão\n- \"Portanto\" → conclusão (início parágrafo 4)\n- \"Dessa forma\" → modo\n- \"a fim de\" → finalidade\n- \"Ademais\" → adição\n- \"com o intuito de\" → finalidade\nREGRA DEFINITIVA — CONECTIVOS REPETIDOS:\n- Conte as ocorrências REAIS no texto antes de apontar repetição\n- Um conectivo repetido = mesmo conectivo 3+ vezes NO TEXTO INTEIRO\n- NÃO confunda conectivos diferentes com o mesmo sentido (ex: 'Portanto' e 'Logo' são diferentes)\n- Se o texto usa conectivos variados como neste caso → C4 = 200\n- Em caso de dúvida sobre uma repetição, releia o texto integralmente antes de penalizar\n================================================================================", "C5_CRITERIOS": "Título: C5 — Proposta de Intervenção: Critérios de Pontuação\nTags: C5, proposta de intervenção, agente, ação, modo, finalidade, detalhamento, 5 elementos\n================================================================================\nCompetência V: Elaborar proposta de intervenção para o problema abordado, respeitando os direitos\nhumanos.\nPONTUAÇÃO:\n- 200: 2 propostas completas com os 5 elementos válidos e articulados\n- 160: 2 propostas com 4/5 elementos válidos\n- 120: 2 propostas com 3/5 elementos válidos\n- 80: 2 propostas com 2/5 elementos. Teto 80 se proposta condicional/hipotética\n- 40: só 1 elemento válido ou tangenciamento\n- 0: proposta ausente ou que fere direitos humanos\nOS 5 ELEMENTOS:\n1. AGENTE: instituição/cargo com artigo definido como sujeito (ex: 'O Ministério da Educação')\n2. AÇÃO: verbo de ação como predicado (ex: 'deve implementar', 'precisa cobrar')\n3. MODO/MEIO: como ou por qual meio (ex: 'por meio de plataformas midiáticas')\n4. FINALIDADE: oração com conectivo de finalidade (ex: 'a fim de', 'com o intuito de')\n5. DETALHAMENTO: termo que especifica pelo menos 1 dos outros elementos\n================================================================================", "C5_CALIBRACAO": "Título: C5 — Calibração: Exemplo Nota 200 (Redação Nota 1000 ENEM 2023)\nTags: C5, calibração, exemplo, nota 200, proposta, 5 elementos, ENEM 2023\n================================================================================\nEXEMPLO OFICIAL DE REFERÊNCIA — C5 = 200 pontos\nCandidato: Arthur Sanches Sales | ENEM 2023 | Nota total oficial: 1000/1000\nPROPOSTA 1 (resolve tema-problema 1 — invisibilidade):\n→ Agente: 'o Ministério da Cidadania' (instituição + artigo definido) ✓\n→ Ação: 'deve propagar dados e pesquisas' (verbo de ação) ✓\n→ Modo/Meio: 'por meio de plataformas midiáticas de destaque' ✓\n→ Finalidade: 'a fim de atingir o maior contingente possível e conscientizá-lo' ✓\n→ Detalhamento:'que revelem a gravidade do esquecimento sofrido pelas cuidadoras' ✓\n→ 5/5 elementos válidos ✓\nPROPOSTA 2 (resolve tema-problema 2 — omissão estatal):\n→ Agente: 'a coletividade, por intermédio do Ministério Público' ✓\n→ Ação: 'precisa cobrar do Governo Federal ações efetivas de proteção ocupacional' ✓\n→ Modo/Meio: 'às empregadas domésticas' ✓\n→ Finalidade: 'com o intuito de promover a labor digno a esses indivíduos' ✓\n→ Detalhamento:'efetivas de proteção ocupacional' (especifica a ação) ✓\n→ 5/5 elementos válidos ✓\n2 propostas × 5 elementos = C5 = 200\n================================================================================", "REDACAO_NOTA_1000_COMPLETA": "Título: Redação Nota 1000 ENEM 2023 — Arthur Sanches Sales (Texto Completo + Gabarito)\nTags: redação completa, nota 1000, gabarito, ENEM 2023, Arthur Sales, calibração, C1 200, C2 200, C3\n200, C4 200, C5 200, referência máxima\n================================================================================\nGABARITO OFICIAL: 1000/1000 — C1=200, C2=200, C3=200, C4=200, C5=200\nTema: Desafios para o enfrentamento da invisibilidade do trabalho de cuidado realizado pela mulher no\nBrasil\nCandidato: Arthur Sanches Sales | ENEM 2023\nTEXTO COMPLETO:\n§1 — INTRODUÇÃO:\nConforme estudos demográficos realizados pelo Instituto Brasileiro de Geografia e Estatística (IBGE), a\npopulação de idosos crescerá drasticamente nas próximas décadas. Nesse contexto, o trabalho de cuidado\nrealizado pelas mulheres é fundamental para acolher essa parcela populacional. Todavia, a\ninvisibilidade e a omissão estatal são desafios que perpetuam o descaso sofrido por essas trabalhadoras\nno Brasil. Logo, faz-se imperiosa a tomada de medidas que resolvam esse contexto de emergência\ngeneralizada.\n§2 — DESENVOLVIMENTO 1 (tema-problema 1: invisibilidade):\nSob essa perspectiva, é crucial que a escassez de debates acerca da importância das atividades de\nassistência seja superada. A esse respeito, a ilustre filósofa Djamila Ribeiro defende que, para atuar\nem uma situação, deve-se, antes de tudo, tirá-la da invisibilidade. Entretanto, o panorama nacional\ndestoa do pensamento da autora, já que o alto índice de empregadas domésticas em condições ocupacionais\nprecárias não é enxergado pelo círculo social, de modo que discussões sobre essa questão não sejam\npriorizadas, dificultando intervenções nesse problema. Então, essa nebulosidade precisa ser exposta\npara conscientizar a sociedade.\n§3 — DESENVOLVIMENTO 2 (tema-problema 2: negligência do Estado):\nOutrossim, vale ressaltar de que maneira a negligência do Estado fomenta a marginalização das\ncuidadoras. A partir disso, o sociólogo polonês Zygmunt Bauman utiliza o termo \"Instituição Zumbi\" para\nsimbolizar as entidades que não cumprem seu papel previamente estabelecido. Seguindo o raciocínio, é\npossível compreender o Poder Executivo como um exemplo da ideia do expositor do Sociólogo, uma vez que a\nsua função de garantir dignidade profissional a todos não está sendo cumprida em sua totalidade, pois\nmuitas trabalhadoras de acolhimento ainda encontram-se em situações indignas. Por isso, a conduta\ngovernamental necessita ser reformulada para assegurar os direitos dessas profissionais.\n§4 — CONCLUSÃO (propostas de intervenção):\nPortanto, torna-se primordial mitigar a marginalidade do trabalho de cuidado realizado pelo gênero\nfeminino. Dessa forma, o Ministério da Cidadania, enquanto responsável por políticas cidadãs, deve\npropagar dados e pesquisas que revelem a gravidade do esquecimento sofrido pelas cuidadoras, por meio de\nplataformas midiáticas de destaque, a fim de atingir o maior contingente possível e conscientizá-lo.\nAdemais, a coletividade, por intermédio do Ministério Público, precisa cobrar do Governo Federal ações\nefetivas de proteção ocupacional às empregadas domésticas, com o intuito de promover a labor digno a\nesses indivíduos. Assim, a acolhida da nova geração de pessoas de terceira idade poderá ser efetiva.\nLIÇÕES DE CALIBRAÇÃO:\n- Rasura corrigida NÃO penaliza em C1\n- Inversão sintática formal NÃO é falha\n- Vocabulário erudito correto NÃO é desvio\n- Repertório explicado + conectado = PRODUTIVO = C2 máximo\n- Operadores variados nos §2/3/4 = C4 = 200\n- 2 propostas com 5 elementos = C5 = 200\n- Redação com essas características = NOTA 1000, NÃO 800\n================================================================================", "CASOS_ANULACAO": "Título: Casos de Anulação — Nota Zero Automática\nTags: anulação, nota zero, fuga, Em Branco, Anulada, Texto insuficiente\n================================================================================\nAs seguintes situações resultam em nota ZERO em TODAS as competências:\n- Fuga total ao tema\n- Não obediência ao tipo dissertativo-argumentativo\n- Texto ausente (Em Branco)\n- Extensão de até 7 linhas manuscritas (Texto insuficiente)\n- Extensão de até 10 linhas em Braille (Texto insuficiente)\n- Impropérios, desenhos ou formas propositais de anulação\n- Parte deliberadamente desconectada do tema\n- Mensagem política, religiosa, recado, bilhete\n- Nome, assinatura ou identificação no corpo do texto (Anulada)\n- Texto predominantemente em língua estrangeira\n- Texto ilegível por dois avaliadores independentes (Anulada)\n- Cópia de texto(s) da internet"};
+
+function getRagContext(i) {
+  if (!window.RAG_DATABASE) return "";
+  var chunks = [];
+  if (RAG_DATABASE.ESCALA_GERAL) chunks.push(RAG_DATABASE.ESCALA_GERAL);
+  if (RAG_DATABASE.CASOS_ANULACAO) chunks.push(RAG_DATABASE.CASOS_ANULACAO);
+  var prefix = "C" + i + "_";
+  for (var key in RAG_DATABASE) {
+    if (key.startsWith(prefix)) chunks.push(RAG_DATABASE[key]);
+  }
+  return chunks.join("\n\n");
+}
+
+var TOKEN_LADDER = [3500, 2000, 1200];
+var evalCache = new Map();
+
+function hashString(str) {
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash;
+}
+
+function repairJson(jsonStr) {
+  if (!jsonStr) return null;
+  var m = jsonStr.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  var cleaned = m[0].trim();
+  try { return JSON.parse(cleaned); } catch(e) {}
+  var stack = [];
+  var repaired = '';
+  var inString = false;
+  var escape = false;
+
+  for (var i = 0; i < cleaned.length; i++) {
+    var c = cleaned[i];
+    if (escape) { repaired += c; escape = false; continue; }
+    if (c === '\\') { repaired += c; escape = true; continue; }
+    if (c === '"') { inString = !inString; repaired += c; continue; }
+    if (inString) {
+      if (c === '\n') repaired += '\\n';
+      else if (c === '\r') repaired += '\\r';
+      else if (c === '\t') repaired += '\\t';
+      else repaired += c;
+      continue;
+    }
+    if (c === '{' || c === '[') { stack.push(c === '{' ? '}' : ']'); repaired += c; }
+    else if (c === '}' || c === ']') { if (stack.length && stack[stack.length-1] === c) stack.pop(); repaired += c; }
+    else repaired += c;
+  }
+  repaired = repaired.replace(/,\s*$/, '');
+  while (stack.length) repaired += stack.pop();
+  try { return JSON.parse(repaired); } catch(e2) { return null; }
+}
+
+function setP(pct, msg) {
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = pct + '%';
+  document.getElementById('progLabel').textContent = msg;
+}
+
+function log(msg) {
+  var el = document.getElementById('errorLog');
+  el.textContent += '\n' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function evaluateSingleComp(i, txt, temaInfo) {
+  var cacheKey = 'c' + i + '_' + hashString(txt + '_' + (temaInfo||''));
+  if (evalCache.has(cacheKey)) {
+    log('C' + i + ' - retornado do cache instantâneo⚡');
+    return evalCache.get(cacheKey);
+  }
+
+  var ragCtx = getRagContext(i);
+  var ragInfo = ragCtx ? "\n\n--- BASE DE CONHECIMENTO RAG OFICIAL (PDFs ENEM) ---\n" + ragCtx + "\n----------------------------------------------------\n" : "";
+  var promptC = 'Você é um corretor oficial do ENEM. Avalie SOMENTE a Competência '+i+': "'+COMPS[i]+'".'+temaInfo + ragInfo + '\nTexto da redação:\n"""\n'+txt+'\n"""\n\nRetorne SOMENTE um JSON valido sem marcação de código:\n{"c'+i+'_score": <0|40|80|120|160|200>, "c'+i+'_ded": <objeto_detalhado>}';
+
+  for (var t = 0; t < TOKEN_LADDER.length; t++) {
+    var maxTok = TOKEN_LADDER[t];
+    try {
+      var resp = await fetch(cfg.apiUrl, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','ngrok-skip-browser-warning':'true','Connection':'keep-alive'},
+        body: JSON.stringify({
+          model: cfg.model,
+          messages: [{role:'system', content: promptC}, {role:'user', content: txt}],
+          temperature: cfg.temp,
+          max_tokens: maxTok
+        }),
+        signal: AbortSignal.timeout(45000)
+      });
+
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var data = await resp.json();
+      var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      var parsed = repairJson(reply || '');
+      if (!parsed || parsed['c'+i+'_score'] === undefined) throw new Error('JSON inválido C'+i);
+      
+      var dedKey = 'c'+i+'_ded', scoreKey = 'c'+i+'_score';
+      if (parsed[dedKey] && typeof parsed[dedKey] === 'object') {
+        parsed[dedKey] = autoCorrectPts(i, parsed[dedKey], parsed[scoreKey]);
+      }
+
+      try {
+        var sp2 = 'Você é corretor do ENEM.\nPara a Competência '+i+', nota '+(parsed['c'+i+'_score']||0)+'/200.\nEscreva dois textos curtos (max 2 frases cada).\nRetorne SOMENTE JSON: {"c'+i+'_pos":"...","c'+i+'_imp":"..."}';
+        var r2 = await fetch(cfg.apiUrl, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+          body:JSON.stringify({model:cfg.model, messages:[{role:'system',content:sp2},{role:'user',content:txt}], temperature:cfg.temp, max_tokens:400}),
+          signal:AbortSignal.timeout(25000)
+        });
+        if (r2.ok) {
+          var d2 = await r2.json();
+          var p2 = repairJson(d2.choices?.[0]?.message?.content || '');
+          if (p2) Object.assign(parsed, p2);
         }
+      } catch(e) {}
 
-        function checkLoginState() {
-            if (sessionStorage.getItem('biaLoggedIn') === 'true') {
-                document.getElementById('loginOverlay').style.display = 'none';
-            }
-        }
-        checkLoginState();
+      evalCache.set(cacheKey, parsed);
+      return parsed;
+    } catch(e) {
+      if (t === TOKEN_LADDER.length - 1) throw e;
+    }
+  }
+}
 
-        /* ── THEME SWITCHER SYSTEM ── */
-        let particleColor = '255, 51, 102';
+async function startCorrection() {
+  if (!cfg.apiUrl) { showToast('Configure a URL do servidor!','error'); return; }
+  var txt = document.getElementById('essayText').value.trim();
+  if (!txt) { showToast('Escreva ou cole sua redação primeiro!','error'); return; }
+  if (txt.length > 15000) { showToast('Texto muito longo (máximo 15.000 caracteres).','error'); return; }
 
-        function openThemeModal() { document.getElementById('themeModal').style.display = 'flex'; }
-        function closeThemeModal() { document.getElementById('themeModal').style.display = 'none'; }
+  var tema = document.getElementById('temaInput').value.trim();
+  var temaInfo = tema ? '\nTema oficial: "'+tema+'".' : '\n[Sem tema definido]';
+  var btn = document.getElementById('btnCorr');
+  btn.disabled = true;
+  feedbackData = {};
 
-        function setTheme(themeName) {
-            if (themeName === 'default') document.documentElement.removeAttribute('data-theme');
-            else document.documentElement.setAttribute('data-theme', themeName);
-            
-            localStorage.setItem('biaTheme', themeName);
-            
-            document.querySelectorAll('.theme-opt-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.getElementById(`themeBtn-${themeName}`);
-            if (activeBtn) activeBtn.classList.add('active');
+  var errorLog = document.getElementById('errorLog');
+  errorLog.textContent = '--- LOG DE CORREÇÃO ULTRA-RÁPIDA (PARALELA) ---';
+  errorLog.style.display = 'block';
 
-            // Update particle colors
-            if (themeName === 'purple') particleColor = '168, 85, 247';
-            else if (themeName === 'emerald') particleColor = '16, 185, 129';
-            else if (themeName === 'light') particleColor = '230, 57, 70';
-            else particleColor = '255, 51, 102';
+  document.getElementById('progWrap').style.display = 'block';
+  document.getElementById('pdfBtnWrap').style.display = 'none';
+  document.querySelectorAll('.comp-step').forEach(function(s){ s.className = 'comp-step active'; });
+  showTab('results');
+  setP(20, '⚡ Avaliando C1 a C5 simultaneamente em paralelo...');
 
-            closeThemeModal();
-        }
+  var compPromises = [1, 2, 3, 4, 5].map(function(i) {
+    return evaluateSingleComp(i, txt, temaInfo).then(function(res) {
+      Object.assign(feedbackData, res);
+      var ps = document.getElementById('ps' + i);
+      if (ps) { ps.textContent = res['c' + i + '_score']; ps.classList.add('visible'); }
+      document.querySelectorAll('.comp-step')[i - 1].className = 'comp-step done';
+      log('C' + i + ' - ✓ Concluída: ' + res['c' + i + '_score'] + ' pts');
+      return res;
+    }).catch(function(err) {
+      document.querySelectorAll('.comp-step')[i - 1].className = 'comp-step error';
+      log('C' + i + ' - ❌ Erro: ' + err.message);
+      return null;
+    });
+  });
 
-        function loadSavedTheme() {
-            const saved = localStorage.getItem('biaTheme') || 'default';
-            setTheme(saved);
-        }
-        loadSavedTheme();
+  await Promise.all(compPromises);
 
-        /* ── CANVAS PARTICLES BG ── */
-        const canvas = document.getElementById('bgCanvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
+  document.querySelectorAll('.comp-step').forEach(function(s){ if(!s.className.includes('error')) s.className = 'comp-step done'; });
+  setP(100, 'Correção concluída em velocidade recorde!');
+  var total = [1,2,3,4,5].reduce(function(a,n){ return a + (feedbackData['c'+n+'_score']||0); }, 0);
+  document.getElementById('totalScore').textContent = total;
+  document.getElementById('scoreBanner').style.display = 'flex';
+  renderScoreBars();
+  errorLog.style.display = 'none';
+  await new Promise(function(r){ setTimeout(r, 500); });
+  document.getElementById('progWrap').style.display = 'none';
+  document.getElementById('pdfBtnWrap').style.display = 'flex';
+  btn.disabled = false;
+  setComp(1);
+  showPodcastCard();
+  showToast('Correção concluída! Nota total: ' + total + '/1000', 'success');
+}
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+function renderScoreBars() {
+  document.getElementById('scoreBarsViz').innerHTML = [1,2,3,4,5].map(function(n){
+    var s = feedbackData['c'+n+'_score'] || 0, h = Math.round((s/200)*40);
+    var col = s>=160 ? 'var(--success)' : s>=80 ? 'var(--gold)' : 'var(--accent)';
+    return '<div class="score-bar-item"><div class="score-bar-fill" style="height:'+h+'px;background:'+col+'"></div><div class="score-bar-lbl">C'+n+'</div></div>';
+  }).join('');
+}
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.radius = Math.random() * 2 + 0.5;
-                this.vx = (Math.random() - 0.5) * 0.4;
-                this.vy = (Math.random() - 0.5) * 0.4;
-                this.alpha = Math.random() * 0.5 + 0.1;
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${particleColor}, ${this.alpha})`;
-                ctx.fill();
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-        }
+/* ── PODCAST AUDIO ENGINE BY PROFESSORA BIA ── */
+var isPodcastPlaying = false;
+var podcastSentences = [];
+var podcastCurrentIndex = 0;
+var podcastSpeed = 1.15;
 
-        for (let i = 0; i < 45; i++) particles.push(new Particle());
+function generatePodcastScript() {
+  var total = document.getElementById('totalScore') ? document.getElementById('totalScore').textContent : '0';
+  var tema = (document.getElementById('temaInput') && document.getElementById('temaInput').value.trim()) || localStorage.getItem('tema') || 'Tema da Redação ENEM';
+  
+  var script = [];
+  script.push("Olá! Aqui é a Professora Bia com o seu podcast exclusivo de correção guiada da plataforma ENEM PRO!");
+  script.push("Sua pontuação total nesta redação sobre " + tema + " foi de " + total + " pontos de 1000.");
 
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
+  var compNames = {
+    1: "Competência 1, Norma Culta",
+    2: "Competência 2, Tema e Repertório Sociocultural",
+    3: "Competência 3, Projeto de Texto e Argumentação",
+    4: "Competência 4, Coesão Textual e Conectivos",
+    5: "Competência 5, Proposta de Intervenção"
+  };
 
-        /* ── STATE & VOICE SYNTHESIS ENGINE ── */
-        let isAudioMuted = false;
-        let isRecognitionActive = false;
-        let recognition = null;
-        const synth = window.speechSynthesis;
+  for (var i = 1; i <= 5; i++) {
+    var score = feedbackData['c' + i + '_score'] || 0;
+    var pos = feedbackData['c' + i + '_pos'] || '';
+    var imp = feedbackData['c' + i + '_imp'] || '';
 
-        function toggleAudioMute() {
-            isAudioMuted = !isAudioMuted;
-            document.getElementById('audioMuteBtn').textContent = isAudioMuted ? '🔇' : '🔊';
-            if (isAudioMuted && synth) {
-                synth.cancel();
-                stopBiaTalkingState();
-            }
-        }
+    if (score === 200) {
+      script.push("Na " + compNames[i] + ", parabéns! Você alcançou o desempenho máximo de 200 pontos. " + (pos || "Excelente domínio demonstrado!"));
+    } else {
+      script.push("Na " + compNames[i] + ", você obteve " + score + " pontos. Ponto positivo observado: " + (pos || "Boa estrutura.") + ". Atenção ao ponto de melhoria: " + (imp || "Reforce os elementos exigidos.") + ".");
+    }
+  }
 
-        function speakBiaText(text) {
-            if (isAudioMuted || !synth) return;
-            synth.cancel();
+  var numericTotal = parseInt(total) || 0;
+  if (numericTotal >= 900) {
+    script.push("Excelente trabalho! Sua redação está muito perto da Nota 1000 Oficial. Ajuste os detalhes apontados e mantenha a consistência!");
+  } else if (numericTotal >= 700) {
+    script.push("Muito bem! Você tem uma base sólida de argumentação. Corrigindo as pequenas falhas nas competências em destaque, sua nota vai decolar!");
+  } else {
+    script.push("Não desanime! Toda grande redação é construída com prática. Siga as orientações da Professora Bia e reescreva seu texto!");
+  }
 
-            const cleanText = text.replace(/<[^>]*>/g, '').replace(/[\r\n]+/g, ' ').trim();
-            if (!cleanText) return;
+  script.push("Obrigada por utilizar a plataforma ENEM PRO! Bons estudos e até o próximo episódio!");
+  return script;
+}
 
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'pt-BR';
-            utterance.rate = 1.05;
-            utterance.pitch = 1.1;
+function showPodcastCard() {
+  var card = document.getElementById('podcastCard');
+  if (card) card.style.display = 'block';
+  var script = generatePodcastScript();
+  var box = document.getElementById('podcastTranscriptBox');
+  if (box) box.innerHTML = '<b>🎙️ Roteiro do Episódio:</b><br><br>' + script.join('<br><br>');
+}
 
-            const voices = synth.getVoices();
-            const ptVoice = voices.find(v => v.lang.includes('pt') && (
-                v.name.toLowerCase().includes('luciana') || 
-                v.name.toLowerCase().includes('francisca') || 
-                v.name.toLowerCase().includes('google') || 
-                v.name.toLowerCase().includes('br')
-            )) || voices.find(v => v.lang.includes('pt'));
+function togglePodcastPlay() {
+  if (isPodcastPlaying) {
+    pausePodcast();
+  } else {
+    playPodcast();
+  }
+}
 
-            if (ptVoice) utterance.voice = ptVoice;
+function changePodcastSpeed(val) {
+  podcastSpeed = parseFloat(val);
+  if (isPodcastPlaying && 'speechSynthesis' in window) {
+    playPodcastFromIndex(podcastCurrentIndex);
+  }
+}
 
-            utterance.onstart = () => { startBiaTalkingState(); };
-            utterance.onend = () => { stopBiaTalkingState(); };
-            utterance.onerror = () => { stopBiaTalkingState(); };
+function playPodcast() {
+  if (!('speechSynthesis' in window)) {
+    showToast('Síntese de áudio não suportada no seu navegador.', 'error');
+    return;
+  }
+  podcastSentences = generatePodcastScript();
+  podcastCurrentIndex = 0;
+  playPodcastFromIndex(0);
+}
 
-            synth.speak(utterance);
-        }
+function playPodcastFromIndex(idx) {
+  if (idx >= podcastSentences.length) {
+    stopPodcast();
+    return;
+  }
+  window.speechSynthesis.cancel();
+  podcastCurrentIndex = idx;
+  isPodcastPlaying = true;
 
-        function startBiaTalkingState() {
-            document.getElementById('biaPanel').classList.add('bia-speaking');
-        }
+  var btnText = document.getElementById('podcastPlayText');
+  var btnIcon = document.getElementById('podcastPlayIcon');
+  if (btnText) btnText.textContent = 'Pausar Podcast';
+  if (btnIcon) btnIcon.textContent = '⏸️';
 
-        function stopBiaTalkingState() {
-            document.getElementById('biaPanel').classList.remove('bia-speaking');
-        }
+  var sentence = podcastSentences[idx];
+  
+  var box = document.getElementById('podcastTranscriptBox');
+  if (box) {
+    var formatted = podcastSentences.map(function(s, i) {
+      if (i === idx) return '<mark style="background:rgba(244,162,97,0.3);color:var(--text);padding:2px 6px;border-radius:4px;border-left:3px solid var(--accent);">▶️ ' + sanitizeText(s) + '</mark>';
+      return sanitizeText(s);
+    }).join('<br><br>');
+    box.innerHTML = '<b>🎙️ Narração em Andamento...</b><br><br>' + formatted;
+    var currentMark = box.querySelector('mark');
+    if (currentMark) currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
-        function triggerBiaGreeting() {
-            const msg = "Oi! Eu sou a Professora Bia! Clique no editor ao lado ou pergunte o que quiser aqui!";
-            addBiaChatMessage(msg);
-            speakBiaText(msg);
-        }
+  var utterance = new SpeechSynthesisUtterance(sentence.replace(/<[^>]*>/g, ''));
+  utterance.lang = 'pt-BR';
+  utterance.rate = podcastSpeed;
+  utterance.pitch = 1.05;
 
-        /* ── CHAT SYSTEM ── */
-        function addBiaChatMessage(text) {
-            const box = document.getElementById('chatMessages');
-            const div = document.createElement('div');
-            div.className = 'chat-msg msg-bia';
-            div.innerHTML = text;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
-        }
+  var voices = window.speechSynthesis.getVoices();
+  var ptFemaleVoice = voices.find(function(v){
+    return v.lang.includes('pt') && (
+      v.name.toLowerCase().includes('luciana') || 
+      v.name.toLowerCase().includes('francisca') || 
+      v.name.toLowerCase().includes('female') || 
+      v.name.toLowerCase().includes('google') ||
+      v.name.toLowerCase().includes('br')
+    );
+  }) || voices.find(function(v){ return v.lang.includes('pt'); });
 
-        function addUserChatMessage(text) {
-            const box = document.getElementById('chatMessages');
-            const div = document.createElement('div');
-            div.className = 'chat-msg msg-user';
-            div.textContent = text;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
-        }
+  if (ptFemaleVoice) utterance.voice = ptFemaleVoice;
 
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text) return;
+  utterance.onstart = function() { startBiaTalkingAnim(); };
+  utterance.onend = function() {
+    if (isPodcastPlaying) {
+      playPodcastFromIndex(idx + 1);
+    }
+  };
+  utterance.onerror = function() {
+    if (isPodcastPlaying) {
+      playPodcastFromIndex(idx + 1);
+    }
+  };
 
-            addUserChatMessage(text);
-            input.value = '';
+  window.speechSynthesis.speak(utterance);
+}
 
-            // Generate Smart Response
-            setTimeout(() => {
-                let reply = "Entendido! ";
-                if (text.toLowerCase().includes('introdução') || text.toLowerCase().includes('estruturar')) {
-                    reply += "Na introdução do ENEM, apresente a contextualização do tema, a tese clara e antecipe os dois argumentos que desenvolverá nos D1 e D2.";
-                } else if (text.toLowerCase().includes('repertório')) {
-                    reply += "Para a Competência 2, use autores reconhecidos (ex: Zygmunt Bauman, Thomas Hobbes, Constituição de 1988) e relacione diretamente com o tema!";
-                } else if (text.toLowerCase().includes('c5') || text.toLowerCase().includes('intervenção')) {
-                    reply += "A proposta de intervenção (C5) precisa dos 5 elementos obrigatórios: Agente, Ação, Modo/Meio, Efeito e Detalhamento!";
-                } else {
-                    reply += "Estou pronta para analisar sua redação! Clique em '⚡ Corrigir Redação Agora' no painel ao lado.";
-                }
-                addBiaChatMessage(reply);
-                speakBiaText(reply);
-            }, 600);
-        }
+function pausePodcast() {
+  isPodcastPlaying = false;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  stopBiaTalkingAnim();
 
-        function sendQuickPrompt(prompt) {
-            document.getElementById('chatInput').value = prompt;
-            sendChatMessage();
-        }
+  var btnText = document.getElementById('podcastPlayText');
+  var btnIcon = document.getElementById('podcastPlayIcon');
+  if (btnText) btnText.textContent = 'Continuar Podcast';
+  if (btnIcon) btnIcon.textContent = '▶️';
+}
 
-        /* ── SPEECH TO TEXT RECOGNITION (MIC 🎙️) ── */
-        function toggleMicSpeech() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Seu navegador não suporta reconhecimento de voz.");
-                return;
-            }
+function stopPodcast() {
+  isPodcastPlaying = false;
+  podcastCurrentIndex = 0;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  stopBiaTalkingAnim();
 
-            if (isRecognitionActive) {
-                recognition.stop();
-                return;
-            }
+  var btnText = document.getElementById('podcastPlayText');
+  var btnIcon = document.getElementById('podcastPlayIcon');
+  if (btnText) btnText.textContent = 'Ouvir Podcast';
+  if (btnIcon) btnIcon.textContent = '▶️';
+}
 
-            recognition = new SpeechRecognition();
-            recognition.lang = 'pt-BR';
-            recognition.interimResults = false;
+var toastTimer;
+function showToast(msg, type) {
+  var el = document.getElementById('toast');
+  var icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  el.innerHTML = '<span style="color:'+(type==='success'?'var(--success)':'var(--accent)')+';font-weight:700">'+icon+'</span> ' + sanitizeText(msg);
+  el.className = 'show ' + (type || '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.className = ''; }, 4500);
+}
 
-            recognition.onstart = () => {
-                isRecognitionActive = true;
-                document.getElementById('micBtn').classList.add('active');
-            };
+renderCrits(1);
 
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('chatInput').value = transcript;
-                sendChatMessage();
-            };
+/* ── BIA SPEECH & AVATAR ── */
+var avatarOpen = false;
+var biaVoiceMuted = false;
 
-            recognition.onend = () => {
-                isRecognitionActive = false;
-                document.getElementById('micBtn').classList.remove('active');
-            };
+function toggleBiaVoice() {
+  biaVoiceMuted = !biaVoiceMuted;
+  var btn = document.getElementById('biaVoiceBtn');
+  if (btn) btn.textContent = biaVoiceMuted ? '🔇' : '🔊';
+  if (biaVoiceMuted && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    stopBiaTalkingAnim();
+  }
+}
 
-            recognition.start();
-        }
+function speakBia(text) {
+  if (biaVoiceMuted || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var plainText = text.replace(/<[^>]*>/g, '').replace(/[\r\n]+/g, ' ').trim();
+  if (!plainText) return;
 
-        /* ── NAVIGATION TABS ── */
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  var utterance = new SpeechSynthesisUtterance(plainText);
+  utterance.lang = 'pt-BR';
+  utterance.rate = 1.05;
+  utterance.pitch = 1.1;
 
-            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
-            document.getElementById(`pane-${tabId}`).classList.add('active');
-        }
+  var voices = window.speechSynthesis.getVoices();
+  var ptFemaleVoice = voices.find(function(v){
+    return v.lang.includes('pt') && (
+      v.name.toLowerCase().includes('luciana') || 
+      v.name.toLowerCase().includes('francisca') || 
+      v.name.toLowerCase().includes('female') || 
+      v.name.toLowerCase().includes('google') ||
+      v.name.toLowerCase().includes('br')
+    );
+  }) || voices.find(function(v){ return v.lang.includes('pt'); });
+  
+  if (ptFemaleVoice) utterance.voice = ptFemaleVoice;
 
-        /* ── ESSAY WORD COUNTER ── */
-        function updateWordStats() {
-            const text = document.getElementById('essayText').value;
-            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-            const lines = text.trim() ? text.split(/\n/).length : 0;
+  utterance.onstart = function() { startBiaTalkingAnim(); };
+  utterance.onend = function() { stopBiaTalkingAnim(); };
+  utterance.onerror = function() { stopBiaTalkingAnim(); };
 
-            document.getElementById('statWords').innerHTML = `${words} <strong>Palavras</strong>`;
-            document.getElementById('statLines').innerHTML = `${lines} <strong>Linhas</strong>`;
-        }
+  window.speechSynthesis.speak(utterance);
+}
 
-        /* ── OCR IMAGE UPLOAD ── */
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('ocrPreviewImg').src = e.target.result;
-                    document.getElementById('scannerZone').style.display = 'none';
-                    document.getElementById('ocrPreviewWrap').style.display = 'block';
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+function startBiaTalkingAnim() {
+  var btnWrap = document.getElementById('avatar-btn-wrapper');
+  var bubble = document.getElementById('avatar-bubble');
+  if (btnWrap) btnWrap.classList.add('bia-speaking');
+  if (bubble) bubble.classList.add('bia-speaking');
+}
 
-        function runOCRExtraction() {
-            const laser = document.getElementById('scanLaser');
-            laser.style.display = 'block';
-            addBiaChatMessage("🔍 Lendo e extraindo o texto da redação manuscrita...");
-            speakBiaText("Processando imagem da redação com inteligência artificial.");
+function stopBiaTalkingAnim() {
+  var btnWrap = document.getElementById('avatar-btn-wrapper');
+  var bubble = document.getElementById('avatar-bubble');
+  if (btnWrap) btnWrap.classList.remove('bia-speaking');
+  if (bubble) bubble.classList.remove('bia-speaking');
+}
 
-            setTimeout(() => {
-                laser.style.display = 'none';
-                document.getElementById('essayText').value = "O desenvolvimento tecnológico na era contemporânea trouxe transformações profundas na organização social. Contudo, percebe-se que a acessibilidade digital ainda enfrenta entraves significativos no Brasil, exigindo medidas eficientes de democratização do acesso à informação.";
-                updateWordStats();
-                switchTab('editor');
-                addBiaChatMessage("✅ Texto extraído com sucesso! Verifique e clique em **Corrigir Redação**.");
-                speakBiaText("Texto extraído com sucesso para o editor!");
-            }, 2500);
-        }
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = function() { window.speechSynthesis.getVoices(); };
+}
 
-        /* ── CORRECTION SIMULATOR ── */
-        function startCorrectionProcess() {
-            const text = document.getElementById('essayText').value.trim();
-            if (!text) {
-                alert("Por favor, cole ou digite uma redação no editor!");
-                return;
-            }
+/* ── BIA INTERACTIVE CHAT & LLM REQUISITIONS ── */
+var isBiaListening = false;
+var biaRecognition = null;
 
-            addBiaChatMessage("⚡ Analisando sua redação segundo as 5 competências do ENEM...");
-            speakBiaText("Iniciando a correção da sua redação nas cinco competências do ENEM.");
+function appendBiaMessage(sender, text, isTemp) {
+  var history = document.getElementById('biaChatHistory');
+  if (!history) return null;
+  var msgDiv = document.createElement('div');
+  msgDiv.className = 'bia-msg-' + sender;
+  if (sender === 'user') {
+    msgDiv.style.cssText = 'align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;padding:8px 12px;border-radius:14px;font-size:0.85rem;max-width:85%;line-height:1.4;box-shadow:0 2px 8px var(--primary-glow);';
+  } else {
+    msgDiv.style.cssText = 'align-self:flex-start;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:10px 14px;border-radius:14px;font-size:0.88rem;max-width:90%;line-height:1.5;';
+  }
+  msgDiv.innerHTML = isTemp ? '<i>⏳ Professora Bia pensando no LM Studio...</i>' : sanitizeText(text);
+  history.appendChild(msgDiv);
+  history.scrollTop = history.scrollHeight;
+  return msgDiv;
+}
 
-            setTimeout(() => {
-                switchTab('results');
-                document.getElementById('totalScoreNum').textContent = "960";
-                addBiaChatMessage("📊 Correção concluída com sucesso! Você obteve **960 / 1000 pontos**.");
-                speakBiaText("Parabéns! Sua pontuação final foi de 960 pontos de mil!");
-            }, 1800);
-        }
+async function sendBiaChatMessage(customText) {
+  var input = document.getElementById('biaChatInput');
+  var userText = customText || (input ? input.value.trim() : '');
+  if (!userText) return;
+  if (input) input.value = '';
 
-        /* ── COMPETENCY DETAIL SELECTOR ── */
-        const COMP_DETAILS = {
-            1: { title: "C1 — Domínio da Norma Culta (200/200)", text: "Excelente domínio da modalidade escrita formal. Nenhuma falha sintática grave encontrada, com excelente acentuação e pontuação adequada." },
-            2: { title: "C2 — Compreensão do Tema & Repertório (200/200)", text: "O tema foi abordado de forma completa sem tangenciamento. O repertório sociocultural foi legitimado e aplicado de maneira extremamente produtiva." },
-            3: { title: "C3 — Projeto de Texto & Argumentação (160/200)", text: "Texto muito bem articulado. Sugestão de melhoria: Aprofundar o desdobramento do segundo argumento no D2 para garantir nota máxima." },
-            4: { title: "C4 — Coesão e Conectivos (200/200)", text: "Uso exemplar de operadores argumentativos interparágrafos e diversidade lexical sem repetições excessivas." },
-            5: { title: "C5 — Proposta de Intervenção (200/200)", text: "Proposta completa contendo todos os 5 elementos essenciais: Agente (Ministério das Comunicações), Ação, Meio/Modo, Efeito e Detalhamento." }
-        };
+  appendBiaMessage('user', userText, false);
+  var tempEl = appendBiaMessage('bia', '', true);
 
-        function selectCompDetail(n) {
-            const data = COMP_DETAILS[n];
-            document.getElementById('detailTitle').textContent = data.title;
-            document.getElementById('detailContent').textContent = data.text;
-            speakBiaText(data.title + ". " + data.text);
-        }
+  if (!cfg.apiUrl) {
+    if (tempEl) tempEl.innerHTML = '⚠️ Por favor, configure a URL do LM Studio na aba ⚙️ <b>Configurações</b>!';
+    speakBia('Por favor, configure a URL do LM Studio na aba Configurações.');
+    return;
+  }
 
-        /* ── MODAL CONFIG ── */
-        function openConfigModal() { document.getElementById('configModal').style.display = 'flex'; }
-        function closeConfigModal() { document.getElementById('configModal').style.display = 'none'; }
-        function saveConfigModal() {
-            closeConfigModal();
-            addBiaChatMessage("⚙️ Configurações da IA salvas com sucesso!");
-        }
-    </script>
+  var essay = document.getElementById('essayText') ? document.getElementById('essayText').value : '';
+  var tema = localStorage.getItem('tema') || 'Tema da Redação ENEM';
+  
+  var ragContext = (window.getRagContext ? (getRagContext(1) + '\n\n' + getRagContext(2) + '\n\n' + getRagContext(3)) : '');
+
+  var systemPrompt = 'Você é a Professora Bia, assistente virtual oficial, atenciosa e especialista no ENEM.\n' +
+                     'Ajude o aluno a entender a correção da redação dele e dê orientação prática para reescrever e alcançar 1000 pontos.\n' +
+                     'Seja direta, empática e encorajadora (máximo 3 parágrafos curtos).\n\n' +
+                     '--- BASE DE CONHECIMENTO RAG ENEM (PDFs) ---\n' + ragContext + '\n-------------------------------------------\n\n' +
+                     'Tema: ' + tema + '\n' +
+                     'Redação do Aluno:\n"""\n' + (essay || 'Nenhuma redação inserida no momento.') + '\n"""';
+
+  try {
+    var resp = await fetch(cfg.apiUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'},
+      body: JSON.stringify({
+        model: cfg.model,
+        messages: [
+          {role: 'system', content: systemPrompt},
+          {role: 'user', content: userText}
+        ],
+        temperature: 0.3,
+        max_tokens: 700
+      }),
+      signal: AbortSignal.timeout(35000)
+    });
+
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!reply) throw new Error('Sem resposta da IA');
+
+    if (tempEl) tempEl.innerHTML = sanitizeText(reply).replace(/\n/g, '<br>');
+    var history = document.getElementById('biaChatHistory');
+    if (history) history.scrollTop = history.scrollHeight;
+
+    speakBia(reply);
+  } catch(err) {
+    if (tempEl) tempEl.innerHTML = '❌ Não consegui consultar o LM Studio: ' + sanitizeText(err.message);
+    speakBia('Não consegui consultar o LM Studio. Verifique se o servidor está ativo.');
+  }
+}
+
+function toggleBiaVoiceMic() {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('Reconhecimento de voz não suportado neste navegador.', 'error');
+    return;
+  }
+  var btn = document.getElementById('biaMicBtn');
+  if (isBiaListening && biaRecognition) {
+    biaRecognition.stop();
+    return;
+  }
+
+  try {
+    biaRecognition = new SpeechRecognition();
+    biaRecognition.lang = 'pt-BR';
+    biaRecognition.continuous = false;
+    biaRecognition.interimResults = false;
+
+    biaRecognition.onstart = function() {
+      isBiaListening = true;
+      if (btn) { btn.style.color = 'var(--accent)'; btn.style.transform = 'scale(1.2)'; }
+      showToast('🎤 Bia ouvindo... fale sua dúvida!', 'info');
+    };
+
+    biaRecognition.onresult = function(event) {
+      var transcript = event.results[0][0].transcript;
+      if (transcript) {
+        var input = document.getElementById('biaChatInput');
+        if (input) input.value = transcript;
+        sendBiaChatMessage(transcript);
+      }
+    };
+
+    biaRecognition.onerror = function() {
+      isBiaListening = false;
+      if (btn) { btn.style.color = 'var(--gold)'; btn.style.transform = 'scale(1)'; }
+    };
+
+    biaRecognition.onend = function() {
+      isBiaListening = false;
+      if (btn) { btn.style.color = 'var(--gold)'; btn.style.transform = 'scale(1)'; }
+    };
+
+    biaRecognition.start();
+  } catch(e) {
+    showToast('Erro ao ativar microfone: ' + e.message, 'error');
+  }
+}
+
+function askBiaAboutComp(n) {
+  if (!avatarOpen) toggleAvatar();
+  var score = (feedbackData && feedbackData['c' + n + '_score']) !== undefined ? feedbackData['c' + n + '_score'] : 0;
+  var pos = (feedbackData && feedbackData['c' + n + '_pos']) || '';
+  var imp = (feedbackData && feedbackData['c' + n + '_imp']) || '';
+  var query = 'Professora Bia, minha nota na Competência ' + n + ' foi ' + score + '/200. Ponto positivo: "' + pos + '". Ponto a melhorar: "' + imp + '". O que posso fazer para melhorar meu texto nesta competência?';
+  sendBiaChatMessage(query);
+}
+
+function toggleAvatar() {
+  avatarOpen = !avatarOpen;
+  document.getElementById('avatar-bubble').style.display = avatarOpen ? 'block' : 'none';
+  if (!avatarOpen && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    stopBiaTalkingAnim();
+  }
+  if (avatarOpen) showAvatarForTab();
+}
+
+function showAvatarForTab() {
+  var tips = {
+    scanner: {msg:'📷 <b>Digitalizar</b><br><br>Envie uma foto da redação manuscrita. A IA extrai o texto automaticamente.',opts:['Como tirar a foto?','Ir para Redação']},
+    editor:  {msg:'✏️ <b>Redação</b><br><br>1. Preencha o <b>tema</b>.<br>2. Cole ou escreva a redação.<br>3. Clique em <b>⚡ Corrigir Agora</b>.',opts:['O que é C2?','Ir para Resultado']},
+    results: {msg:'📊 <b>Resultado</b><br><br>Veja nota total, C1-C5 e onde perdeu pontos.<br><br>Use <b>🖨️ Imprimir Relatório PDF</b> para salvar.',opts:['O que são C1-C5?','Voltar ao início']},
+    config:  {msg:'⚙️ <b>Configurações</b><br><br>Configure a <b>URL do Ngrok</b> gerada ao iniciar o servidor local.',opts:['Como obter a URL?','O que é modelo?']}
+  };
+  var active = document.querySelector('.tab-pane.active'), id = active ? active.id : 'scanner', tip = tips[id] || tips.scanner;
+  document.getElementById('avatar-msg').innerHTML = tip.msg;
+  document.getElementById('avatar-options').innerHTML = tip.opts.map(function(o){
+    return '<button onclick="avatarAnswer(\''+o+'\')" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;color:var(--text);font-size:.78rem;cursor:pointer;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'+o+'</button>';
+  }).join('');
+  speakBia(tip.msg);
+}
+
+function avatarAnswer(q) {
+  var answers = {
+    'Como tirar a foto?':'Boa iluminação, sem sombras, folha plana. PNG, JPG ou WEBP.',
+    'Ir para Redação':function(){showTab('editor');toggleAvatar();},
+    'O que é C2?':'Avalia se você desenvolveu o tema proposto com repertório pertinente e produtivo.',
+    'Ir para Resultado':function(){showTab('results');toggleAvatar();},
+    'O que são C1-C5?':'C1: Língua formal | C2: Tema | C3: Argumentação | C4: Coesão | C5: Proposta',
+    'Voltar ao início':function(){showTab('scanner');toggleAvatar();},
+    'Como obter a URL?':'Rode <code style="background:#111;padding:2px 6px;border-radius:4px">ngrok http 1234</code> e copie o link.',
+    'O que é modelo?':'Nome do modelo carregado no servidor.'
+  };
+  var a = answers[q];
+  if (typeof a === 'function') { a(); return; }
+  document.getElementById('avatar-msg').innerHTML = '<b>'+q+'</b><br><br>'+a;
+  document.getElementById('avatar-options').innerHTML = '<button onclick="showAvatarForTab()" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;color:var(--muted);font-size:.78rem;cursor:pointer;">← Voltar</button>';
+  speakBia(q + '. ' + a);
+}
+</script>
 </body>
 </html>
