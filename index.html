@@ -1574,17 +1574,21 @@ function playPodcastFromIndex(idx) {
 
   var utterance = new SpeechSynthesisUtterance(sentence.replace(/<[^>]*>/g, ''));
   utterance.lang = 'pt-BR';
-  utterance.rate = podcastSpeed;
-  utterance.pitch = 1.05;
+  utterance.rate = podcastSpeed || 1.15;
+  utterance.pitch = 1.4; // Voz de adolescente mulher
 
   var voices = window.speechSynthesis.getVoices();
   var ptFemaleVoice = voices.find(function(v){
+    var n = v.name.toLowerCase();
     return v.lang.includes('pt') && (
-      v.name.toLowerCase().includes('luciana') || 
-      v.name.toLowerCase().includes('francisca') || 
-      v.name.toLowerCase().includes('female') || 
-      v.name.toLowerCase().includes('google') ||
-      v.name.toLowerCase().includes('br')
+      n.includes('luciana') || 
+      n.includes('leticia') || 
+      n.includes('vitoria') || 
+      n.includes('victoria') || 
+      n.includes('francisca') || 
+      n.includes('female') || 
+      n.includes('google') ||
+      n.includes('br')
     );
   }) || voices.find(function(v){ return v.lang.includes('pt'); });
 
@@ -1662,17 +1666,21 @@ function speakBia(text) {
 
   var utterance = new SpeechSynthesisUtterance(plainText);
   utterance.lang = 'pt-BR';
-  utterance.rate = 1.05;
-  utterance.pitch = 1.1;
+  utterance.rate = 1.12;  // Cadência jovem e dinâmica
+  utterance.pitch = 1.4;   // Voz de adolescente mulher
 
   var voices = window.speechSynthesis.getVoices();
   var ptFemaleVoice = voices.find(function(v){
+    var n = v.name.toLowerCase();
     return v.lang.includes('pt') && (
-      v.name.toLowerCase().includes('luciana') || 
-      v.name.toLowerCase().includes('francisca') || 
-      v.name.toLowerCase().includes('female') || 
-      v.name.toLowerCase().includes('google') ||
-      v.name.toLowerCase().includes('br')
+      n.includes('luciana') || 
+      n.includes('leticia') || 
+      n.includes('vitoria') || 
+      n.includes('victoria') || 
+      n.includes('francisca') || 
+      n.includes('female') || 
+      n.includes('google') ||
+      n.includes('br')
     );
   }) || voices.find(function(v){ return v.lang.includes('pt'); });
   
