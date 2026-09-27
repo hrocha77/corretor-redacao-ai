@@ -1572,27 +1572,49 @@ function playPodcastFromIndex(idx) {
     if (currentMark) currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+function getStrictFemaleVoice() {
+  var voices = window.speechSynthesis.getVoices();
+  if (!voices || !voices.length) return null;
+
+  var MALE_NAMES = ['daniel', 'felipe', 'ricardo', 'antonio', 'joao', 'helio', 'male', 'masculino', 'guy', 'boy', 'man'];
+  var FEMALE_NAMES = ['luciana', 'leticia', 'letícia', 'vitoria', 'vitória', 'victoria', 'francisca', 'fernanda', 'heloisa', 'heloísa', 'yara', 'maria', 'female', 'feminino', 'feminina', 'zira', 'catherine'];
+
+  var ptFemale = voices.find(function(v) {
+    var lang = (v.lang || '').toLowerCase();
+    var name = (v.name || '').toLowerCase();
+    var isPt = lang.includes('pt') || lang.includes('por');
+    var isMale = MALE_NAMES.some(function(m) { return name.includes(m); });
+    var isFemale = FEMALE_NAMES.some(function(f) { return name.includes(f); });
+    return isPt && isFemale && !isMale;
+  });
+  if (ptFemale) return ptFemale;
+
+  var ptNotMale = voices.find(function(v) {
+    var lang = (v.lang || '').toLowerCase();
+    var name = (v.name || '').toLowerCase();
+    var isPt = lang.includes('pt') || lang.includes('por');
+    var isMale = MALE_NAMES.some(function(m) { return name.includes(m); });
+    return isPt && !isMale;
+  });
+  if (ptNotMale) return ptNotMale;
+
+  var anyFemale = voices.find(function(v) {
+    var name = (v.name || '').toLowerCase();
+    var isMale = MALE_NAMES.some(function(m) { return name.includes(m); });
+    var isFemale = FEMALE_NAMES.some(function(f) { return name.includes(f); });
+    return isFemale && !isMale;
+  });
+
+  return anyFemale || (voices.length ? voices[0] : null);
+}
+
   var utterance = new SpeechSynthesisUtterance(sentence.replace(/<[^>]*>/g, ''));
   utterance.lang = 'pt-BR';
   utterance.rate = podcastSpeed || 1.15;
-  utterance.pitch = 1.4; // Voz de adolescente mulher
+  utterance.pitch = 1.45; // Tom estritamente de voz feminina adolescente
 
-  var voices = window.speechSynthesis.getVoices();
-  var ptFemaleVoice = voices.find(function(v){
-    var n = v.name.toLowerCase();
-    return v.lang.includes('pt') && (
-      n.includes('luciana') || 
-      n.includes('leticia') || 
-      n.includes('vitoria') || 
-      n.includes('victoria') || 
-      n.includes('francisca') || 
-      n.includes('female') || 
-      n.includes('google') ||
-      n.includes('br')
-    );
-  }) || voices.find(function(v){ return v.lang.includes('pt'); });
-
-  if (ptFemaleVoice) utterance.voice = ptFemaleVoice;
+  var femaleVoice = getStrictFemaleVoice();
+  if (femaleVoice) utterance.voice = femaleVoice;
 
   utterance.onstart = function() { startBiaTalkingAnim(); };
   utterance.onend = function() {
@@ -1667,24 +1689,10 @@ function speakBia(text) {
   var utterance = new SpeechSynthesisUtterance(plainText);
   utterance.lang = 'pt-BR';
   utterance.rate = 1.12;  // Cadência jovem e dinâmica
-  utterance.pitch = 1.4;   // Voz de adolescente mulher
+  utterance.pitch = 1.45;  // Tom de voz feminina adolescente
 
-  var voices = window.speechSynthesis.getVoices();
-  var ptFemaleVoice = voices.find(function(v){
-    var n = v.name.toLowerCase();
-    return v.lang.includes('pt') && (
-      n.includes('luciana') || 
-      n.includes('leticia') || 
-      n.includes('vitoria') || 
-      n.includes('victoria') || 
-      n.includes('francisca') || 
-      n.includes('female') || 
-      n.includes('google') ||
-      n.includes('br')
-    );
-  }) || voices.find(function(v){ return v.lang.includes('pt'); });
-  
-  if (ptFemaleVoice) utterance.voice = ptFemaleVoice;
+  var femaleVoice = getStrictFemaleVoice();
+  if (femaleVoice) utterance.voice = femaleVoice;
 
   utterance.onstart = function() { startBiaTalkingAnim(); };
   utterance.onend = function() { stopBiaTalkingAnim(); };
