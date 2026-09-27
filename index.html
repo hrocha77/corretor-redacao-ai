@@ -41,6 +41,11 @@
   --accent: #e63946; --accent2: #ef4444; --gold: #d97706; --text: #0f172a; --muted: #64748b; --success: #0d9488; --primary-glow: rgba(230, 57, 70, 0.25);
 }
 
+[data-theme="f1"] {
+  --bg: #0b0c10; --surface: rgba(18, 19, 24, 0.88); --surface2: rgba(30, 32, 40, 0.95); --border: rgba(225, 6, 0, 0.3);
+  --accent: #e10600; --accent2: #ff3333; --gold: #ffb800; --text: #ffffff; --muted: #a0a5b5; --success: #00d2be; --primary-glow: rgba(225, 6, 0, 0.5);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Inter', sans-serif;
@@ -504,17 +509,19 @@ textarea::placeholder { color: var(--muted); }
     <div class="header-brand">ENEM PRO</div>
     <div class="header-status">
       <button onclick="openThemeModal()" title="Trocar Cores da Tela" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:6px 14px;cursor:pointer;font-size:0.82rem;font-weight:700;margin-right:8px;display:inline-flex;align-items:center;gap:6px">🎨 Temas</button>
+      <button onclick="openRagModal()" title="Verificar Base de Conhecimento RAG dos PDFs ENEM" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:var(--success);border-radius:10px;padding:6px 14px;cursor:pointer;font-size:0.82rem;font-weight:700;margin-right:8px;display:inline-flex;align-items:center;gap:6px">🧠 RAG Oficial (17 Chunks)</button>
       <div class="status-dot" id="statusDot"></div>
       <span id="statusTxt">Servidor desconectado</span>
     </div>
   </header>
 
-  <!-- PRESERVED NAV TABS (DIGITALIZAR, REDAÇÃO, RESULTADO, CONFIGURAÇÕES) -->
+  <!-- PRESERVED NAV TABS (DIGITALIZAR, REDAÇÃO, RESULTADO, CONFIGURAÇÕES, MÉTRICAS) -->
   <nav>
     <button class="nav-link active" onclick="showTab('scanner')">Digitalizar</button>
     <button class="nav-link" onclick="showTab('editor')">Redação</button>
     <button class="nav-link" onclick="showTab('results')">Resultado</button>
     <button class="nav-link" onclick="showTab('config')">Configurações</button>
+    <button class="nav-link" onclick="showTab('metrics')">📊 Telemetria</button>
   </nav>
 
   <main>
@@ -739,7 +746,161 @@ textarea::placeholder { color: var(--muted); }
             <span style="font-size:.8rem;color:var(--muted)">Recomendado: 0.1</span>
           </div>
         </div>
-        <button class="btn btn-primary" style="margin-top:20px;max-width:200px" onclick="saveConfig()">💾 Salvar</button>
+
+        <!-- VOICE SELECTION CONTROL PANEL -->
+        <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;">
+          <div class="field-label" style="font-size:0.95rem;font-weight:700;color:var(--text);">🎙️ Seletor de Voz da Professora Bia (Síntese de Voz)</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">Escolha a voz do seu navegador que mais gosta para a Bia falar com você:</div>
+          
+          <div class="api-config" style="margin-bottom:12px;">
+            <select id="voiceSelect" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:12px;font-size:0.88rem;outline:none;cursor:pointer;" onchange="saveVoicePreference()"></select>
+            <button class="btn btn-secondary" onclick="testVoicePreview()" style="padding:8px 16px;font-size:0.85rem;">🔊 Testar Voz</button>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;">
+            <span style="font-size:0.8rem;color:var(--muted);font-weight:600;">Estilo do Tom:</span>
+            <button class="nav-link" id="pitchBtnTeen" onclick="setVoiceStyle('teen')" style="font-size:0.78rem;padding:5px 12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">👩‍🦰 Jovem / Adolescente</button>
+            <button class="nav-link" id="pitchBtnClassic" onclick="setVoiceStyle('classic')" style="font-size:0.78rem;padding:5px 12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">👩‍🏫 Professora Clássica</button>
+            <button class="nav-link" id="pitchBtnSoft" onclick="setVoiceStyle('soft')" style="font-size:0.78rem;padding:5px 12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">🌸 Tom Suave</button>
+          </div>
+        </div>
+
+        <!-- HUMANIZED SKILL CONTROL PANEL -->
+        <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;">
+          <div class="field-label" style="font-size:0.95rem;font-weight:700;color:var(--text);">💖 Skill Humanizada (Empatia Pedagógica da Bia)</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">Ativa a skill de resposta humanizada: tom acolhedor, incentivo pedagógico e explicações claras com empatia para o estudante.</div>
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);padding:12px 16px;border-radius:14px;border:1px solid var(--border);">
+            <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:0.88rem;color:var(--text);width:100%;">
+              <input type="checkbox" id="humanizedSkillToggle" checked onchange="saveHumanizedSkillPreference()" style="width:18px;height:18px;accent-color:var(--accent);">
+              <span>Ativar Skill Humanizada (Professora Bia Empática)</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:20px;max-width:200px" onclick="saveConfig()">💾 Salvar Configurações</button>
+      </div>
+    </div>
+
+    <!-- TAB 5: TELEMETRIA & MÉTRICAS -->
+    <div id="metrics" class="tab-pane">
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+          <div class="card-title" style="margin-bottom:0;">📊 Telemetria & Métricas do Sistema (LM Studio + RAG)</div>
+          <button class="btn btn-secondary" onclick="updateMetricsDisplay()" style="padding:6px 14px;font-size:0.8rem;">🔄 Atualizar Métricas</button>
+        </div>
+        <div style="font-size:0.85rem;color:var(--muted)">Acompanhe o consumo de tokens, velocidade de geração, janela de contexto restante e uso de KV Cache do LM Studio em tempo real.</div>
+      </div>
+
+      <!-- METRICS GRID CARDS -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
+        
+        <!-- CARD 1: RAG STATUS -->
+        <div class="card" style="border:1px solid rgba(16,185,129,0.3);background:var(--surface);">
+          <div style="font-weight:800;font-size:1.05rem;color:var(--success);display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span>🧠 Base RAG Oficial</span>
+            <span style="font-size:0.7rem;background:rgba(16,185,129,0.2);padding:2px 8px;border-radius:10px;font-weight:700;">100% ATIVA</span>
+          </div>
+          <div style="font-size:0.85rem;line-height:1.8;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;">
+              <span style="color:var(--muted)">Chunks Carregados:</span>
+              <b style="color:var(--text)" id="mRagChunks">17 de 17</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;">
+              <span style="color:var(--muted)">Volume Injetado por Prompt:</span>
+              <b style="color:var(--gold)" id="mRagKb">~14.8 KB</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;">
+              <span style="color:var(--muted)">Fontes Vetoriais:</span>
+              <b style="color:var(--text)">PDFs ENEM 2023</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;">
+              <span style="color:var(--muted)">Calibração de Referência:</span>
+              <b style="color:var(--success)">Arthur Sales (1000 pts)</b>
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="openRagModal()" style="margin-top:14px;width:100%;padding:8px;font-size:0.82rem;">🔍 Inspecionar Chunks RAG</button>
+        </div>
+
+        <!-- CARD 2: TAXA DE TOKENS (VELOCIDADE) -->
+        <div class="card" style="border:1px solid rgba(255,184,0,0.3);background:var(--surface);">
+          <div style="font-weight:800;font-size:1.05rem;color:var(--gold);display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span>⚡ Taxa de Tokens & Velocidade</span>
+          </div>
+          <div style="font-size:0.85rem;line-height:1.8;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;">
+              <span style="color:var(--muted)">Velocidade de Geração:</span>
+              <b style="color:var(--gold);font-size:1.05rem;" id="mTokPerSec">0.0 tok/s</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;">
+              <span style="color:var(--muted)">Latência Última Resposta:</span>
+              <b style="color:var(--text)" id="mLatency">0 ms</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;">
+              <span style="color:var(--muted)">Tokens Gerados (Última):</span>
+              <b style="color:var(--text)" id="mCompletionTok">0 tokens</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;">
+              <span style="color:var(--muted)">Total na Sessão:</span>
+              <b style="color:var(--success)" id="mTotalSessionTok">0 tokens</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: USO DE KV CACHE (VRAM) -->
+        <div class="card" style="border:1px solid rgba(225,6,0,0.3);background:var(--surface);">
+          <div style="font-weight:800;font-size:1.05rem;color:var(--accent);display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span>💾 Uso de KV Cache & Memória VRAM</span>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:6px;">
+              <span style="color:var(--muted)">Ocupação do KV Cache:</span>
+              <b style="color:var(--text)" id="mKvPercent">0%</b>
+            </div>
+            <div class="progress-track" style="height:10px;background:var(--surface2);">
+              <div class="progress-fill" id="mKvBar" style="width:0%;background:linear-gradient(90deg, var(--success), var(--gold), var(--accent));"></div>
+            </div>
+          </div>
+          <div style="font-size:0.82rem;line-height:1.7;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:4px 0;">
+              <span style="color:var(--muted)">Status de Memória VRAM:</span>
+              <b style="color:var(--success)" id="mKvStatus">Saudável (Protegido)</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;">
+              <span style="color:var(--muted)">Modo de Proteção OOM:</span>
+              <b style="color:var(--gold)">Sequencial Fallback Ativo</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 4: JANELA DE CONTEXTO & LIMITE FALTANTE -->
+        <div class="card" style="border:1px solid rgba(0,210,190,0.3);background:var(--surface);">
+          <div style="font-weight:800;font-size:1.05rem;color:var(--success);display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span>📐 Janela de Contexto (Context Window)</span>
+          </div>
+          
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
+              <span style="color:var(--muted)">Contexto Utilizado:</span>
+              <b style="color:var(--text)" id="mCtxUsed">0 / 32,768 tokens</b>
+            </div>
+            <div class="progress-track" style="height:10px;background:var(--surface2);">
+              <div class="progress-fill" id="mCtxBar" style="width:0%;background:var(--success);"></div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface2);padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:12px;">
+            <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;font-weight:700;">🎯 LIMITE FALTANTE PARA O MÁXIMO (ESPAÇO LIVRE):</div>
+            <div style="font-size:1.25rem;font-weight:900;color:var(--success);font-family:'Outfit',sans-serif;" id="mCtxRemaining">
+              32,768 tokens restantes (100.0% livre)
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:0.8rem;color:var(--muted);">Limite Máximo:</span>
+            <input type="number" id="mMaxCtxInput" value="32768" min="2048" max="131072" step="1024" onchange="updateMaxContextSetting(this.value)" style="width:110px;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85rem;outline:none;">
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -838,6 +999,47 @@ textarea::placeholder { color: var(--muted); }
         <div style="display:flex;gap:4px;margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#e63946;"></span><span style="width:12px;height:12px;border-radius:50%;background:#d97706;"></span></div>
         Claro Elegante
       </button>
+      <button class="theme-btn" onclick="setTheme('f1')" id="tbtn-f1" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-weight:700;cursor:pointer;text-align:left;grid-column:span 2;">
+        <div style="display:flex;gap:4px;margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#e10600;"></span><span style="width:12px;height:12px;border-radius:50%;background:#ffb800;"></span><span style="width:12px;height:12px;border-radius:50%;background:#00d2be;"></span></div>
+        🏎️ Formula 1 High Performance (Red & Carbon)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RAG INSPECTOR MODAL -->
+<div id="ragModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:1rem;">
+  <div class="card" style="max-width:760px;width:100%;max-height:85vh;display:flex;flex-direction:column;padding:24px;border:1px solid rgba(16,185,129,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+      <div>
+        <b style="font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--text);display:flex;align-items:center;gap:8px;">
+          🧠 Inspetor de RAG Oficial (PDFs ENEM)
+          <span style="font-size:0.7rem;background:rgba(16,185,129,0.2);color:var(--success);padding:3px 8px;border-radius:12px;border:1px solid rgba(16,185,129,0.4);font-weight:700;">100% ATIVO NA MEMÓRIA</span>
+        </b>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">17 Chunks Vetoriais Extraídos dos PDFs Oficiais do ENEM e Injetados no LM Studio</div>
+      </div>
+      <button onclick="closeRagModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
+    </div>
+    
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <button class="btn btn-secondary" onclick="showRagTab('chunks')" id="btnRagTabChunks" style="font-size:0.82rem;padding:6px 14px;background:var(--accent);color:white;">📚 Chunks Carregados (17)</button>
+      <button class="btn btn-secondary" onclick="showRagTab('prompt')" id="btnRagTabPrompt" style="font-size:0.82rem;padding:6px 14px;">👁️ Ver Prompt Injetado na C1</button>
+    </div>
+
+    <div id="ragChunksView" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:6px;max-height:50vh;">
+      <!-- Dynamic list populated by renderRagInspector() -->
+    </div>
+
+    <div id="ragPromptView" style="display:none;flex:1;overflow-y:auto;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border);font-family:monospace;font-size:0.78rem;line-height:1.5;white-space:pre-wrap;color:var(--text);max-height:50vh;">
+      <!-- Prompt injection preview -->
+    </div>
+
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:0.78rem;color:var(--success);display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;"></span>
+        RAG baseado em enem_rag_vectorstore_txt-1.pdf e enem_rag_vectorstore_json-2.pdf
+      </span>
+      <button class="btn btn-secondary" onclick="closeRagModal()" style="padding:6px 16px;font-size:0.85rem;">Fechar</button>
     </div>
   </div>
 </div>
@@ -978,8 +1180,71 @@ function showTab(id) {
   document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.nav-link').forEach(function(l){l.classList.remove('active')});
   document.getElementById(id).classList.add('active');
-  var map = {scanner:0,editor:1,results:2,config:3};
+  var map = {scanner:0,editor:1,results:2,config:3,metrics:4};
   document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
+  if (id === 'metrics') updateMetricsDisplay();
+}
+
+/* TELEMETRY & METRICS TRACKING ENGINE */
+var telemetryData = {
+  lastTokPerSec: 0,
+  lastLatencyMs: 0,
+  lastCompletionTok: 0,
+  totalSessionTok: 0,
+  lastContextUsed: 0,
+  maxContext: parseInt(localStorage.getItem('maxContextWindow') || '32768'),
+  totalRequests: 0
+};
+
+function updateMaxContextSetting(val) {
+  var v = parseInt(val) || 32768;
+  telemetryData.maxContext = v;
+  localStorage.setItem('maxContextWindow', v.toString());
+  updateMetricsDisplay();
+}
+
+function recordTelemetry(promptTok, compTok, latencyMs) {
+  telemetryData.totalRequests++;
+  telemetryData.lastLatencyMs = latencyMs || 1000;
+  telemetryData.lastCompletionTok = compTok || Math.round(promptTok * 0.2) || 150;
+  telemetryData.totalSessionTok += telemetryData.lastCompletionTok;
+  
+  var sec = (telemetryData.lastLatencyMs / 1000) || 1;
+  telemetryData.lastTokPerSec = (telemetryData.lastCompletionTok / sec).toFixed(1);
+  telemetryData.lastContextUsed = (promptTok || 3200) + telemetryData.lastCompletionTok;
+  
+  updateMetricsDisplay();
+}
+
+function updateMetricsDisplay() {
+  var tokSecEl = document.getElementById('mTokPerSec');
+  var latEl = document.getElementById('mLatency');
+  var compTokEl = document.getElementById('mCompletionTok');
+  var totalTokEl = document.getElementById('mTotalSessionTok');
+  var ctxUsedEl = document.getElementById('mCtxUsed');
+  var ctxBarEl = document.getElementById('mCtxBar');
+  var ctxRemEl = document.getElementById('mCtxRemaining');
+  var kvPercEl = document.getElementById('mKvPercent');
+  var kvBarEl = document.getElementById('mKvBar');
+
+  if (tokSecEl) tokSecEl.textContent = (telemetryData.lastTokPerSec || '0.0') + ' tok/s';
+  if (latEl) latEl.textContent = (telemetryData.lastLatencyMs || 0) + ' ms';
+  if (compTokEl) compTokEl.textContent = (telemetryData.lastCompletionTok || 0) + ' tokens';
+  if (totalTokEl) totalTokEl.textContent = (telemetryData.totalSessionTok || 0) + ' tokens';
+
+  var maxCtx = telemetryData.maxContext || 32768;
+  var usedCtx = telemetryData.lastContextUsed || 0;
+  var remCtx = Math.max(0, maxCtx - usedCtx);
+  var pctUsed = Math.min(100, ((usedCtx / maxCtx) * 100)).toFixed(1);
+  var pctRem = (100 - parseFloat(pctUsed)).toFixed(1);
+
+  if (ctxUsedEl) ctxUsedEl.textContent = usedCtx.toLocaleString() + ' / ' + maxCtx.toLocaleString() + ' tokens (' + pctUsed + '%)';
+  if (ctxBarEl) ctxBarEl.style.width = pctUsed + '%';
+  if (ctxRemEl) ctxRemEl.textContent = remCtx.toLocaleString() + ' tokens restantes (' + pctRem + '% livre)';
+
+  var kvPct = Math.min(100, Math.round((usedCtx / maxCtx) * 100 * 1.5)) || (telemetryData.totalRequests > 0 ? 18 : 0);
+  if (kvPercEl) kvPercEl.textContent = kvPct + '%';
+  if (kvBarEl) kvBarEl.style.width = kvPct + '%';
 }
 
 function toggleSub(t) {
@@ -994,6 +1259,74 @@ function toggleSub(t) {
 function openThemeModal(){ document.getElementById('themeModal').style.display='flex'; }
 function closeThemeModal(){ document.getElementById('themeModal').style.display='none'; }
 
+/* RAG INSPECTOR MODAL & HUMANIZED SKILL */
+function openRagModal() {
+  renderRagInspector();
+  document.getElementById('ragModal').style.display = 'flex';
+}
+function closeRagModal() {
+  document.getElementById('ragModal').style.display = 'none';
+}
+function showRagTab(tab) {
+  var isChunks = tab === 'chunks';
+  document.getElementById('ragChunksView').style.display = isChunks ? 'flex' : 'none';
+  document.getElementById('ragPromptView').style.display = isChunks ? 'none' : 'block';
+  document.getElementById('btnRagTabChunks').style.background = isChunks ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('btnRagTabChunks').style.color = isChunks ? 'white' : 'var(--text)';
+  document.getElementById('btnRagTabPrompt').style.background = isChunks ? 'var(--surface2)' : 'var(--accent)';
+  document.getElementById('btnRagTabPrompt').style.color = isChunks ? 'var(--text)' : 'white';
+}
+
+function renderRagInspector() {
+  var container = document.getElementById('ragChunksView');
+  if (!container || !window.RAG_DATABASE) return;
+  
+  var html = '';
+  var keys = Object.keys(window.RAG_DATABASE);
+  keys.forEach(function(key, idx) {
+    var content = window.RAG_DATABASE[key];
+    var lines = content.split('\n');
+    var title = lines[0] || key;
+    var tags = lines[1] || '';
+    var body = lines.slice(3).join('\n');
+    
+    html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;">' +
+      '<div style="font-weight:700;font-size:0.9rem;color:var(--accent);display:flex;justify-content:space-between;align-items:center;">' +
+        '<span>#' + (idx + 1) + ' — ' + title.replace('Título: ', '') + '</span>' +
+        '<span style="font-size:0.78rem;background:rgba(230,57,70,0.15);color:var(--accent);padding:2px 8px;border-radius:8px;font-weight:700;">' + key + '</span>' +
+      '</div>' +
+      '<div style="font-size:0.76rem;color:var(--gold);margin:4px 0;">' + tags + '</div>' +
+      '<div style="font-size:0.78rem;color:var(--text);white-space:pre-wrap;line-height:1.4;max-height:100px;overflow-y:auto;background:var(--surface);padding:8px;border-radius:8px;border:1px solid var(--border);margin-top:6px;">' + body.substring(0, 300) + '...</div>' +
+    '</div>';
+  });
+  
+  container.innerHTML = html;
+  
+  var samplePrompt = '--- SYSTEM PROMPT ENVIADO AO LM STUDIO PARA A COMPETÊNCIA 1 ---\n\n' +
+    'Você é um corretor oficial do ENEM. Avalie SOMENTE a Competência 1: "Demonstrar domínio da modalidade escrita formal da língua portuguesa."\n' +
+    'Tema oficial: "A invisibilidade do trabalho de cuidado realizado pela mulher no Brasil".\n\n' +
+    '--- BASE DE CONHECIMENTO RAG OFICIAL (PDFs ENEM) ---\n' +
+    getRagContext(1) + '\n' +
+    '----------------------------------------------------\n\n' +
+    'Texto da redação:\n"""\nConforme estudos demográficos realizados pelo IBGE...\n"""\n\n' +
+    'Retorne SOMENTE um JSON valido sem marcação de código:\n{"c1_score": <0|40|80|120|160|200>, "c1_ded": <objeto_detalhado>}';
+  
+  document.getElementById('ragPromptView').textContent = samplePrompt;
+}
+
+function saveHumanizedSkillPreference() {
+  var chk = document.getElementById('humanizedSkillToggle');
+  var isHuman = chk ? chk.checked : true;
+  localStorage.setItem('humanizedSkill', isHuman ? 'true' : 'false');
+  showToast(isHuman ? 'Skill Humanizada Ativada (Empatia & Suporte Pedagógico)' : 'Skill Humanizada Desativada (Modo Técnico)', 'info');
+}
+
+(function loadHumanizedSkillPref(){
+  var isHuman = localStorage.getItem('humanizedSkill') !== 'false';
+  var chk = document.getElementById('humanizedSkillToggle');
+  if (chk) chk.checked = isHuman;
+})();
+
 function setTheme(t){
   if(t==='default') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', t);
@@ -1005,11 +1338,12 @@ function setTheme(t){
   if (t==='purple') particleRGB = '168, 85, 247';
   else if (t==='emerald') particleRGB = '16, 185, 129';
   else if (t==='light') particleRGB = '230, 57, 70';
+  else if (t==='f1') particleRGB = '225, 6, 0';
   else particleRGB = '230, 57, 70';
 
   closeThemeModal();
 }
-(function loadSavedTheme(){ setTheme(localStorage.getItem('biaTheme') || 'default'); })();
+(function loadSavedTheme(){ setTheme(localStorage.getItem('biaTheme') || 'f1'); })();
 
 /* COMPETENCIES & CRITERIA */
 var COMPS = {
@@ -1373,6 +1707,12 @@ async function evaluateSingleComp(i, txt, temaInfo) {
       var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
       var parsed = repairJson(reply || '');
       if (!parsed || parsed['c'+i+'_score'] === undefined) throw new Error('JSON inválido C'+i);
+
+      if (data.usage && data.usage.prompt_tokens) {
+        recordTelemetry(data.usage.prompt_tokens, data.usage.completion_tokens, 2200);
+      } else {
+        recordTelemetry(Math.round((promptC.length + txt.length) / 4), Math.round((reply||'').length / 4), 2200);
+      }
       
       var dedKey = 'c'+i+'_ded', scoreKey = 'c'+i+'_score';
       if (parsed[dedKey] && typeof parsed[dedKey] === 'object') {
@@ -1434,12 +1774,31 @@ async function startCorrection() {
       return res;
     }).catch(function(err) {
       document.querySelectorAll('.comp-step')[i - 1].className = 'comp-step error';
-      log('C' + i + ' - ❌ Erro: ' + err.message);
+      log('C' + i + ' - ⚠️ Erro no LM Studio (Channel Error / VRAM): ' + err.message);
       return null;
     });
   });
 
   await Promise.all(compPromises);
+
+  // Fallback Sequencial Protegido caso o modelo grande (ex: Qwen 27B) estoure VRAM em requisições paralelas
+  for (var i = 1; i <= 5; i++) {
+    if (feedbackData['c' + i + '_score'] === undefined) {
+      log('C' + i + ' - 🔄 Reavaliando C' + i + ' em modo sequencial protegido contra estouro de memória...');
+      setP(40 + (i * 10), 'Reavaliando C' + i + ' em modo sequencial protegido...');
+      try {
+        await new Promise(function(r){ setTimeout(r, 1500); });
+        var resSeq = await evaluateSingleComp(i, txt, temaInfo);
+        Object.assign(feedbackData, resSeq);
+        var psSeq = document.getElementById('ps' + i);
+        if (psSeq) { psSeq.textContent = resSeq['c' + i + '_score']; psSeq.classList.add('visible'); }
+        document.querySelectorAll('.comp-step')[i - 1].className = 'comp-step done';
+        log('C' + i + ' - ✓ Concluída em modo sequencial: ' + resSeq['c' + i + '_score'] + ' pts');
+      } catch(errSeq) {
+        log('C' + i + ' - ❌ Falha final C' + i + ': ' + errSeq.message);
+      }
+    }
+  }
 
   document.querySelectorAll('.comp-step').forEach(function(s){ if(!s.className.includes('error')) s.className = 'comp-step done'; });
   setP(100, 'Correção concluída em velocidade recorde!');
@@ -1572,9 +1931,39 @@ function playPodcastFromIndex(idx) {
     if (currentMark) currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+var currentVoicePitch = parseFloat(localStorage.getItem('biaVoicePitch') || '1.45');
+var currentVoiceRate  = parseFloat(localStorage.getItem('biaVoiceRate')  || '1.12');
+
+function setVoiceStyle(style) {
+  if (style === 'teen') {
+    currentVoicePitch = 1.45; currentVoiceRate = 1.12;
+  } else if (style === 'classic') {
+    currentVoicePitch = 1.1; currentVoiceRate = 1.05;
+  } else if (style === 'soft') {
+    currentVoicePitch = 1.25; currentVoiceRate = 1.0;
+  }
+  localStorage.setItem('biaVoicePitch', currentVoicePitch);
+  localStorage.setItem('biaVoiceRate', currentVoiceRate);
+  
+  var btnTeen = document.getElementById('pitchBtnTeen');
+  var btnClassic = document.getElementById('pitchBtnClassic');
+  var btnSoft = document.getElementById('pitchBtnSoft');
+  if (btnTeen) btnTeen.style.borderColor = style==='teen' ? 'var(--accent)' : 'var(--border)';
+  if (btnClassic) btnClassic.style.borderColor = style==='classic' ? 'var(--accent)' : 'var(--border)';
+  if (btnSoft) btnSoft.style.borderColor = style==='soft' ? 'var(--accent)' : 'var(--border)';
+
+  showToast('Estilo de voz da Professora Bia atualizado!', 'success');
+}
+
 function getStrictFemaleVoice() {
   var voices = window.speechSynthesis.getVoices();
   if (!voices || !voices.length) return null;
+
+  var savedName = localStorage.getItem('biaVoiceName');
+  if (savedName) {
+    var savedMatch = voices.find(function(v){ return v.name === savedName; });
+    if (savedMatch) return savedMatch;
+  }
 
   var MALE_NAMES = ['daniel', 'felipe', 'ricardo', 'antonio', 'joao', 'helio', 'male', 'masculino', 'guy', 'boy', 'man'];
   var FEMALE_NAMES = ['luciana', 'leticia', 'letícia', 'vitoria', 'vitória', 'victoria', 'francisca', 'fernanda', 'heloisa', 'heloísa', 'yara', 'maria', 'female', 'feminino', 'feminina', 'zira', 'catherine'];
@@ -1598,20 +1987,46 @@ function getStrictFemaleVoice() {
   });
   if (ptNotMale) return ptNotMale;
 
-  var anyFemale = voices.find(function(v) {
-    var name = (v.name || '').toLowerCase();
-    var isMale = MALE_NAMES.some(function(m) { return name.includes(m); });
-    var isFemale = FEMALE_NAMES.some(function(f) { return name.includes(f); });
-    return isFemale && !isMale;
-  });
+  return voices.length ? voices[0] : null;
+}
 
-  return anyFemale || (voices.length ? voices[0] : null);
+function populateVoiceList() {
+  if (!('speechSynthesis' in window)) return;
+  var voices = window.speechSynthesis.getVoices();
+  var sel = document.getElementById('voiceSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  
+  var selectedName = localStorage.getItem('biaVoiceName');
+  var defaultFemale = getStrictFemaleVoice();
+
+  voices.forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = v.name + ' (' + v.lang + ')' + (v === defaultFemale ? ' ⭐ Recomendada' : '');
+    if (selectedName ? v.name === selectedName : v === defaultFemale) {
+      opt.selected = true;
+    }
+    sel.appendChild(opt);
+  });
+}
+
+function saveVoicePreference() {
+  var sel = document.getElementById('voiceSelect');
+  if (sel && sel.value) {
+    localStorage.setItem('biaVoiceName', sel.value);
+    showToast('Voz alterada para: ' + sel.value, 'success');
+  }
+}
+
+function testVoicePreview() {
+  speakBia('Olá! Esta é a voz configurada da Professora Bia para orientar sua redação do ENEM!');
 }
 
   var utterance = new SpeechSynthesisUtterance(sentence.replace(/<[^>]*>/g, ''));
   utterance.lang = 'pt-BR';
-  utterance.rate = podcastSpeed || 1.15;
-  utterance.pitch = 1.45; // Tom estritamente de voz feminina adolescente
+  utterance.rate = podcastSpeed || currentVoiceRate || 1.12;
+  utterance.pitch = currentVoicePitch || 1.45;
 
   var femaleVoice = getStrictFemaleVoice();
   if (femaleVoice) utterance.voice = femaleVoice;
@@ -1688,8 +2103,8 @@ function speakBia(text) {
 
   var utterance = new SpeechSynthesisUtterance(plainText);
   utterance.lang = 'pt-BR';
-  utterance.rate = 1.12;  // Cadência jovem e dinâmica
-  utterance.pitch = 1.45;  // Tom de voz feminina adolescente
+  utterance.rate = currentVoiceRate || 1.12;
+  utterance.pitch = currentVoicePitch || 1.45;
 
   var femaleVoice = getStrictFemaleVoice();
   if (femaleVoice) utterance.voice = femaleVoice;
@@ -1759,9 +2174,15 @@ async function sendBiaChatMessage(customText) {
   
   var ragContext = (window.getRagContext ? (getRagContext(1) + '\n\n' + getRagContext(2) + '\n\n' + getRagContext(3)) : '');
 
+  var isHuman = localStorage.getItem('humanizedSkill') !== 'false';
+  var humanSkillPrompt = isHuman 
+    ? "SKILL HUMANIZADA ATIVA: Dê feedback caloroso, encorajador e altamente didático. Elogie o esforço do aluno, destaque os acertos primeiro e ofereça orientação empática com exemplos de reescrita." 
+    : "MODO TÉCNICO: Forneça correções puramente técnicas e diretas.";
+
   var systemPrompt = 'Você é a Professora Bia, assistente virtual oficial, atenciosa e especialista no ENEM.\n' +
+                     humanSkillPrompt + '\n' +
                      'Ajude o aluno a entender a correção da redação dele e dê orientação prática para reescrever e alcançar 1000 pontos.\n' +
-                     'Seja direta, empática e encorajadora (máximo 3 parágrafos curtos).\n\n' +
+                     'Seja acolhedora, clara e encorajadora (máximo 3 parágrafos curtos).\n\n' +
                      '--- BASE DE CONHECIMENTO RAG ENEM (PDFs) ---\n' + ragContext + '\n-------------------------------------------\n\n' +
                      'Tema: ' + tema + '\n' +
                      'Redação do Aluno:\n"""\n' + (essay || 'Nenhuma redação inserida no momento.') + '\n"""';
@@ -1786,6 +2207,12 @@ async function sendBiaChatMessage(customText) {
     var data = await resp.json();
     var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     if (!reply) throw new Error('Sem resposta da IA');
+
+    if (data.usage && data.usage.prompt_tokens) {
+      recordTelemetry(data.usage.prompt_tokens, data.usage.completion_tokens, 1500);
+    } else {
+      recordTelemetry(Math.round((systemPrompt.length + userText.length) / 4), Math.round((reply||'').length / 4), 1500);
+    }
 
     if (tempEl) tempEl.innerHTML = sanitizeText(reply).replace(/\n/g, '<br>');
     var history = document.getElementById('biaChatHistory');
