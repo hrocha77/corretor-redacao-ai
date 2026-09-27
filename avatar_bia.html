@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Animado & Falante da Bia - IA ENEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0b12;
+            --surface: #12121f;
+            --surface2: #19192e;
+            --border: #2a2a48;
+            --accent: #e63946;
+            --accent2: #ff6b6b;
+            --gold: #f4a261;
+            --teal: #2ec4b6;
+            --text: #f0f0f8;
+            --muted: #8080b0;
+            --glow: rgba(230, 57, 70, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(230, 57, 70, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(244, 162, 97, 0.12) 0%, transparent 45%);
+            overflow-x: hidden;
+        }
+
+        .header-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-sub {
+            color: var(--muted);
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        /* CONTAINER GRID */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 2rem;
+            max-width: 960px;
+            width: 100%;
+        }
+
+        @media (max-width: 800px) {
+            .showcase-grid { grid-template-columns: 1fr; }
+        }
+
+        /* CARD STYLES */
+        .card {
+            background: rgba(18, 18, 31, 0.85);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* ── AVATAR COMPONENT ── */
+        .avatar-stage {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Glowing Ring Behind Avatar */
+        .avatar-aura {
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--accent), var(--gold), var(--teal), var(--accent2), var(--accent));
+            opacity: 0.75;
+            filter: blur(12px);
+            animation: ringRotate 8s linear infinite;
+            transition: all 0.5s ease;
+        }
+
+        /* Outer Spinning Ring */
+        .avatar-ring {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--accent), var(--gold), var(--teal), var(--accent));
+            animation: ringRotate 5s linear infinite;
+            padding: 3px;
+        }
+
+        /* Avatar Container */
+        .avatar-box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--surface2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .avatar-box:hover {
+            transform: scale(1.06);
+        }
+
+        /* Avatar Image (bia.jpeg) */
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 15%;
+            animation: breathing 4s ease-in-out infinite;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        /* Status Badge Dot */
+        .status-badge {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: var(--teal);
+            border: 3.5px solid var(--surface);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--teal);
+            z-index: 10;
+        }
+
+        /* Sound Waves Indicator */
+        .voice-waves {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 18px;
+            margin-top: 8px;
+        }
+
+        .voice-bar {
+            width: 3.5px;
+            background: var(--teal);
+            border-radius: 3px;
+            animation: waveAnim 1s infinite ease-in-out;
+        }
+        .voice-bar:nth-child(1) { animation-delay: 0.0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.4s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.1s; }
+
+        /* ── KEYFRAME ANIMATIONS ── */
+        @keyframes floatMotion {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
+        }
+
+        @keyframes breathing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        @keyframes ringRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes speakPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 10px var(--accent)); }
+            25% { transform: scale(1.06) rotate(-2deg); filter: drop-shadow(0 0 20px var(--gold)); }
+            50% { transform: scale(1.02) rotate(1deg); filter: drop-shadow(0 0 15px var(--accent2)); }
+            75% { transform: scale(1.07) rotate(-1deg); filter: drop-shadow(0 0 25px var(--teal)); }
+        }
+
+        @keyframes waveAnim {
+            0%, 100% { height: 4px; }
+            50% { height: 18px; }
+        }
+
+        @keyframes thinkRotate {
+            0% { transform: rotate(0deg) scale(1); opacity: 0.7; }
+            50% { transform: rotate(180deg) scale(1.15); opacity: 1; }
+            100% { transform: rotate(360deg) scale(1); opacity: 0.7; }
+        }
+
+        /* Dynamic Animation Classes */
+        .state-float .avatar-stage { animation: floatMotion 4s ease-in-out infinite; }
+        .state-speak .avatar-img { animation: speakPulse 0.35s ease-in-out infinite alternate; }
+        .state-speak .avatar-aura { opacity: 0.95; filter: blur(16px); animation: ringRotate 2.5s linear infinite; }
+        .state-think .avatar-aura { animation: thinkRotate 2.5s ease-in-out infinite; background: conic-gradient(from 0deg, var(--gold), #9b59b6, var(--accent), var(--gold)); }
+        .state-shine .avatar-ring { animation: ringRotate 2s linear infinite; }
+        .state-shine .avatar-aura { opacity: 1; filter: blur(20px); }
+
+        /* AVATAR INFO */
+        .avatar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .avatar-role {
+            font-size: 0.8rem;
+            color: var(--gold);
+            font-weight: 600;
+            background: rgba(244, 162, 97, 0.12);
+            border: 1px solid rgba(244, 162, 97, 0.3);
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-top: 4px;
+        }
+
+        /* ── CHAT PREVIEW / SPEECH BUBBLE ── */
+        .chat-box {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.25rem;
+            margin-top: 1.25rem;
+            position: relative;
+        }
+
+        .chat-box::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 14px;
+            height: 14px;
+            background: var(--surface2);
+            border-left: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        /* CONTROLS PANEL */
+        .controls-card {
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.6rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-opt {
+            padding: 10px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-opt:hover {
+            border-color: var(--accent);
+            background: rgba(230, 57, 70, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-opt.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4);
+        }
+
+        .input-speech-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .input-speech-group input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .input-speech-group input:focus {
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body class="state-float">
+
+    <div class="header-title">Avatar Animado & Falante da Bia</div>
+    <div class="header-sub">Com Imagem Real (bia.jpeg), Síntese de Voz (Text-to-Speech pt-BR) e Movimentos Sincronizados</div>
+
+    <div class="showcase-grid">
+
+        <!-- AVATAR DISPLAY CARD -->
+        <div class="card" id="avatarCard">
+            <div class="avatar-stage">
+                <div class="avatar-aura"></div>
+                <div class="avatar-ring">
+                    <div class="avatar-box" onclick="triggerReaction()" title="Clique para a Bia falar com você!">
+                        <img src="bia.jpeg" alt="Bia Avatar" class="avatar-img" id="biaImg">
+                    </div>
+                </div>
+                <div class="status-badge" id="statusDot"></div>
+            </div>
+
+            <div class="avatar-name">
+                Professora Bia 👩‍🏫
+            </div>
+            <div class="avatar-role">Tutora IA ENEM (Voz Ativa 🔊)</div>
+
+            <div class="voice-waves" id="voiceWaves" style="display: flex;">
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+            </div>
+
+            <!-- CHAT BUBBLE PREVIEW -->
+            <div class="chat-box">
+                <div class="chat-text" id="chatMsg">
+                    Olá! Eu sou a <b>Professora Bia</b>. Clique em qualquer opção ao lado ou na minha foto para me ouvir falar! 🗣️
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS CARD -->
+        <div class="card controls-card">
+            <div class="section-title">🗣️ Fazer a Bia Falar</div>
+
+            <div class="control-group">
+                <span class="control-label">Escreva qualquer frase para a Bia falar:</span>
+                <div class="input-speech-group">
+                    <input type="text" id="customText" placeholder="Ex: Olá aluno, como vai sua redação?" value="Olá! Vamos estudar para tirar nota mil na redação do ENEM!">
+                    <button class="btn-opt active" onclick="speakCustom()" style="flex:0 0 auto; padding:10px 18px;">🔊 Falar</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <span class="control-label">Dicas Faladas pela Bia</span>
+                <div class="btn-grid">
+                    <button class="btn-opt" onclick="say('Dica da Competência 1: Atenção aos desvios gramaticais e de concordância verbal!')">💡 Dica C1</button>
+                    <button class="btn-opt" onclick="say('Dica da Competência 2: Use repertórios socioculturais pertinentes e bem fundamentados!')">📚 Dica C2</button>
+                    <button class="btn-opt" onclick="say('Dica da Competência 5: Sua proposta de intervenção deve conter agente, ação, meio, efeito e detalhamento!')">🎯 Dica C5</button>
+                    <button class="btn-opt" onclick="say('Parabéns! Sua redação está excelente e com ótima estrutura dissertativa!')">🏆 Elogio</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <span class="control-label">Estados Visual de Animação</span>
+                <div class="btn-grid">
+                    <button class="btn-opt active" onclick="setState('float')">🌊 Flutuar</button>
+                    <button class="btn-opt" onclick="setState('speak')">💬 Falando</button>
+                    <button class="btn-opt" onclick="setState('think')">🧠 Pensando</button>
+                    <button class="btn-opt" onclick="setState('shine')">✨ Brilhar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentState = 'float';
+        let synth = window.speechSynthesis;
+
+        // Warm up voices
+        if (synth) {
+            synth.onvoiceschanged = () => { synth.getVoices(); };
+        }
+
+        function setState(state) {
+            currentState = state;
+            document.body.className = `state-${state}`;
+            
+            document.querySelectorAll('.control-group:nth-of-type(3) .btn-opt').forEach(btn => {
+                btn.classList.toggle('active', 
+                    (state==='float' && btn.textContent.includes('Flutuar')) ||
+                    (state==='speak' && btn.textContent.includes('Falando')) ||
+                    (state==='think' && btn.textContent.includes('Pensando')) ||
+                    (state==='shine' && btn.textContent.includes('Brilhar')));
+            });
+
+            const wave = document.getElementById('voiceWaves');
+            wave.style.display = (state === 'speak' || state === 'float') ? 'flex' : 'none';
+
+            if (state === 'think') {
+                document.getElementById('chatMsg').innerHTML = "<i>Bia está pensando e analisando os dados... 🤔</i>";
+            } else if (state === 'shine') {
+                document.getElementById('chatMsg').innerHTML = "✨ <b>Parabéns!</b> O repertório foi aplicado de forma muito produtiva!";
+            }
+        }
+
+        function say(text) {
+            document.getElementById('chatMsg').innerHTML = text;
+
+            if (!synth) {
+                alert("Seu navegador não suporta síntese de voz (SpeechSynthesis).");
+                return;
+            }
+
+            synth.cancel(); // Stop current audio
+
+            const plainText = text.replace(/<[^>]*>/g, '').replace(/[\r\n]+/g, ' ').trim();
+            const utterance = new SpeechSynthesisUtterance(plainText);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 1.05;
+            utterance.pitch = 1.1;
+
+            const voices = synth.getVoices();
+            const ptVoice = voices.find(v => v.lang.includes('pt') && (
+                v.name.toLowerCase().includes('luciana') || 
+                v.name.toLowerCase().includes('francisca') || 
+                v.name.toLowerCase().includes('female') || 
+                v.name.toLowerCase().includes('google') ||
+                v.name.toLowerCase().includes('br')
+            )) || voices.find(v => v.lang.includes('pt'));
+
+            if (ptVoice) utterance.voice = ptVoice;
+
+            utterance.onstart = () => {
+                document.body.className = 'state-speak';
+                const waves = document.querySelectorAll('.voice-bar');
+                waves.forEach(w => w.style.animationDuration = '0.4s');
+            };
+
+            utterance.onend = () => {
+                document.body.className = `state-${currentState}`;
+                const waves = document.querySelectorAll('.voice-bar');
+                waves.forEach(w => w.style.animationDuration = '1s');
+            };
+
+            utterance.onerror = () => {
+                document.body.className = `state-${currentState}`;
+            };
+
+            synth.speak(utterance);
+        }
+
+        function speakCustom() {
+            const input = document.getElementById('customText');
+            if (input.value.trim()) {
+                say(input.value.trim());
+            }
+        }
+
+        function triggerReaction() {
+            say("Olá! Eu sou a Bia, sua tutora de redação para o ENEM. Estou aqui para garantir que você alcance a nota mil!");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIA.AI — Correção Inteligente de Redação ENEM</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #05060a;
+            --bg-card: rgba(14, 16, 27, 0.75);
+            --bg-card-hover: rgba(22, 25, 42, 0.85);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(255, 51, 102, 0.3);
+            
+            --primary: #ff3366;
+            --primary-glow: rgba(255, 51, 102, 0.4);
+            --secondary: #ffc700;
+            --secondary-glow: rgba(255, 199, 0, 0.35);
+            --cyber-cyan: #00f5d4;
+            --cyber-cyan-glow: rgba(0, 245, 212, 0.35);
+            --accent-purple: #7b2cbf;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --success: #10b981;
+            
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --glass-blur: blur(20px);
+        }
+
+        /* ── THEME PALETTES ── */
+        [data-theme="purple"] {
+            --primary: #a855f7;
+            --primary-glow: rgba(168, 85, 247, 0.4);
+            --secondary: #ec4899;
+            --secondary-glow: rgba(236, 72, 153, 0.35);
+            --cyber-cyan: #38bdf8;
+            --bg-dark: #0a0518;
+            --bg-card: rgba(23, 15, 45, 0.8);
+            --text-main: #f8fafc;
+        }
+
+        [data-theme="emerald"] {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --secondary: #f59e0b;
+            --secondary-glow: rgba(245, 158, 11, 0.35);
+            --cyber-cyan: #06b6d4;
+            --bg-dark: #021412;
+            --bg-card: rgba(6, 30, 28, 0.8);
+            --text-main: #f8fafc;
+        }
+
+        [data-theme="light"] {
+            --primary: #e63946;
+            --primary-glow: rgba(230, 57, 70, 0.25);
+            --secondary: #f4a261;
+            --secondary-glow: rgba(244, 162, 97, 0.25);
+            --cyber-cyan: #0d9488;
+            --bg-dark: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --border: rgba(0, 0, 0, 0.1);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Ambient Canvas Particles Background */
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* ── HEADER NAVBAR ── */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(5, 6, 10, 0.8);
+            backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            color: #fff;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .brand-text {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(0, 245, 212, 0.12);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            color: var(--cyber-cyan);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.1rem;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .status-dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+            animation: pulseGlow 2s infinite;
+        }
+
+        /* ── MAIN WORKSPACE ── */
+        .workspace {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            flex: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace { grid-template-columns: 1fr; padding: 1rem; }
+        }
+
+        /* ── LEFT PANEL: BIA CHATBOT & AVATAR ── */
+        .bia-panel {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bia-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--cyber-cyan));
+        }
+
+        /* Holographic Avatar Display */
+        .avatar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding: 1rem 0;
+        }
+
+        .avatar-hologram {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Outer Orbital Ring */
+        .avatar-orbit-ring {
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            border: 2px dashed var(--primary-glow);
+            animation: spinClockwise 12s linear infinite;
+        }
+
+        .avatar-aura-glow {
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--primary), var(--secondary), var(--cyber-cyan), var(--primary));
+            opacity: 0.85;
+            filter: blur(12px);
+            animation: spinClockwise 6s linear infinite;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--bg-dark);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .avatar-frame:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 15%;
+            animation: avatarBreath 4s ease-in-out infinite;
+        }
+
+        /* Dynamic Talking Animation */
+        .bia-speaking .avatar-frame img {
+            animation: avatarSpeakPulse 0.35s ease-in-out infinite alternate !important;
+        }
+
+        .bia-speaking .avatar-aura-glow {
+            opacity: 1;
+            filter: blur(18px);
+            animation: spinClockwise 2.5s linear infinite !important;
+        }
+
+        /* Sound Waves Visualizer */
+        .equalizer-bar-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 18px;
+            margin-top: 10px;
+        }
+
+        .eq-bar {
+            width: 4px;
+            background: var(--cyber-cyan);
+            border-radius: 4px;
+            animation: eqAnim 1s ease-in-out infinite;
+            box-shadow: 0 0 8px var(--cyber-cyan-glow);
+        }
+        .eq-bar:nth-child(1) { animation-delay: 0.1s; }
+        .eq-bar:nth-child(2) { animation-delay: 0.3s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.5s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        /* Chat Stream */
+        .chat-messages {
+            flex: 1;
+            min-height: 240px;
+            max-height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 4px;
+        }
+
+        .chat-msg {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .msg-bia {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-top-left-radius: 4px;
+            color: var(--text-main);
+        }
+
+        .msg-user {
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+            border: 1px solid var(--primary-glow);
+            border-top-right-radius: 4px;
+            align-self: flex-end;
+            color: #fff;
+        }
+
+        /* Quick Action Chips */
+        .quick-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .chip-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn:hover {
+            border-color: var(--primary);
+            color: var(--text-main);
+            background: var(--primary-glow);
+        }
+
+        /* Chat Input Controls */
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 6px 8px 6px 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-family: inherit;
+        }
+
+        .mic-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .mic-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 12px var(--primary-glow);
+            animation: pulseMic 1.2s infinite;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            transition: transform 0.2s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* ── RIGHT PANEL: DASHBOARD & WORKSPACE TABS ── */
+        .main-panel {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.88rem;
+            font-family: 'Outfit', sans-serif;
+            padding: 10px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25 ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+            border: 1px solid var(--primary-glow);
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        /* Tab Content Panes */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* ── SCANNER HUD SECTION ── */
+        .scanner-card {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .scanner-card:hover {
+            border-color: var(--primary);
+            background: rgba(255, 51, 102, 0.03);
+        }
+
+        .scanner-card input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .scan-laser-line {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--cyber-cyan), transparent);
+            box-shadow: 0 0 15px var(--cyber-cyan);
+            animation: scanLaser 2s linear infinite;
+        }
+
+        /* ── ESSAY EDITOR SECTION ── */
+        .editor-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .meta-tag strong {
+            color: var(--secondary);
+        }
+
+        .input-tema {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-tema:focus {
+            border-color: var(--primary);
+        }
+
+        .essay-textarea {
+            width: 100%;
+            height: 360px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-size: 1rem;
+            line-height: 1.8;
+            font-family: 'Georgia', serif;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .essay-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+
+        /* Action Buttons */
+        .btn-action-primary {
+            padding: 16px 28px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 30px var(--primary-glow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-action-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px var(--primary-glow);
+        }
+
+        /* ── RESULT / DASHBOARD SECTION ── */
+        .score-hero-card {
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+            border: 1px solid var(--primary-glow);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-big-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-label-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 6px;
+        }
+
+        /* Competency Cards Grid */
+        .competency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .comp-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .comp-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .comp-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .comp-badge {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+
+        .comp-score-chip {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .comp-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Progress Bar */
+        .progress-bar-wrap {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        /* CONFIG MODAL & THEME MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(5, 6, 10, 0.85);
+            backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .theme-opt-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+        .theme-opt-btn:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+        .theme-opt-btn.active {
+            border-color: var(--primary);
+            background: var(--primary-glow);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* KEYFRAMES */
+        @keyframes avatarBreath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        @keyframes avatarSpeakPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.06) rotate(-2deg); }
+            50% { transform: scale(1.02) rotate(1deg); }
+            75% { transform: scale(1.07) rotate(-1deg); }
+        }
+
+        @keyframes spinClockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes eqAnim {
+            0%, 100% { height: 4px; }
+            50% { height: 18px; }
+        }
+
+        @keyframes scanLaser {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes pulseMic {
+            0%, 100% { box-shadow: 0 0 10px var(--primary-glow); }
+            50% { box-shadow: 0 0 25px var(--primary); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Particle Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- ── LOGIN OVERLAY SCREEN ── -->
+    <div id="loginOverlay" style="position:fixed; inset:0; z-index:99999; background:rgba(5,6,10,0.95); backdrop-filter:blur(24px); display:flex; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:24px; padding:2.5rem; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.8); position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, var(--primary), var(--secondary), var(--cyber-cyan));"></div>
+            
+            <div style="width:64px; height:64px; border-radius:18px; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-size:2rem; font-weight:900; color:#fff; margin:0 auto 1.25rem; box-shadow:0 0 30px var(--primary-glow);">
+                B
+            </div>
+
+            <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.6rem; color:var(--text-main); margin-bottom:4px;">BIA.AI — ENEM PRO</div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.75rem;">Digite a senha para acessar a plataforma inteligente</div>
+
+            <input type="password" id="loginPassInput" placeholder="Senha de Acesso (beatriz)" style="width:100%; padding:14px 18px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:14px; color:var(--text-main); font-size:1rem; outline:none; margin-bottom:1rem; text-align:center; transition:border-color 0.2s;" onkeydown="if(event.key==='Enter') attemptLogin()">
+            
+            <button class="btn-action-primary" style="width:100%; font-size:0.95rem; padding:14px;" onclick="attemptLogin()">
+                🔓 Acessar Plataforma
+            </button>
+            
+            <div id="loginErr" style="color:var(--primary); font-size:0.8rem; margin-top:10px; min-height:1.2rem; font-weight:600;"></div>
+        </div>
+    </div>
+
+    <!-- HEADER NAVIGATION -->
+    <header>
+        <div class="brand-container">
+            <div class="brand-logo-badge">B</div>
+            <div class="brand-text">BIA.AI</div>
+            <div class="brand-tag">ENEM PRO v2.0</div>
+        </div>
+
+        <div class="header-actions">
+            <div class="status-pill">
+                <div class="status-dot-pulse"></div>
+                <span id="headerStatusTxt">IA Pronta</span>
+            </div>
+            <button class="icon-btn" onclick="openThemeModal()" title="Trocar Cor da Tela (Temas)">🎨</button>
+            <button class="icon-btn" onclick="toggleAudioMute()" id="audioMuteBtn" title="Ativar/Desativar Voz da Bia">🔊</button>
+            <button class="icon-btn" onclick="openConfigModal()" title="Configurações IA">⚙️</button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE LAYOUT -->
+    <div class="workspace">
+
+        <!-- LEFT PANEL: BIA CHATBOT & AVATAR -->
+        <div class="bia-panel" id="biaPanel">
+            
+            <!-- Holographic Avatar Stage -->
+            <div class="avatar-container">
+                <div class="avatar-hologram" id="avatarHologram">
+                    <div class="avatar-orbit-ring"></div>
+                    <div class="avatar-aura-glow"></div>
+                    <div class="avatar-frame" onclick="triggerBiaGreeting()" title="Clique para conversar com a Professora Bia!">
+                        <img src="bia.jpeg" alt="Professora Bia Avatar">
+                    </div>
+                </div>
+
+                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; margin-top:12px; display:flex; align-items:center; gap:6px;">
+                    Professora Bia <span style="font-size:0.65rem; background:rgba(255,51,102,0.2); border:1px solid rgba(255,51,102,0.4); color:var(--primary); padding:2px 8px; border-radius:12px; font-weight:700;">TUTORA IA</span>
+                </div>
+
+                <div class="equalizer-bar-group" id="eqGroup">
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                </div>
+            </div>
+
+            <!-- Chat Stream -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg msg-bia">
+                    👋 Olá! Eu sou a <b>Professora Bia</b>. Estou aqui para te guiar na redação nota 1000 do ENEM. Cole seu texto ou converse comigo abaixo!
+                </div>
+            </div>
+
+            <!-- Quick Action Chips -->
+            <div class="quick-chips">
+                <button class="chip-btn" onclick="sendQuickPrompt('Como estruturar a introdução?')">💡 Introdução</button>
+                <button class="chip-btn" onclick="sendQuickPrompt('Dicas de repertórios socioculturais')">📚 Repertório</button>
+                <button class="chip-btn" onclick="sendQuickPrompt('Como não zerar a C5?')">🎯 Dica C5</button>
+            </div>
+
+            <!-- Chat Input Controls -->
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Pergunte algo para a Bia..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+                <button class="mic-btn" id="micBtn" onclick="toggleMicSpeech()" title="Falar pelo microfone">🎙️</button>
+                <button class="send-btn" onclick="sendChatMessage()">➔</button>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: WORKSPACE & TAB PANES -->
+        <div class="main-panel">
+            
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('editor')">✏️ Editor de Redação</button>
+                <button class="tab-btn" onclick="switchTab('scanner')">📷 Digitalizar (OCR)</button>
+                <button class="tab-btn" onclick="switchTab('results')">📊 Resultado & Raio-X</button>
+            </div>
+
+            <!-- TAB 1: EDITOR -->
+            <div class="tab-pane active" id="pane-editor">
+                
+                <div class="editor-meta-bar">
+                    <div style="flex:1; min-width:240px;">
+                        <input type="text" class="input-tema" id="temaInput" placeholder="Informe o Tema da Redação (Ex: O impacto da inteligência artificial na sociedade brasileira)" oninput="updateWordStats()">
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <div class="meta-tag" id="statWords">0 <strong>Palavras</strong></div>
+                        <div class="meta-tag" id="statLines">0 <strong>Linhas</strong></div>
+                    </div>
+                </div>
+
+                <textarea class="essay-textarea" id="essayText" placeholder="Cole ou digite a sua redação aqui..." oninput="updateWordStats()"></textarea>
+
+                <div style="display:flex; gap:12px; justify-content:flex-end;">
+                    <button class="btn-action-primary" onclick="startCorrectionProcess()">
+                        ⚡ Corrigir Redação Agora com IA
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 2: SCANNER (OCR) -->
+            <div class="tab-pane" id="pane-scanner">
+                <div class="scanner-card" id="scannerZone">
+                    <input type="file" id="fileIn" accept="image/*" onchange="handleImageUpload(this)">
+                    <div class="scan-laser-line" id="scanLaser"></div>
+                    <div style="font-size:3rem; margin-bottom:12px;">📄</div>
+                    <div style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:6px;">Digitalizar Redação Manuscrita</div>
+                    <div style="font-size:0.88rem; color:var(--text-muted);">Arraste uma foto da folha ou clique para selecionar (PNG, JPG, WEBP)</div>
+                </div>
+                
+                <div id="ocrPreviewWrap" style="display:none; text-align:center;">
+                    <img id="ocrPreviewImg" style="max-width:100%; border-radius:12px; border:1px solid var(--border); margin-bottom:1rem;">
+                    <button class="btn-action-primary" style="margin:0 auto;" onclick="runOCRExtraction()">🤖 Extrair Texto da Imagem</button>
+                </div>
+            </div>
+
+            <!-- TAB 3: RESULTS & RAIO-X -->
+            <div class="tab-pane" id="pane-results">
+                
+                <!-- Score Hero Banner -->
+                <div class="score-hero-card">
+                    <div>
+                        <div class="score-big-number" id="totalScoreNum">960</div>
+                        <div class="score-label-text">Pontuação Total no ENEM / 1000</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:1.1rem; color:var(--cyber-cyan);" id="scoreRatingTxt">Excelente Desempenho!</div>
+                        <div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">Parabéns! Texto bem estruturado.</div>
+                    </div>
+                </div>
+
+                <!-- Competencies Grid -->
+                <div class="competency-grid">
+                    <div class="comp-card" onclick="selectCompDetail(1)">
+                        <div class="comp-card-header">
+                            <span class="comp-badge">C1 — Domínio Escrito</span>
+                            <span class="comp-score-chip" id="c1ScoreChip">200 pts</span>
+                        </div>
+                        <div class="comp-desc">Avaliação da norma culta, acentuação e gramática.</div>
+                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c1Bar" style="width:100%"></div></div>
+                    </div>
+
+                    <div class="comp-card" onclick="selectCompDetail(2)">
+                        <div class="comp-card-header">
+                            <span class="comp-badge">C2 — Tema & Repertório</span>
+                            <span class="comp-score-chip" id="c2ScoreChip">200 pts</span>
+                        </div>
+                        <div class="comp-desc">Compreensão da proposta e aplicação de repertório.</div>
+                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c2Bar" style="width:100%"></div></div>
+                    </div>
+
+                    <div class="comp-card" onclick="selectCompDetail(3)">
+                        <div class="comp-card-header">
+                            <span class="comp-badge">C3 — Projeto de Texto</span>
+                            <span class="comp-score-chip" id="c3ScoreChip">160 pts</span>
+                        </div>
+                        <div class="comp-desc">Organização de argumentos e defesa do ponto de vista.</div>
+                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c3Bar" style="width:80%"></div></div>
+                    </div>
+
+                    <div class="comp-card" onclick="selectCompDetail(4)">
+                        <div class="comp-card-header">
+                            <span class="comp-badge">C4 — Coesão Textual</span>
+                            <span class="comp-score-chip" id="c4ScoreChip">200 pts</span>
+                        </div>
+                        <div class="comp-desc">Uso de conectivos inter e intraparágrafos.</div>
+                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c4Bar" style="width:100%"></div></div>
+                    </div>
+
+                    <div class="comp-card" onclick="selectCompDetail(5)">
+                        <div class="comp-card-header">
+                            <span class="comp-badge">C5 — Intervenção</span>
+                            <span class="comp-score-chip" id="c5ScoreChip">200 pts</span>
+                        </div>
+                        <div class="comp-desc">Proposta com Agente, Ação, Meio, Efeito e Detalhamento.</div>
+                        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="c5Bar" style="width:100%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Detail Feedback Card -->
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.5rem;" id="compDetailBox">
+                    <div style="font-family:'Outfit',sans-serif; font-weight:700; font-size:1.1rem; color:var(--secondary); margin-bottom:10px;" id="detailTitle">Detalhes da Competência 1</div>
+                    <div style="font-size:0.9rem; line-height:1.7; color:var(--text-main);" id="detailContent">Selecione um card de competência acima para analisar as observações da Professora Bia.</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- THEME SELECTION MODAL -->
+    <div class="modal-overlay" id="themeModal">
+        <div class="modal-card" style="max-width:440px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.25rem;">🎨 Trocar Cores da Tela</div>
+                <button class="icon-btn" onclick="closeThemeModal()">✕</button>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">Selecione uma paleta de cores para personalizar a interface do site:</div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1rem;">
+                <button class="theme-opt-btn active" onclick="setTheme('default')" id="themeBtn-default">
+                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#ff3366;"></span><span style="width:12px;height:12px;border-radius:50%;background:#ffc700;"></span><span style="width:12px;height:12px;border-radius:50%;background:#05060a;"></span></div>
+                    💖 Cyber Coral
+                </button>
+                <button class="theme-opt-btn" onclick="setTheme('purple')" id="themeBtn-purple">
+                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#a855f7;"></span><span style="width:12px;height:12px;border-radius:50%;background:#ec4899;"></span><span style="width:12px;height:12px;border-radius:50%;background:#0a0518;"></span></div>
+                    💜 Nebulosa Roxa
+                </button>
+                <button class="theme-opt-btn" onclick="setTheme('emerald')" id="themeBtn-emerald">
+                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;"></span><span style="width:12px;height:12px;border-radius:50%;background:#06b6d4;"></span><span style="width:12px;height:12px;border-radius:50%;background:#021412;"></span></div>
+                    💚 Esmeralda Neon
+                </button>
+                <button class="theme-opt-btn" onclick="setTheme('light')" id="themeBtn-light">
+                    <div style="display:flex; gap:4px; margin-bottom:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#e63946;"></span><span style="width:12px;height:12px;border-radius:50%;background:#f4a261;"></span><span style="width:12px;height:12px;border-radius:50%;background:#f1f5f9;"></span></div>
+                    ☀️ Claro Elegante
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIG CONFIGURATION MODAL -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.3rem;">⚙️ Configurações da IA</div>
+                <button class="icon-btn" onclick="closeConfigModal()">✕</button>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block;">URL do Servidor (Ngrok / API Local)</label>
+                <input type="text" class="input-tema" id="cfgApiUrl" placeholder="https://xxxx.ngrok-free.app/v1/chat/completions">
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+                <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block;">Modelo de IA</label>
+                <input type="text" class="input-tema" id="cfgModel" value="local-model">
+            </div>
+
+            <button class="btn-action-primary" style="width:100%;" onclick="saveConfigModal()">💾 Salvar Configurações</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* ── LOGIN OVERLAY ── */
+        function attemptLogin() {
+            const input = document.getElementById('loginPassInput').value.trim();
+            if (input === 'beatriz') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                sessionStorage.setItem('biaLoggedIn', 'true');
+                triggerBiaGreeting();
+            } else {
+                document.getElementById('loginErr').textContent = 'Senha incorreta. Tente novamente.';
+                document.getElementById('loginPassInput').value = '';
+            }
+        }
+
+        function checkLoginState() {
+            if (sessionStorage.getItem('biaLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+            }
+        }
+        checkLoginState();
+
+        /* ── THEME SWITCHER SYSTEM ── */
+        let particleColor = '255, 51, 102';
+
+        function openThemeModal() { document.getElementById('themeModal').style.display = 'flex'; }
+        function closeThemeModal() { document.getElementById('themeModal').style.display = 'none'; }
+
+        function setTheme(themeName) {
+            if (themeName === 'default') document.documentElement.removeAttribute('data-theme');
+            else document.documentElement.setAttribute('data-theme', themeName);
+            
+            localStorage.setItem('biaTheme', themeName);
+            
+            document.querySelectorAll('.theme-opt-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`themeBtn-${themeName}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Update particle colors
+            if (themeName === 'purple') particleColor = '168, 85, 247';
+            else if (themeName === 'emerald') particleColor = '16, 185, 129';
+            else if (themeName === 'light') particleColor = '230, 57, 70';
+            else particleColor = '255, 51, 102';
+
+            closeThemeModal();
+        }
+
+        function loadSavedTheme() {
+            const saved = localStorage.getItem('biaTheme') || 'default';
+            setTheme(saved);
+        }
+        loadSavedTheme();
+
+        /* ── CANVAS PARTICLES BG ── */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 2 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${particleColor}, ${this.alpha})`;
+                ctx.fill();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+        }
+
+        for (let i = 0; i < 45; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        /* ── STATE & VOICE SYNTHESIS ENGINE ── */
+        let isAudioMuted = false;
+        let isRecognitionActive = false;
+        let recognition = null;
+        const synth = window.speechSynthesis;
+
+        function toggleAudioMute() {
+            isAudioMuted = !isAudioMuted;
+            document.getElementById('audioMuteBtn').textContent = isAudioMuted ? '🔇' : '🔊';
+            if (isAudioMuted && synth) {
+                synth.cancel();
+                stopBiaTalkingState();
+            }
+        }
+
+        function speakBiaText(text) {
+            if (isAudioMuted || !synth) return;
+            synth.cancel();
+
+            const cleanText = text.replace(/<[^>]*>/g, '').replace(/[\r\n]+/g, ' ').trim();
+            if (!cleanText) return;
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 1.05;
+            utterance.pitch = 1.1;
+
+            const voices = synth.getVoices();
+            const ptVoice = voices.find(v => v.lang.includes('pt') && (
+                v.name.toLowerCase().includes('luciana') || 
+                v.name.toLowerCase().includes('francisca') || 
+                v.name.toLowerCase().includes('google') || 
+                v.name.toLowerCase().includes('br')
+            )) || voices.find(v => v.lang.includes('pt'));
+
+            if (ptVoice) utterance.voice = ptVoice;
+
+            utterance.onstart = () => { startBiaTalkingState(); };
+            utterance.onend = () => { stopBiaTalkingState(); };
+            utterance.onerror = () => { stopBiaTalkingState(); };
+
+            synth.speak(utterance);
+        }
+
+        function startBiaTalkingState() {
+            document.getElementById('biaPanel').classList.add('bia-speaking');
+        }
+
+        function stopBiaTalkingState() {
+            document.getElementById('biaPanel').classList.remove('bia-speaking');
+        }
+
+        function triggerBiaGreeting() {
+            const msg = "Oi! Eu sou a Professora Bia! Clique no editor ao lado ou pergunte o que quiser aqui!";
+            addBiaChatMessage(msg);
+            speakBiaText(msg);
+        }
+
+        /* ── CHAT SYSTEM ── */
+        function addBiaChatMessage(text) {
+            const box = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'chat-msg msg-bia';
+            div.innerHTML = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addUserChatMessage(text) {
+            const box = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'chat-msg msg-user';
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addUserChatMessage(text);
+            input.value = '';
+
+            // Generate Smart Response
+            setTimeout(() => {
+                let reply = "Entendido! ";
+                if (text.toLowerCase().includes('introdução') || text.toLowerCase().includes('estruturar')) {
+                    reply += "Na introdução do ENEM, apresente a contextualização do tema, a tese clara e antecipe os dois argumentos que desenvolverá nos D1 e D2.";
+                } else if (text.toLowerCase().includes('repertório')) {
+                    reply += "Para a Competência 2, use autores reconhecidos (ex: Zygmunt Bauman, Thomas Hobbes, Constituição de 1988) e relacione diretamente com o tema!";
+                } else if (text.toLowerCase().includes('c5') || text.toLowerCase().includes('intervenção')) {
+                    reply += "A proposta de intervenção (C5) precisa dos 5 elementos obrigatórios: Agente, Ação, Modo/Meio, Efeito e Detalhamento!";
+                } else {
+                    reply += "Estou pronta para analisar sua redação! Clique em '⚡ Corrigir Redação Agora' no painel ao lado.";
+                }
+                addBiaChatMessage(reply);
+                speakBiaText(reply);
+            }, 600);
+        }
+
+        function sendQuickPrompt(prompt) {
+            document.getElementById('chatInput').value = prompt;
+            sendChatMessage();
+        }
+
+        /* ── SPEECH TO TEXT RECOGNITION (MIC 🎙️) ── */
+        function toggleMicSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Seu navegador não suporta reconhecimento de voz.");
+                return;
+            }
+
+            if (isRecognitionActive) {
+                recognition.stop();
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isRecognitionActive = true;
+                document.getElementById('micBtn').classList.add('active');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chatInput').value = transcript;
+                sendChatMessage();
+            };
+
+            recognition.onend = () => {
+                isRecognitionActive = false;
+                document.getElementById('micBtn').classList.remove('active');
+            };
+
+            recognition.start();
+        }
+
+        /* ── NAVIGATION TABS ── */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(`pane-${tabId}`).classList.add('active');
+        }
+
+        /* ── ESSAY WORD COUNTER ── */
+        function updateWordStats() {
+            const text = document.getElementById('essayText').value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const lines = text.trim() ? text.split(/\n/).length : 0;
+
+            document.getElementById('statWords').innerHTML = `${words} <strong>Palavras</strong>`;
+            document.getElementById('statLines').innerHTML = `${lines} <strong>Linhas</strong>`;
+        }
+
+        /* ── OCR IMAGE UPLOAD ── */
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('ocrPreviewImg').src = e.target.result;
+                    document.getElementById('scannerZone').style.display = 'none';
+                    document.getElementById('ocrPreviewWrap').style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function runOCRExtraction() {
+            const laser = document.getElementById('scanLaser');
+            laser.style.display = 'block';
+            addBiaChatMessage("🔍 Lendo e extraindo o texto da redação manuscrita...");
+            speakBiaText("Processando imagem da redação com inteligência artificial.");
+
+            setTimeout(() => {
+                laser.style.display = 'none';
+                document.getElementById('essayText').value = "O desenvolvimento tecnológico na era contemporânea trouxe transformações profundas na organização social. Contudo, percebe-se que a acessibilidade digital ainda enfrenta entraves significativos no Brasil, exigindo medidas eficientes de democratização do acesso à informação.";
+                updateWordStats();
+                switchTab('editor');
+                addBiaChatMessage("✅ Texto extraído com sucesso! Verifique e clique em **Corrigir Redação**.");
+                speakBiaText("Texto extraído com sucesso para o editor!");
+            }, 2500);
+        }
+
+        /* ── CORRECTION SIMULATOR ── */
+        function startCorrectionProcess() {
+            const text = document.getElementById('essayText').value.trim();
+            if (!text) {
+                alert("Por favor, cole ou digite uma redação no editor!");
+                return;
+            }
+
+            addBiaChatMessage("⚡ Analisando sua redação segundo as 5 competências do ENEM...");
+            speakBiaText("Iniciando a correção da sua redação nas cinco competências do ENEM.");
+
+            setTimeout(() => {
+                switchTab('results');
+                document.getElementById('totalScoreNum').textContent = "960";
+                addBiaChatMessage("📊 Correção concluída com sucesso! Você obteve **960 / 1000 pontos**.");
+                speakBiaText("Parabéns! Sua pontuação final foi de 960 pontos de mil!");
+            }, 1800);
+        }
+
+        /* ── COMPETENCY DETAIL SELECTOR ── */
+        const COMP_DETAILS = {
+            1: { title: "C1 — Domínio da Norma Culta (200/200)", text: "Excelente domínio da modalidade escrita formal. Nenhuma falha sintática grave encontrada, com excelente acentuação e pontuação adequada." },
+            2: { title: "C2 — Compreensão do Tema & Repertório (200/200)", text: "O tema foi abordado de forma completa sem tangenciamento. O repertório sociocultural foi legitimado e aplicado de maneira extremamente produtiva." },
+            3: { title: "C3 — Projeto de Texto & Argumentação (160/200)", text: "Texto muito bem articulado. Sugestão de melhoria: Aprofundar o desdobramento do segundo argumento no D2 para garantir nota máxima." },
+            4: { title: "C4 — Coesão e Conectivos (200/200)", text: "Uso exemplar de operadores argumentativos interparágrafos e diversidade lexical sem repetições excessivas." },
+            5: { title: "C5 — Proposta de Intervenção (200/200)", text: "Proposta completa contendo todos os 5 elementos essenciais: Agente (Ministério das Comunicações), Ação, Meio/Modo, Efeito e Detalhamento." }
+        };
+
+        function selectCompDetail(n) {
+            const data = COMP_DETAILS[n];
+            document.getElementById('detailTitle').textContent = data.title;
+            document.getElementById('detailContent').textContent = data.text;
+            speakBiaText(data.title + ". " + data.text);
+        }
+
+        /* ── MODAL CONFIG ── */
+        function openConfigModal() { document.getElementById('configModal').style.display = 'flex'; }
+        function closeConfigModal() { document.getElementById('configModal').style.display = 'none'; }
+        function saveConfigModal() {
+            closeConfigModal();
+            addBiaChatMessage("⚙️ Configurações da IA salvas com sucesso!");
+        }
+    </script>
+</body>
+</html>
