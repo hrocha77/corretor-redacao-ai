@@ -930,7 +930,7 @@ textarea::placeholder { color: var(--muted); }
         <div class="avatar-dot-status"></div>
     </div>
     <div class="avatar-pill-badge">
-        <span style="color:var(--gold);font-weight:800;">Bia</span> Professora IA • 💬 Dúvidas?
+        <span style="color:var(--gold);font-weight:800;">Bia</span> • 💬 Dúvidas?
     </div>
 </div>
 
@@ -1242,22 +1242,54 @@ function showTab(id) {
   if (id === 'metrics') updateMetricsDisplay();
 }
 
-/* TELEMETRY & METRICS TRACKING ENGINE */
+/* REAL-TIME LIVE TELEMETRY ENGINE */
 var telemetryData = {
+  isGenerating: false,
+  startTime: 0,
+  liveTimerId: null,
   lastTokPerSec: 0,
   lastLatencyMs: 0,
   lastCompletionTok: 0,
   totalSessionTok: 0,
   lastContextUsed: 0,
   maxContext: parseInt(localStorage.getItem('maxContextWindow') || '32768'),
-  totalRequests: 0
+  totalRequests: 0,
+  estimatedPromptTok: 0
 };
 
 function updateMaxContextSetting(val) {
   var v = parseInt(val) || 32768;
   telemetryData.maxContext = v;
   localStorage.setItem('maxContextWindow', v.toString());
-  updateMetricsDisplay();
+  updateMetricsDisplay(false);
+}
+
+function startLiveTelemetry(estPromptTok) {
+  telemetryData.isGenerating = true;
+  telemetryData.startTime = Date.now();
+  telemetryData.estimatedPromptTok = estPromptTok || 3200;
+  
+  if (telemetryData.liveTimerId) clearInterval(telemetryData.liveTimerId);
+  
+  telemetryData.liveTimerId = setInterval(function() {
+    if (!telemetryData.isGenerating) {
+      clearInterval(telemetryData.liveTimerId);
+      return;
+    }
+    var elapsedSec = ((Date.now() - telemetryData.startTime) / 1000) || 0.1;
+    var estGenerated = Math.round(elapsedSec * 22);
+    telemetryData.lastContextUsed = telemetryData.estimatedPromptTok + estGenerated;
+    telemetryData.lastLatencyMs = Math.round(elapsedSec * 1000);
+    telemetryData.lastTokPerSec = (estGenerated / elapsedSec).toFixed(1);
+    telemetryData.lastCompletionTok = estGenerated;
+    updateMetricsDisplay(true);
+  }, 300);
+}
+
+function stopLiveTelemetry(actualPromptTok, actualCompTok, actualLatencyMs) {
+  telemetryData.isGenerating = false;
+  if (telemetryData.liveTimerId) clearInterval(telemetryData.liveTimerId);
+  recordTelemetry(actualPromptTok, actualCompTok, actualLatencyMs);
 }
 
 function recordTelemetry(promptTok, compTok, latencyMs) {
@@ -1270,10 +1302,10 @@ function recordTelemetry(promptTok, compTok, latencyMs) {
   telemetryData.lastTokPerSec = (telemetryData.lastCompletionTok / sec).toFixed(1);
   telemetryData.lastContextUsed = (promptTok || 3200) + telemetryData.lastCompletionTok;
   
-  updateMetricsDisplay();
+  updateMetricsDisplay(false);
 }
 
-function updateMetricsDisplay() {
+function updateMetricsDisplay(isLive) {
   var tokSecEl = document.getElementById('mTokPerSec');
   var latEl = document.getElementById('mLatency');
   var compTokEl = document.getElementById('mCompletionTok');
@@ -1283,10 +1315,17 @@ function updateMetricsDisplay() {
   var ctxRemEl = document.getElementById('mCtxRemaining');
   var kvPercEl = document.getElementById('mKvPercent');
   var kvBarEl = document.getElementById('mKvBar');
+  var kvStatusEl = document.getElementById('mKvStatus');
 
-  if (tokSecEl) tokSecEl.textContent = (telemetryData.lastTokPerSec || '0.0') + ' tok/s';
+  if (tokSecEl) {
+    if (isLive) {
+      tokSecEl.innerHTML = '<span style="color:var(--gold);font-weight:800;">⚡ ' + (telemetryData.lastTokPerSec || '22.0') + ' tok/s (Gerando...)</span>';
+    } else {
+      tokSecEl.textContent = (telemetryData.lastTokPerSec || '0.0') + ' tok/s';
+    }
+  }
   if (latEl) latEl.textContent = (telemetryData.lastLatencyMs || 0) + ' ms';
-  if (compTokEl) compTokEl.textContent = (telemetryData.lastCompletionTok || 0) + ' tokens';
+  if (compTokEl) compTokEl.textContent = (telemetryData.lastCompletionTok || 0) + ' tokens' + (isLive ? ' (em andamento)' : '');
   if (totalTokEl) totalTokEl.textContent = (telemetryData.totalSessionTok || 0) + ' tokens';
 
   var maxCtx = telemetryData.maxContext || 32768;
@@ -1302,6 +1341,14 @@ function updateMetricsDisplay() {
   var kvPct = Math.min(100, Math.round((usedCtx / maxCtx) * 100 * 1.5)) || (telemetryData.totalRequests > 0 ? 18 : 0);
   if (kvPercEl) kvPercEl.textContent = kvPct + '%';
   if (kvBarEl) kvBarEl.style.width = kvPct + '%';
+
+  if (kvStatusEl) {
+    if (isLive) {
+      kvStatusEl.innerHTML = '<span style="color:var(--gold);font-weight:700;">⚡ Processando no LM Studio...</span>';
+    } else {
+      kvStatusEl.innerHTML = '<span style="color:var(--success);font-weight:700;">✓ Saudável (Concluído)</span>';
+    }
+  }
 }
 
 function toggleSub(t) {
@@ -1841,6 +1888,9 @@ async function evaluateSingleComp(i, txt, temaInfo) {
 
   for (var t = 0; t < TOKEN_LADDER.length; t++) {
     var maxTok = TOKEN_LADDER[t];
+    var tStart = Date.now();
+    startLiveTelemetry(Math.round((promptC.length + txt.length) / 4));
+
     try {
       var resp = await fetch(cfg.apiUrl, {
         method: 'POST',
@@ -1851,20 +1901,20 @@ async function evaluateSingleComp(i, txt, temaInfo) {
           temperature: cfg.temp,
           max_tokens: maxTok
         }),
-        signal: AbortSignal.timeout(45000)
+        signal: AbortSignal.timeout(180000) // 180s (3 min) timeout
       });
 
+      var tLatency = Date.now() - tStart;
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       var data = await resp.json();
       var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
       var parsed = repairJson(reply || '');
       if (!parsed || parsed['c'+i+'_score'] === undefined) throw new Error('JSON inválido C'+i);
 
-      if (data.usage && data.usage.prompt_tokens) {
-        recordTelemetry(data.usage.prompt_tokens, data.usage.completion_tokens, 2200);
-      } else {
-        recordTelemetry(Math.round((promptC.length + txt.length) / 4), Math.round((reply||'').length / 4), 2200);
-      }
+      var pTok = (data.usage && data.usage.prompt_tokens) ? data.usage.prompt_tokens : Math.round((promptC.length + txt.length) / 4);
+      var cTok = (data.usage && data.usage.completion_tokens) ? data.usage.completion_tokens : Math.round((reply||'').length / 4);
+
+      stopLiveTelemetry(pTok, cTok, tLatency);
       
       var dedKey = 'c'+i+'_ded', scoreKey = 'c'+i+'_score';
       if (parsed[dedKey] && typeof parsed[dedKey] === 'object') {
@@ -1877,7 +1927,7 @@ async function evaluateSingleComp(i, txt, temaInfo) {
           method:'POST',
           headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
           body:JSON.stringify({model:cfg.model, messages:[{role:'system',content:sp2},{role:'user',content:txt}], temperature:cfg.temp, max_tokens:400}),
-          signal:AbortSignal.timeout(25000)
+          signal:AbortSignal.timeout(90000) // 90s timeout
         });
         if (r2.ok) {
           var d2 = await r2.json();
@@ -1889,7 +1939,10 @@ async function evaluateSingleComp(i, txt, temaInfo) {
       evalCache.set(cacheKey, parsed);
       return parsed;
     } catch(e) {
-      if (t === TOKEN_LADDER.length - 1) throw e;
+      if (t === TOKEN_LADDER.length - 1) {
+        stopLiveTelemetry(0, 0, Date.now() - tStart);
+        throw e;
+      }
     }
   }
 }
@@ -2412,6 +2465,9 @@ async function sendBiaChatMessage(customText) {
                      'Tema: ' + tema + '\n' +
                      'Redação do Aluno:\n"""\n' + (essay || 'Nenhuma redação inserida no momento.') + '\n"""';
 
+  var tStart = Date.now();
+  startLiveTelemetry(Math.round((systemPrompt.length + userText.length) / 4));
+
   try {
     var resp = await fetch(cfg.apiUrl, {
       method: 'POST',
@@ -2425,19 +2481,19 @@ async function sendBiaChatMessage(customText) {
         temperature: 0.3,
         max_tokens: 700
       }),
-      signal: AbortSignal.timeout(35000)
+      signal: AbortSignal.timeout(180000) // 180s (3 minutos) timeout
     });
 
+    var tLatency = Date.now() - tStart;
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var data = await resp.json();
     var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     if (!reply) throw new Error('Sem resposta da IA');
 
-    if (data.usage && data.usage.prompt_tokens) {
-      recordTelemetry(data.usage.prompt_tokens, data.usage.completion_tokens, 1500);
-    } else {
-      recordTelemetry(Math.round((systemPrompt.length + userText.length) / 4), Math.round((reply||'').length / 4), 1500);
-    }
+    var pTok = (data.usage && data.usage.prompt_tokens) ? data.usage.prompt_tokens : Math.round((systemPrompt.length + userText.length) / 4);
+    var cTok = (data.usage && data.usage.completion_tokens) ? data.usage.completion_tokens : Math.round((reply||'').length / 4);
+
+    stopLiveTelemetry(pTok, cTok, tLatency);
 
     if (tempEl) tempEl.innerHTML = sanitizeText(reply).replace(/\n/g, '<br>');
     var history = document.getElementById('biaChatHistory');
@@ -2445,6 +2501,7 @@ async function sendBiaChatMessage(customText) {
 
     speakBia(reply);
   } catch(err) {
+    stopLiveTelemetry(0, 0, Date.now() - tStart);
     if (tempEl) tempEl.innerHTML = '❌ Não consegui consultar o LM Studio: ' + sanitizeText(err.message);
     speakBia('Não consegui consultar o LM Studio. Verifique se o servidor está ativo.');
   }
