@@ -1904,33 +1904,6 @@ function playPodcast() {
   playPodcastFromIndex(0);
 }
 
-function playPodcastFromIndex(idx) {
-  if (idx >= podcastSentences.length) {
-    stopPodcast();
-    return;
-  }
-  window.speechSynthesis.cancel();
-  podcastCurrentIndex = idx;
-  isPodcastPlaying = true;
-
-  var btnText = document.getElementById('podcastPlayText');
-  var btnIcon = document.getElementById('podcastPlayIcon');
-  if (btnText) btnText.textContent = 'Pausar Podcast';
-  if (btnIcon) btnIcon.textContent = '⏸️';
-
-  var sentence = podcastSentences[idx];
-  
-  var box = document.getElementById('podcastTranscriptBox');
-  if (box) {
-    var formatted = podcastSentences.map(function(s, i) {
-      if (i === idx) return '<mark style="background:rgba(244,162,97,0.3);color:var(--text);padding:2px 6px;border-radius:4px;border-left:3px solid var(--accent);">▶️ ' + sanitizeText(s) + '</mark>';
-      return sanitizeText(s);
-    }).join('<br><br>');
-    box.innerHTML = '<b>🎙️ Narração em Andamento...</b><br><br>' + formatted;
-    var currentMark = box.querySelector('mark');
-    if (currentMark) currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
 var currentVoicePitch = parseFloat(localStorage.getItem('biaVoicePitch') || '1.45');
 var currentVoiceRate  = parseFloat(localStorage.getItem('biaVoiceRate')  || '1.12');
 
@@ -1956,6 +1929,7 @@ function setVoiceStyle(style) {
 }
 
 function getStrictFemaleVoice() {
+  if (!('speechSynthesis' in window)) return null;
   var voices = window.speechSynthesis.getVoices();
   if (!voices || !voices.length) return null;
 
@@ -2003,7 +1977,7 @@ function populateVoiceList() {
   voices.forEach(function(v) {
     var opt = document.createElement('option');
     opt.value = v.name;
-    opt.textContent = v.name + ' (' + v.lang + ')' + (v === defaultFemale ? ' ⭐ Recomendada' : '');
+    opt.textContent = v.name + ' (' + v.lang + ')' + (v === defaultFemale ? ' ⭐ Recomendada (Bia)' : '');
     if (selectedName ? v.name === selectedName : v === defaultFemale) {
       opt.selected = true;
     }
@@ -2022,6 +1996,36 @@ function saveVoicePreference() {
 function testVoicePreview() {
   speakBia('Olá! Esta é a voz configurada da Professora Bia para orientar sua redação do ENEM!');
 }
+
+function playPodcastFromIndex(idx) {
+  if (idx >= podcastSentences.length) {
+    stopPodcast();
+    return;
+  }
+  if (!('speechSynthesis' in window)) return;
+
+  if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+  window.speechSynthesis.cancel();
+  podcastCurrentIndex = idx;
+  isPodcastPlaying = true;
+
+  var btnText = document.getElementById('podcastPlayText');
+  var btnIcon = document.getElementById('podcastPlayIcon');
+  if (btnText) btnText.textContent = 'Pausar Podcast';
+  if (btnIcon) btnIcon.textContent = '⏸️';
+
+  var sentence = podcastSentences[idx];
+  
+  var box = document.getElementById('podcastTranscriptBox');
+  if (box) {
+    var formatted = podcastSentences.map(function(s, i) {
+      if (i === idx) return '<mark style="background:rgba(244,162,97,0.3);color:var(--text);padding:2px 6px;border-radius:4px;border-left:3px solid var(--accent);">▶️ ' + sanitizeText(s) + '</mark>';
+      return sanitizeText(s);
+    }).join('<br><br>');
+    box.innerHTML = '<b>🎙️ Narração em Andamento...</b><br><br>' + formatted;
+    var currentMark = box.querySelector('mark');
+    if (currentMark) currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
   var utterance = new SpeechSynthesisUtterance(sentence.replace(/<[^>]*>/g, ''));
   utterance.lang = 'pt-BR';
@@ -2097,7 +2101,9 @@ function toggleBiaVoice() {
 
 function speakBia(text) {
   if (biaVoiceMuted || !('speechSynthesis' in window)) return;
+  if (window.speechSynthesis.paused) window.speechSynthesis.resume();
   window.speechSynthesis.cancel();
+  
   var plainText = text.replace(/<[^>]*>/g, '').replace(/[\r\n]+/g, ' ').trim();
   if (!plainText) return;
 
@@ -2131,7 +2137,11 @@ function stopBiaTalkingAnim() {
 }
 
 if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = function() { window.speechSynthesis.getVoices(); };
+  window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.getVoices();
+    populateVoiceList();
+  };
+  setTimeout(populateVoiceList, 500);
 }
 
 /* ── BIA INTERACTIVE CHAT & LLM REQUISITIONS ── */
