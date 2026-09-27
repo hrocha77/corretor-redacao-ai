@@ -47,6 +47,13 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg);
@@ -56,9 +63,47 @@ body {
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* FORMULA 1 CUSTOM SCROLLBARS FOR RAG & OVERFLOW CONTAINERS */
+/* CHROME GLASSMORPHISM & WEBKIT BACKDROP FALLBACKS */
+.card, .navbar, .login-card, #avatar-bubble, #themeModal, #ragModal, #addRagModal, #login-overlay {
+  -webkit-backdrop-filter: var(--glass-blur, blur(16px));
+}
+
+/* CHROME FILE UPLOAD BUTTON STYLING */
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-right: 10px;
+}
+input[type="file"]::file-selector-button:hover,
+input[type="file"]::-webkit-file-upload-button:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+/* CHROME FOCUS RINGS & FLEXBOX OVERFLOW FIXES */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.card, .tab-pane {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* FORMULA 1 CUSTOM SCROLLBARS FOR CHROME & WEBKIT */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -1142,8 +1187,12 @@ var particles = [];
 var particleRGB = '230, 57, 70';
 
 function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.scale(dpr, dpr);
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
