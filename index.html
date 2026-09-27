@@ -764,7 +764,8 @@ textarea::placeholder { color: var(--muted); }
           <div style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">Escolha a voz do seu navegador que mais gosta para a Bia falar com você:</div>
           
           <div class="api-config" style="margin-bottom:12px;">
-            <select id="voiceSelect" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:12px;font-size:0.88rem;outline:none;cursor:pointer;" onchange="saveVoicePreference()"></select>
+            <select id="voiceSelect" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:12px;font-size:0.88rem;outline:none;cursor:pointer;" onfocus="populateVoiceList()" onclick="populateVoiceList()" onchange="saveVoicePreference()"></select>
+            <button class="btn btn-secondary" onclick="populateVoiceList(); showToast('Vozes atualizadas!', 'info');" title="Atualizar Lista de Vozes do Sistema" style="padding:8px 12px;font-size:0.85rem;">🔄</button>
             <button class="btn btn-secondary" onclick="testVoicePreview()" style="padding:8px 16px;font-size:0.85rem;">🔊 Testar Voz</button>
           </div>
 
@@ -1032,9 +1033,10 @@ textarea::placeholder { color: var(--muted); }
       <button onclick="closeRagModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
     </div>
     
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
-      <button class="btn btn-secondary" onclick="showRagTab('chunks')" id="btnRagTabChunks" style="font-size:0.82rem;padding:6px 14px;background:var(--accent);color:white;">📚 Chunks Carregados (17)</button>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-secondary" onclick="showRagTab('chunks')" id="btnRagTabChunks" style="font-size:0.82rem;padding:6px 14px;background:var(--accent);color:white;">📚 Chunks Carregados (<span id="ragChunksCountLabel">17</span>)</button>
       <button class="btn btn-secondary" onclick="showRagTab('prompt')" id="btnRagTabPrompt" style="font-size:0.82rem;padding:6px 14px;">👁️ Ver Prompt Injetado na C1</button>
+      <button class="btn btn-primary" onclick="openAddRagModal()" style="font-size:0.82rem;padding:6px 14px;background:var(--success);color:white;margin-left:auto;">➕ Adicionar Novo Arquivo RAG</button>
     </div>
 
     <div id="ragChunksView" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:6px;max-height:50vh;">
@@ -1045,12 +1047,56 @@ textarea::placeholder { color: var(--muted); }
       <!-- Prompt injection preview -->
     </div>
 
-    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
       <span style="font-size:0.78rem;color:var(--success);display:flex;align-items:center;gap:6px;">
         <span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;"></span>
-        RAG baseado em enem_rag_vectorstore_txt-1.pdf e enem_rag_vectorstore_json-2.pdf
+        Base de Conhecimento Híbrida (PDFs Oficiais ENEM + Chunks Customizados do Usuário)
       </span>
       <button class="btn btn-secondary" onclick="closeRagModal()" style="padding:6px 16px;font-size:0.85rem;">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD RAG DOCUMENT MODAL -->
+<div id="addRagModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem;">
+  <div class="card" style="max-width:620px;width:100%;padding:24px;border:1px solid rgba(16,185,129,0.4);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+      <b style="font-family:'Outfit',sans-serif;font-size:1.15rem;color:var(--text);display:flex;align-items:center;gap:8px;">
+        ➕ Adicionar Novo Documento / Regra ao RAG
+      </b>
+      <button onclick="closeAddRagModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
+    </div>
+
+    <!-- FILE UPLOAD DROPZONE -->
+    <div style="margin-bottom:16px;background:var(--surface2);padding:14px;border-radius:12px;border:1px dashed var(--accent);text-align:center;">
+      <div style="font-size:0.85rem;color:var(--text);margin-bottom:6px;font-weight:700;">📄 Importar de Arquivo (.txt, .json, .md)</div>
+      <input type="file" id="ragFileInput" accept=".txt,.json,.md,.csv" onchange="handleRagFileUpload(this)" style="font-size:0.8rem;color:var(--muted);cursor:pointer;">
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+      <div>
+        <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Título do Documento / Regra:</label>
+        <input type="text" id="newRagTitle" placeholder="Ex: Manual Guia da Redação ENEM 2024" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.88rem;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Chave Única (ID):</label>
+          <input type="text" id="newRagKey" placeholder="Ex: CUSTOM_MANUAL_2024" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.88rem;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Tags / Palavras-chave:</label>
+          <input type="text" id="newRagTags" placeholder="Ex: c1, norma culta, 2024" style="width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.88rem;outline:none;">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Conteúdo do Documento / Regras:</label>
+        <textarea id="newRagContent" rows="6" placeholder="Cole o texto, critérios de avaliação ou regras de calibração aqui..." style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.85rem;outline:none;font-family:inherit;resize:vertical;"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn btn-secondary" onclick="closeAddRagModal()" style="padding:8px 16px;font-size:0.85rem;">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCustomRagChunk()" style="padding:8px 20px;font-size:0.85rem;background:var(--success);color:white;">💾 Salvar e Injetar no RAG</button>
     </div>
   </div>
 </div>
@@ -1288,40 +1334,135 @@ function showRagTab(tab) {
   document.getElementById('btnRagTabPrompt').style.color = isChunks ? 'var(--text)' : 'white';
 }
 
+/* CUSTOM RAG MANIPULATION ENGINE */
+function openAddRagModal() {
+  document.getElementById('addRagModal').style.display = 'flex';
+}
+
+function closeAddRagModal() {
+  document.getElementById('addRagModal').style.display = 'none';
+  document.getElementById('newRagTitle').value = '';
+  document.getElementById('newRagKey').value = '';
+  document.getElementById('newRagTags').value = '';
+  document.getElementById('newRagContent').value = '';
+  if (document.getElementById('ragFileInput')) document.getElementById('ragFileInput').value = '';
+}
+
+function getCustomRags() {
+  try {
+    return JSON.parse(localStorage.getItem('custom_rag_database') || '{}');
+  } catch(e) {
+    return {};
+  }
+}
+
+function saveCustomRagChunk() {
+  var title = document.getElementById('newRagTitle').value.trim();
+  var keyInput = document.getElementById('newRagKey').value.trim();
+  var tags = document.getElementById('newRagTags').value.trim();
+  var content = document.getElementById('newRagContent').value.trim();
+
+  if (!title || !content) {
+    showToast('Preencha o título e o conteúdo do documento!', 'error');
+    return;
+  }
+
+  var key = (keyInput || ('CUSTOM_' + Date.now())).toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+  if (!key.startsWith('CUSTOM_')) key = 'CUSTOM_' + key;
+
+  var formattedChunk = 'Título: ' + title + '\n' +
+                       'Tags: ' + (tags || 'custom, usuario, documento') + '\n' +
+                       '================================================================================\n' +
+                       content;
+
+  var customRags = getCustomRags();
+  customRags[key] = formattedChunk;
+  localStorage.setItem('custom_rag_database', JSON.stringify(customRags));
+
+  if (!window.RAG_DATABASE) window.RAG_DATABASE = {};
+  window.RAG_DATABASE[key] = formattedChunk;
+
+  showToast('Documento RAG "' + title + '" adicionado com sucesso!', 'success');
+  closeAddRagModal();
+  renderRagInspector();
+}
+
+function deleteCustomRagChunk(key) {
+  if (!confirm('Deseja realmente remover este documento customizado do RAG?')) return;
+  var customRags = getCustomRags();
+  delete customRags[key];
+  if (window.RAG_DATABASE) delete window.RAG_DATABASE[key];
+  localStorage.setItem('custom_rag_database', JSON.stringify(customRags));
+  showToast('Documento removido da Base RAG!', 'info');
+  renderRagInspector();
+}
+
+function handleRagFileUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    document.getElementById('newRagContent').value = text;
+    if (!document.getElementById('newRagTitle').value) {
+      document.getElementById('newRagTitle').value = file.name.replace(/\.[^/.]+$/, "");
+    }
+    if (!document.getElementById('newRagKey').value) {
+      document.getElementById('newRagKey').value = 'CUSTOM_' + file.name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+    }
+  };
+  reader.readAsText(file);
+}
+
 function renderRagInspector() {
   var container = document.getElementById('ragChunksView');
   if (!container || !window.RAG_DATABASE) return;
-  
-  var html = '';
+
+  var customRags = getCustomRags();
+  for (var k in customRags) {
+    window.RAG_DATABASE[k] = customRags[k];
+  }
+
   var keys = Object.keys(window.RAG_DATABASE);
+  var badgeLabel = document.getElementById('ragChunksCountLabel');
+  if (badgeLabel) badgeLabel.textContent = keys.length;
+
+  var mRagChunksEl = document.getElementById('mRagChunks');
+  if (mRagChunksEl) mRagChunksEl.textContent = keys.length + ' Chunks Ativos';
+
+  var html = '';
   keys.forEach(function(key, idx) {
     var content = window.RAG_DATABASE[key];
     var lines = content.split('\n');
-    var title = lines[0] || key;
+    var title = (lines[0] || key).replace('Título: ', '');
     var tags = lines[1] || '';
     var body = lines.slice(3).join('\n');
-    
-    html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;">' +
-      '<div style="font-weight:700;font-size:0.9rem;color:var(--accent);display:flex;justify-content:space-between;align-items:center;">' +
-        '<span>#' + (idx + 1) + ' — ' + title.replace('Título: ', '') + '</span>' +
-        '<span style="font-size:0.78rem;background:rgba(230,57,70,0.15);color:var(--accent);padding:2px 8px;border-radius:8px;font-weight:700;">' + key + '</span>' +
+    var isCustom = key.startsWith('CUSTOM_');
+
+    html += '<div style="background:var(--surface2);border:1px solid ' + (isCustom ? 'rgba(16,185,129,0.5)' : 'var(--border)') + ';border-radius:12px;padding:12px 16px;position:relative;">' +
+      '<div style="font-weight:700;font-size:0.9rem;color:' + (isCustom ? 'var(--success)' : 'var(--accent)') + ';display:flex;justify-content:space-between;align-items:center;">' +
+        '<span>#' + (idx + 1) + ' — ' + title + '</span>' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<span style="font-size:0.75rem;background:' + (isCustom ? 'rgba(16,185,129,0.2)' : 'rgba(230,57,70,0.15)') + ';color:' + (isCustom ? 'var(--success)' : 'var(--accent)') + ';padding:2px 8px;border-radius:8px;font-weight:700;">' + (isCustom ? '👤 CUSTOMIZADO' : key) + '</span>' +
+          (isCustom ? '<button onclick="deleteCustomRagChunk(\'' + key + '\')" title="Excluir Chunk" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.9rem;padding:2px 6px;">🗑️</button>' : '') +
+        '</div>' +
       '</div>' +
       '<div style="font-size:0.76rem;color:var(--gold);margin:4px 0;">' + tags + '</div>' +
-      '<div style="font-size:0.78rem;color:var(--text);white-space:pre-wrap;line-height:1.4;max-height:100px;overflow-y:auto;background:var(--surface);padding:8px;border-radius:8px;border:1px solid var(--border);margin-top:6px;">' + body.substring(0, 300) + '...</div>' +
+      '<div style="font-size:0.78rem;color:var(--text);white-space:pre-wrap;line-height:1.4;max-height:100px;overflow-y:auto;background:var(--surface);padding:8px;border-radius:8px;border:1px solid var(--border);margin-top:6px;">' + body.substring(0, 320) + (body.length > 320 ? '...' : '') + '</div>' +
     '</div>';
   });
-  
+
   container.innerHTML = html;
-  
+
   var samplePrompt = '--- SYSTEM PROMPT ENVIADO AO LM STUDIO PARA A COMPETÊNCIA 1 ---\n\n' +
     'Você é um corretor oficial do ENEM. Avalie SOMENTE a Competência 1: "Demonstrar domínio da modalidade escrita formal da língua portuguesa."\n' +
     'Tema oficial: "A invisibilidade do trabalho de cuidado realizado pela mulher no Brasil".\n\n' +
-    '--- BASE DE CONHECIMENTO RAG OFICIAL (PDFs ENEM) ---\n' +
+    '--- BASE DE CONHECIMENTO RAG OFICIAL (PDFs ENEM + CUSTOMS) ---\n' +
     getRagContext(1) + '\n' +
     '----------------------------------------------------\n\n' +
     'Texto da redação:\n"""\nConforme estudos demográficos realizados pelo IBGE...\n"""\n\n' +
     'Retorne SOMENTE um JSON valido sem marcação de código:\n{"c1_score": <0|40|80|120|160|200>, "c1_ded": <objeto_detalhado>}';
-  
+
   document.getElementById('ragPromptView').textContent = samplePrompt;
 }
 
@@ -1626,7 +1767,7 @@ function getRagContext(i) {
   if (RAG_DATABASE.CASOS_ANULACAO) chunks.push(RAG_DATABASE.CASOS_ANULACAO);
   var prefix = "C" + i + "_";
   for (var key in RAG_DATABASE) {
-    if (key.startsWith(prefix)) chunks.push(RAG_DATABASE[key]);
+    if (key.startsWith(prefix) || key.startsWith('CUSTOM_')) chunks.push(RAG_DATABASE[key]);
   }
   return chunks.join("\n\n");
 }
@@ -2024,16 +2165,35 @@ function populateVoiceList() {
   var voices = window.speechSynthesis.getVoices();
   var sel = document.getElementById('voiceSelect');
   if (!sel) return;
+  
   sel.innerHTML = '';
+  
+  if (!voices || voices.length === 0) {
+    var opt = document.createElement('option');
+    opt.value = "";
+    opt.textContent = "🔄 Carregando vozes do sistema... (Clique aqui para atualizar)";
+    sel.appendChild(opt);
+    return;
+  }
   
   var selectedName = localStorage.getItem('biaVoiceName');
   var defaultFemale = getStrictFemaleVoice();
 
-  voices.forEach(function(v) {
+  // Sort: Portuguese voices first!
+  var sortedVoices = voices.slice().sort(function(a, b) {
+    var aPt = (a.lang||'').toLowerCase().includes('pt') || (a.lang||'').toLowerCase().includes('por');
+    var bPt = (b.lang||'').toLowerCase().includes('pt') || (b.lang||'').toLowerCase().includes('por');
+    if (aPt && !bPt) return -1;
+    if (!aPt && bPt) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  sortedVoices.forEach(function(v) {
     var opt = document.createElement('option');
     opt.value = v.name;
-    opt.textContent = v.name + ' (' + v.lang + ')' + (v === defaultFemale ? ' ⭐ Recomendada (Bia)' : '');
-    if (selectedName ? v.name === selectedName : v === defaultFemale) {
+    var isRec = (defaultFemale && v.name === defaultFemale.name);
+    opt.textContent = (isRec ? '⭐ [Bia Recomendada] ' : '') + v.name + ' (' + v.lang + ')';
+    if (selectedName ? v.name === selectedName : isRec) {
       opt.selected = true;
     }
     sel.appendChild(opt);
